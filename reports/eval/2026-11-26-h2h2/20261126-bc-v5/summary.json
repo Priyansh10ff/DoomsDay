@@ -1,0 +1,869 @@
+{
+ "config": {
+  "stages": [
+   "S0",
+   "S1",
+   "S2",
+   "S3"
+  ],
+  "episodes_per_map": 1,
+  "out": "reports/eval/2026-11-26-h2h2/20261126-bc-v5",
+  "noise": 0.0,
+  "clean_every": 0,
+  "burst_max": 3,
+  "workers": 3,
+  "seed": 4242,
+  "keep_failures": false,
+  "save": false,
+  "map_ids": [
+   "S0-train-110063",
+   "S0-train-110019",
+   "S0-train-110082",
+   "S0-train-110147",
+   "S0-train-100013",
+   "S0-train-100019",
+   "S0-train-110191",
+   "S0-train-110118",
+   "S0-train-110005",
+   "S0-train-110074",
+   "S0-train-110130",
+   "S0-train-100015",
+   "S0-train-110110",
+   "S0-train-110035",
+   "S0-train-100010",
+   "S0-train-110003",
+   "S0-train-110092",
+   "S0-train-110088",
+   "S0-train-100018",
+   "S0-train-110042",
+   "S0-train-110004",
+   "S0-train-110122",
+   "S0-train-110089",
+   "S0-train-100016",
+   "S0-train-110125",
+   "S0-train-110012",
+   "S0-train-110038",
+   "S0-train-110142",
+   "S0-train-110141",
+   "S0-train-110190",
+   "S1-train-101016",
+   "S1-train-120128",
+   "S1-train-120130",
+   "S1-train-120082",
+   "S1-train-101013",
+   "S1-train-120037",
+   "S1-train-101012",
+   "S1-train-120123",
+   "S1-train-120015",
+   "S1-train-120055",
+   "S1-train-120088",
+   "S1-train-120017",
+   "S1-train-120119",
+   "S1-train-120011",
+   "S1-train-120127",
+   "S1-train-120059",
+   "S1-train-120124",
+   "S1-train-120155",
+   "S1-train-120027",
+   "S1-train-120007",
+   "S1-train-120129",
+   "S1-train-120186",
+   "S1-train-120144",
+   "S1-train-120029",
+   "S1-train-120076",
+   "S1-train-120005",
+   "S1-train-120121",
+   "S1-train-120163",
+   "S1-train-101017",
+   "S1-train-120125",
+   "S2-train-102016",
+   "S2-train-130139",
+   "S2-train-130033",
+   "S2-train-130108",
+   "S2-train-130155",
+   "S2-train-130117",
+   "S2-train-130090",
+   "S2-train-130180",
+   "S2-train-130061",
+   "S2-train-130100",
+   "S2-train-130130",
+   "S2-train-130097",
+   "S2-train-130073",
+   "S2-train-130057",
+   "S2-train-130044",
+   "S2-train-130185",
+   "S2-train-130027",
+   "S2-train-130160",
+   "S2-train-130181",
+   "S2-train-130043",
+   "S2-train-130001",
+   "S2-train-130128",
+   "S2-train-130188",
+   "S2-train-130115",
+   "S2-train-130107",
+   "S2-train-130068",
+   "S2-train-130168",
+   "S2-train-130095",
+   "S2-train-130054",
+   "S2-train-130136",
+   "S3-train-103010",
+   "S3-train-103016",
+   "S3-train-140046",
+   "S3-train-140034",
+   "S3-train-140002",
+   "S3-train-140077",
+   "S3-train-140024",
+   "S3-train-103020",
+   "S3-train-140043",
+   "S3-train-140097",
+   "S3-train-103006",
+   "S3-train-140066",
+   "S3-train-140100",
+   "S3-train-140078",
+   "S3-train-140052",
+   "S3-train-140054",
+   "S3-train-140082",
+   "S3-train-140021",
+   "S3-train-140094",
+   "S3-train-140069",
+   "S3-train-140025",
+   "S3-train-140057",
+   "S3-train-140044",
+   "S3-train-140055",
+   "S3-train-140039",
+   "S3-train-103009",
+   "S3-train-103012",
+   "S3-train-140015",
+   "S3-train-140041",
+   "S3-train-140070"
+  ],
+  "trace": false,
+  "resume": false,
+  "student": "reports/runs/20261126-bc-v5/bc_model.pt",
+  "beta": 0.0,
+  "max_steps": 0,
+  "student_argmax": false
+ },
+ "env_config": "train_generated",
+ "bundle": "maps\\bundles\\train-all-b2.wad",
+ "jobs": 120,
+ "episodes_finished": 120,
+ "wall_s": 274.6,
+ "errors": [],
+ "stopped_low_memory": false,
+ "worker_reductions": 0,
+ "complete": true,
+ "min_available_gib": 3.04,
+ "by_stage_noise": {
+  "S0@noise0.0": {
+   "episodes": 30,
+   "success": 15,
+   "success_rate": 0.5,
+   "decisions_all": 23231,
+   "mean_length_success": 498.7,
+   "saved": 0,
+   "decisions_saved": 0,
+   "use_label_share": 0.0003,
+   "attack_label_share": 0.0,
+   "attack_labels": 0,
+   "combat_decisions": 0,
+   "kills": 0,
+   "deaths": 0,
+   "timeouts": 15,
+   "damage_taken": 0.0,
+   "monsters_seen": 0,
+   "use_edges_exec": 4652,
+   "press_open_target": 0,
+   "press_into_moving": 0,
+   "door_presses": 0,
+   "switch_presses": 5,
+   "ineffective_presses": 0,
+   "repress_after_close": 0,
+   "reversals_label": 0,
+   "reversals_other": 0,
+   "max_presses_per_closed_spell": 0,
+   "pressable_now": 8,
+   "pressable_but_use_held": 2,
+   "closed_door_ahead_far": 0,
+   "open_door_ahead": 0,
+   "near_closed_target_door": 0
+  },
+  "S1@noise0.0": {
+   "episodes": 30,
+   "success": 15,
+   "success_rate": 0.5,
+   "decisions_all": 21707,
+   "mean_length_success": 397.1,
+   "saved": 0,
+   "decisions_saved": 0,
+   "use_label_share": 0.0104,
+   "attack_label_share": 0.0,
+   "attack_labels": 0,
+   "combat_decisions": 0,
+   "kills": 0,
+   "deaths": 0,
+   "timeouts": 15,
+   "damage_taken": 0.0,
+   "monsters_seen": 0,
+   "use_edges_exec": 4047,
+   "press_open_target": 43,
+   "press_into_moving": 0,
+   "door_presses": 175,
+   "switch_presses": 4,
+   "ineffective_presses": 0,
+   "repress_after_close": 98,
+   "reversals_label": 0,
+   "reversals_other": 23,
+   "max_presses_per_closed_spell": 1,
+   "pressable_now": 229,
+   "pressable_but_use_held": 3,
+   "closed_door_ahead_far": 459,
+   "open_door_ahead": 1589,
+   "near_closed_target_door": 340
+  },
+  "S2@noise0.0": {
+   "episodes": 30,
+   "success": 5,
+   "success_rate": 0.1667,
+   "decisions_all": 28198,
+   "mean_length_success": 389.6,
+   "saved": 0,
+   "decisions_saved": 0,
+   "use_label_share": 0.0038,
+   "attack_label_share": 0.0,
+   "attack_labels": 0,
+   "combat_decisions": 0,
+   "kills": 0,
+   "deaths": 0,
+   "timeouts": 25,
+   "damage_taken": 0.0,
+   "monsters_seen": 0,
+   "use_edges_exec": 4261,
+   "press_open_target": 6,
+   "press_into_moving": 0,
+   "door_presses": 83,
+   "switch_presses": 1,
+   "ineffective_presses": 0,
+   "repress_after_close": 40,
+   "reversals_label": 0,
+   "reversals_other": 10,
+   "max_presses_per_closed_spell": 1,
+   "pressable_now": 108,
+   "pressable_but_use_held": 0,
+   "closed_door_ahead_far": 270,
+   "open_door_ahead": 777,
+   "near_closed_target_door": 5839
+  },
+  "S3@noise0.0": {
+   "episodes": 30,
+   "success": 7,
+   "success_rate": 0.2333,
+   "decisions_all": 24978,
+   "mean_length_success": 314.7,
+   "saved": 0,
+   "decisions_saved": 0,
+   "use_label_share": 0.0049,
+   "attack_label_share": 0.0329,
+   "attack_labels": 823,
+   "combat_decisions": 1038,
+   "kills": 78,
+   "deaths": 2,
+   "timeouts": 21,
+   "damage_taken": 468.0,
+   "monsters_seen": 78,
+   "use_edges_exec": 4067,
+   "press_open_target": 15,
+   "press_into_moving": 0,
+   "door_presses": 111,
+   "switch_presses": 2,
+   "ineffective_presses": 2,
+   "repress_after_close": 54,
+   "reversals_label": 0,
+   "reversals_other": 8,
+   "max_presses_per_closed_spell": 2,
+   "pressable_now": 125,
+   "pressable_but_use_held": 2,
+   "closed_door_ahead_far": 327,
+   "open_door_ahead": 1483,
+   "near_closed_target_door": 5268
+  }
+ },
+ "decisions_saved": 0,
+ "episodes_saved": 0,
+ "failures": [
+  {
+   "map_id": "S0-train-100015",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100018",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100019",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S1-train-101012",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 3
+  },
+  {
+   "map_id": "S3-train-103010",
+   "stage": "S3",
+   "length": 1050,
+   "anchor_reached": 4,
+   "anchors": 7
+  },
+  {
+   "map_id": "S3-train-103012",
+   "stage": "S3",
+   "length": 1050,
+   "anchor_reached": 5,
+   "anchors": 7
+  },
+  {
+   "map_id": "S3-train-103016",
+   "stage": "S3",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 9
+  },
+  {
+   "map_id": "S3-train-103020",
+   "stage": "S3",
+   "length": 1050,
+   "anchor_reached": 2,
+   "anchors": 8
+  },
+  {
+   "map_id": "S0-train-110012",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-110035",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-110063",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-110082",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-110092",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-110110",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-110118",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-110125",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-110130",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-110147",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-110190",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-110191",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S1-train-120005",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 2
+  },
+  {
+   "map_id": "S1-train-120011",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-120015",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 2,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-120017",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 2
+  },
+  {
+   "map_id": "S1-train-120027",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 4
+  },
+  {
+   "map_id": "S1-train-120037",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 2,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-120059",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-120076",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-120088",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 2,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-120119",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-120127",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 2
+  },
+  {
+   "map_id": "S1-train-120128",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 2
+  },
+  {
+   "map_id": "S1-train-120129",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 4
+  },
+  {
+   "map_id": "S1-train-120163",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 2
+  },
+  {
+   "map_id": "S2-train-130027",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 7
+  },
+  {
+   "map_id": "S2-train-130033",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 6
+  },
+  {
+   "map_id": "S2-train-130044",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 6
+  },
+  {
+   "map_id": "S2-train-130054",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 4
+  },
+  {
+   "map_id": "S2-train-130057",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 5,
+   "anchors": 6
+  },
+  {
+   "map_id": "S2-train-130061",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 5
+  },
+  {
+   "map_id": "S2-train-130068",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 4
+  },
+  {
+   "map_id": "S2-train-130073",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 5,
+   "anchors": 7
+  },
+  {
+   "map_id": "S2-train-130090",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 2,
+   "anchors": 4
+  },
+  {
+   "map_id": "S2-train-130095",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 3
+  },
+  {
+   "map_id": "S2-train-130100",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 5
+  },
+  {
+   "map_id": "S2-train-130107",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 5
+  },
+  {
+   "map_id": "S2-train-130108",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 6,
+   "anchors": 9
+  },
+  {
+   "map_id": "S2-train-130115",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 4,
+   "anchors": 6
+  },
+  {
+   "map_id": "S2-train-130117",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 3,
+   "anchors": 6
+  },
+  {
+   "map_id": "S2-train-130128",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 2,
+   "anchors": 5
+  },
+  {
+   "map_id": "S2-train-130130",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 5
+  },
+  {
+   "map_id": "S2-train-130136",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 4,
+   "anchors": 6
+  },
+  {
+   "map_id": "S2-train-130139",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 4
+  },
+  {
+   "map_id": "S2-train-130155",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 4
+  },
+  {
+   "map_id": "S2-train-130168",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 7
+  },
+  {
+   "map_id": "S2-train-130180",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 2,
+   "anchors": 6
+  },
+  {
+   "map_id": "S2-train-130181",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 3,
+   "anchors": 5
+  },
+  {
+   "map_id": "S2-train-130185",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 4
+  },
+  {
+   "map_id": "S2-train-130188",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 5,
+   "anchors": 6
+  },
+  {
+   "map_id": "S3-train-140002",
+   "stage": "S3",
+   "length": 1050,
+   "anchor_reached": 4,
+   "anchors": 6
+  },
+  {
+   "map_id": "S3-train-140015",
+   "stage": "S3",
+   "length": 1050,
+   "anchor_reached": 2,
+   "anchors": 7
+  },
+  {
+   "map_id": "S3-train-140021",
+   "stage": "S3",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 4
+  },
+  {
+   "map_id": "S3-train-140024",
+   "stage": "S3",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 4
+  },
+  {
+   "map_id": "S3-train-140034",
+   "stage": "S3",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 5
+  },
+  {
+   "map_id": "S3-train-140039",
+   "stage": "S3",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 4
+  },
+  {
+   "map_id": "S3-train-140043",
+   "stage": "S3",
+   "length": 468,
+   "anchor_reached": 4,
+   "anchors": 6
+  },
+  {
+   "map_id": "S3-train-140044",
+   "stage": "S3",
+   "length": 257,
+   "anchor_reached": 1,
+   "anchors": 4
+  },
+  {
+   "map_id": "S3-train-140046",
+   "stage": "S3",
+   "length": 1050,
+   "anchor_reached": 5,
+   "anchors": 7
+  },
+  {
+   "map_id": "S3-train-140054",
+   "stage": "S3",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 5
+  },
+  {
+   "map_id": "S3-train-140055",
+   "stage": "S3",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 6
+  },
+  {
+   "map_id": "S3-train-140057",
+   "stage": "S3",
+   "length": 1050,
+   "anchor_reached": 4,
+   "anchors": 6
+  },
+  {
+   "map_id": "S3-train-140066",
+   "stage": "S3",
+   "length": 1050,
+   "anchor_reached": 2,
+   "anchors": 8
+  },
+  {
+   "map_id": "S3-train-140069",
+   "stage": "S3",
+   "length": 1050,
+   "anchor_reached": 2,
+   "anchors": 6
+  },
+  {
+   "map_id": "S3-train-140077",
+   "stage": "S3",
+   "length": 1050,
+   "anchor_reached": 2,
+   "anchors": 4
+  },
+  {
+   "map_id": "S3-train-140078",
+   "stage": "S3",
+   "length": 1050,
+   "anchor_reached": 2,
+   "anchors": 5
+  },
+  {
+   "map_id": "S3-train-140082",
+   "stage": "S3",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 5
+  },
+  {
+   "map_id": "S3-train-140097",
+   "stage": "S3",
+   "length": 1050,
+   "anchor_reached": 3,
+   "anchors": 6
+  },
+  {
+   "map_id": "S3-train-140100",
+   "stage": "S3",
+   "length": 1050,
+   "anchor_reached": 2,
+   "anchors": 6
+  }
+ ],
+ "dagger": {
+  "student": "D:\\DoomsDay\\reports\\runs\\20261126-bc-v5\\bc_model.pt",
+  "beta": 0.0,
+  "max_steps": 0,
+  "student_argmax": false,
+  "success_by_stage": {
+   "S0": [
+    15,
+    30
+   ],
+   "S1": [
+    15,
+    30
+   ],
+   "S2": [
+    5,
+    30
+   ],
+   "S3": [
+    7,
+    30
+   ]
+  },
+  "unstick_label_share": 0.0007,
+  "student_decision_share": 1.0,
+  "agree_all": 0.1047,
+  "capped": 0
+ }
+}

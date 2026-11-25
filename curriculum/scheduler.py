@@ -38,7 +38,12 @@ class EpisodeChoice:
     episode: int       # issue index; several choices may be outstanding (parallel envs)
 
 
-def load_config(path: str = DEFAULT_CONFIG) -> dict:
+CONFIG_ENV = "DOOMSDAY_CURRICULUM_CONFIG"   # optional path to another config file; unset = config.json
+
+
+def load_config(path: str | None = None) -> dict:
+    if path is None:
+        path = os.environ.get(CONFIG_ENV) or DEFAULT_CONFIG
     with open(path, encoding="utf-8") as f:
         return json.load(f)
 

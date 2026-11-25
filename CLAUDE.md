@@ -123,6 +123,13 @@ _Add entries as: `YYYY-MM-DD: decision (who decided, why)`._
 
 - 2026-11-25 (evening): **Plan change** (decided by Priyansh with the team, from `DOOM_RL_Hackathon_Brief.md` by Raghav Sharma; reason: time is shorter and the first generated-maps run stalled on doors at about 5%). (a) Build a **scripted teacher** (pathfinding and aim allowed in `teachers/` only, training-time, never imported by the inference path), behaviour-clone it, then fine-tune with PPO. (b) The trainer stays **our own recurrent PPO**; Sample Factory is not used (no Windows support). (c) **No LLM planner.** Still undecided: pretrained weights as a frozen combat skill (conflicts with ADR 0007(a); needs an explicit yes), and whether the organizers accept scripted teachers.
 
+- 2026-11-26 (03:00): **Working assumption: evaluation does NOT set `+viz_nocheat`**, so the depth buffer, labels buffer and sector info are available at inference (decided by Priyansh; reason: the brief strongly recommends engine telemetry and asks for our own inference setup; "unmodified engine" is read as no engine mods / vanilla rules, not as buffers off). No pixel fallback is built unless the organizers say otherwise. The question is still worth sending to the organizers.
+
+- 2026-11-26 (03:10): **Option B** (decided by Priyansh): launch the night-3 run now; build these gaps alongside it and apply them in the day run on top of the night's model (no restart from scratch):
+  1. **Locked-door map channel**: egomap channel 5 set when USE gives the "needs key" message at the door under the view ray; the model grows a 6th egomap input with zero-initialised weights so it starts out identical; re-collect teacher data with it.
+  2. **Longer episodes** (about 4 minutes of game time instead of 2) and **mixed skill levels 1-4** per episode.
+  3. **Lifts and stairs** in the generator: measure on Freedoom Phase 1 first; likely too big for the deadline.
+
 ## 8. Current state of the repo
 
 - 2026-11-24: Repository started. Only this file exists. No code yet.

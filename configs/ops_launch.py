@@ -9,6 +9,8 @@ worker design (daemon / non-daemon). This launcher reads a JSON file with:
     safety_overrides  fields replaced on SafetyConfig (configs.train_config)
     health_overrides  fields replaced on RunConfig.health (HealthMonitorConfig), e.g.
                       {"stop_enabled": false} for a flag-only health monitor
+    process_env       DOOMSDAY_* environment variables set before anything else
+                      (e.g. {"DOOMSDAY_TRAIN_BUNDLE": "train-all-b2"})
 substitutes the names `train.run_doom.main` reads (`a0_train_env_config`,
 `generated_maps_env_config`, `SafetyConfig`, and `RunConfig` when health_overrides is
 non-empty) for this process only, prints and asserts the effective values,
@@ -30,6 +32,14 @@ import sys
 def launch(config_path: str, run_dir: str, extra: list[str] | None = None) -> int:
     with open(config_path, encoding="utf-8") as f:
         cfg = json.load(f)
+    # Process environment the run depends on (e.g. DOOMSDAY_TRAIN_BUNDLE, DOOMSDAY_OBS_VERSION),
+    # set before anything reads it, so a launch and every resume of the same config agree.
+    # Worker processes are spawned after this and inherit it.
+    for k, v in cfg.get("process_env", {}).items():
+        if not (isinstance(k, str) and k.startswith("DOOMSDAY_")):
+            raise SystemExit(f"ops_launch: process_env key {k!r} refused (only DOOMSDAY_* variables)")
+        os.environ[k] = str(v)
+        print(f"ops_launch: process_env {k}={v}")
     env_over = cfg.get("env_overrides", {})
     safety_over = cfg.get("safety_overrides", {})
     health_over = cfg.get("health_overrides", {})
