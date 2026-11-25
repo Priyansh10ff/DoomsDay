@@ -35,7 +35,15 @@ OBS_DTYPES: dict[str, np.dtype] = {
     "rays": np.dtype(np.float32), "entities": np.dtype(np.float32), "entity_type": np.dtype(np.int64),
     "entity_mask": np.dtype(np.bool_), "self": np.dtype(np.float32), "prev_action": np.dtype(np.int64),
     "modality": np.dtype(np.float32),
+    "egomap": np.dtype(np.uint8),        # observation v3 only (env/egomap.py)
 }
+# Observation v3 `egomap` per-step shape (mirrors env.egomap.EGOMAP_SHAPE, checked by a test).
+EGOMAP_STEP_SHAPE: tuple[int, int, int] = (5, 32, 32)
+
+
+def egomap_step_shape(obs_version: int) -> tuple[int, int, int] | None:
+    """Per-step `egomap` shape under an observation version (None before v3)."""
+    return EGOMAP_STEP_SHAPE if obs_version >= 3 else None
 LABEL_KEY = "action"
 LABEL_DTYPE = np.dtype(np.int64)
 
@@ -46,12 +54,18 @@ class DatasetMismatch(ValueError):
 
 def a0_training_spec_and_signature() -> tuple[ObsSpec, tuple]:
     """(ObsSpec, sensor signature) of the A0 training env, built engine-free, at the
-    observation version configs.a0_env.obs_version() selects (v1 or v2)."""
+    observation version configs.a0_env.obs_version() selects (v1, v2 or v3). v3 has the
+    same rays / self sizes as v2 plus `egomap` (egomap_step_shape); the signature carries
+    the version."""
     from configs.a0_env import a0_train_env_config
     from env import observation as O
     from env.actions import head_sizes
     cfg = a0_train_env_config()
-    spec = ObsSpec(
+    extra = {}
+    ego = egomap_step_shape(cfg.obs_version)
+    if ego is not None:   # v3: agent.obs_spec builds an EgoMapObsSpec from a non-None egomap_shape
+        extra["egomap_shape"] = ego
+    spec = ObsSpec(**extra,
         ray_channels=O.ray_channels(len(cfg.ray_bands), cfg.obs_version), ray_width=O.N_RAY_COLS,
         max_entities=cfg.max_entities, entity_feat_dim=ENV_ENTITY_FEAT_DIM,
         n_entity_types=len(O.ENTITY_TYPES), self_dim=O.self_dim(cfg.obs_version),
@@ -61,8 +75,9 @@ def a0_training_spec_and_signature() -> tuple[ObsSpec, tuple]:
 
 
 def expected_step_shapes(spec: ObsSpec) -> dict[str, tuple[int, ...]]:
-    """Per-step (no time axis) shape of every A0 observation key and of the label."""
-    return {
+    """Per-step (no time axis) shape of every A0 observation key and of the label.
+    `egomap` (C, H, W) is included when the spec has one (spec.egomap, observation v3)."""
+    out = {
         "rays": (spec.ray_channels, spec.ray_width),
         "entities": (spec.max_entities, spec.entity_feat_dim),
         "entity_type": (spec.max_entities,),
@@ -72,6 +87,10 @@ def expected_step_shapes(spec: ObsSpec) -> dict[str, tuple[int, ...]]:
         "modality": (spec.modality_dim,),
         LABEL_KEY: (spec.n_heads,),
     }
+    ego = getattr(spec, "egomap", None)
+    if ego is not None:
+        out["egomap"] = tuple(ego)
+    return out
 
 
 def validate_arrays(arrays: Mapping[str, Any], spec: ObsSpec, where: str) -> int:

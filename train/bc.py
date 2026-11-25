@@ -4,7 +4,7 @@
     python -m train.bc --data data/teacher/<name> [--data <dir2>[,<dir3>...]] --out reports/runs/<run-dir>
         [--init-from-bc <bc_model.pt>] [--epochs N] [--seq-len 64] [--batch-seqs 32] [--lr 3e-4] [--device cpu|cuda|auto]
         [--seed S] [--val-frac 0.1] [--max-seconds S] [--head-weights 1,1,1,0,1,1]
-        [--torch-threads 2] [--max-dataset-gb 3] [--use-pos-weight 1.0]
+        [--torch-threads 2] [--max-dataset-gb 3] [--use-pos-weight 1.0] [--prev-action-dropout 0.0]
 
 What it does
   * Loads every episode of the dataset (train/bc_data.py), validates shapes and
@@ -22,6 +22,11 @@ What it does
     `python -m train.run_doom --init-from ... --value-warmup-updates N` to fit it
     under PPO's own return convention before the policy moves.
   * Telemetry dropout (ADR 0006) is not applied: A0 trains with probability 0.
+  * `--prev-action-dropout P` (default 0 = off): in training chunks only, each (step,
+    sequence) independently has its `prev_action` input replaced with probability P by
+    the env's reset value (all zeros, env/doom_env.py reset), so the student cannot
+    lean on copying its previous action (the wall-wedge of
+    reports/eval/2026-11-26-bc-v3-regression.md). Validation is never dropped.
   * Model built with agent.model.build_agent + configs.model_config.ModelConfig(),
     the same path the PPO trainer uses, so weights are interchangeable.
 
@@ -63,6 +68,9 @@ from .checkpoint import save_weights_checkpoint
 MODEL_NAME = "bc_model.pt"
 METRICS_NAME = "bc_metrics.jsonl"
 SUMMARY_NAME = "bc_summary.json"
+# `prev_action` value at episode start: env/doom_env.py reset() sets np.zeros(6, int64).
+NO_PREV_ACTION_VALUE = 0
+PREV_ACTION_KEY = "prev_action"
 VALUE_HEAD_NOTE = ("value head untouched by BC (no value loss); fit it with "
                    "train.run_doom --init-from <bc_model.pt> --value-warmup-updates N")
 
@@ -122,6 +130,19 @@ def bc_loss(logits: list[torch.Tensor], labels: torch.Tensor, valid: torch.Tenso
     return out
 
 
+# ---------------------------------------------------------------- prev-action dropout
+def drop_prev_action(prev: torch.Tensor, p: float, generator: torch.Generator) -> torch.Tensor:
+    """prev (T, B, H) long -> same shape, where each (t, b) row is replaced with
+    probability p by the reset value (NO_PREV_ACTION_VALUE in every head). The draw is
+    made on CPU from `generator` (T x B uniforms per call) and moved to prev's device."""
+    assert prev.dim() == 3, f"prev_action expected (T, B, H), got {tuple(prev.shape)}"
+    t, b, _ = prev.shape
+    drop = (torch.rand((t, b), generator=generator) < p).to(prev.device)
+    out = torch.where(drop.unsqueeze(-1), torch.full_like(prev, NO_PREV_ACTION_VALUE), prev)
+    assert out.shape == prev.shape
+    return out
+
+
 # ---------------------------------------------------------------- epochs
 class Accumulator:
     def __init__(self, n_heads: int) -> None:
@@ -167,19 +188,30 @@ def _fmt(x: float | None) -> str:
 def run_epoch(model: A0Agent, stream: ChunkStream, head_weights: tuple[float, ...],
               optimizer: torch.optim.Optimizer | None, max_grad_norm: float,
               should_stop: Callable[[], bool] = lambda: False,
-              use_pos_weight: float = 1.0) -> tuple[Accumulator, bool]:
+              use_pos_weight: float = 1.0, prev_action_dropout: float = 0.0,
+              dropout_generator: torch.Generator | None = None) -> tuple[Accumulator, bool]:
     """One pass over `stream`. Trains when `optimizer` is given, else evaluates under
-    no_grad. Hidden state carried across chunks, detached. Returns (metrics, stopped)."""
+    no_grad. Hidden state carried across chunks, detached. Returns (metrics, stopped).
+    `prev_action_dropout` > 0 applies drop_prev_action (with `dropout_generator`) to
+    training chunks only; an evaluation pass never drops."""
     acc = Accumulator(model.spec.n_heads)
     device = next(model.parameters()).device
     h = model.initial_state(stream.b, device)
     train = optimizer is not None
+    dropping = train and prev_action_dropout > 0.0
+    if dropping and dropout_generator is None:
+        raise ValueError("prev_action_dropout > 0 needs a dropout_generator")
     model.train(train)
     for chunk in stream:
         if should_stop():
             return acc, True
+        obs = chunk.obs
+        if dropping:
+            assert dropout_generator is not None
+            obs = {**obs, PREV_ACTION_KEY: drop_prev_action(obs[PREV_ACTION_KEY], prev_action_dropout,
+                                                            dropout_generator)}
         with torch.set_grad_enabled(train):
-            out, h_last = model.forward_sequence(chunk.obs, h, chunk.episode_start)
+            out, h_last = model.forward_sequence(obs, h, chunk.episode_start)
             c = bc_loss(out.logits, chunk.labels, chunk.valid, head_weights, use_pos_weight)
         if train and c.n_valid > 0 and c.total.requires_grad:
             optimizer.zero_grad(set_to_none=True)
@@ -248,6 +280,8 @@ def train_bc(train_eps: list[Episode], val_eps: list[Episode], spec: ObsSpec, mo
         note = "weight 0, fine" if weights[h] == 0.0 else "WARNING: weight > 0 will crush its entropy"
         log(f"head {names[h]}: teacher label constant ({v}) in the train split ({note})")
     log(VALUE_HEAD_NOTE)
+    log(f"prev_action dropout P = {cfg.prev_action_dropout} (training chunks only"
+        f"{'; off' if cfg.prev_action_dropout == 0.0 else ''})")
 
     os.makedirs(out_dir, exist_ok=True)
     dev = torch.device(device)
@@ -257,6 +291,7 @@ def train_bc(train_eps: list[Episode], val_eps: list[Episode], spec: ObsSpec, mo
     model = model.to(dev)
     opt = torch.optim.Adam(model.parameters(), lr=cfg.lr, eps=cfg.adam_eps)
     gen = torch.Generator(device="cpu").manual_seed(cfg.seed)
+    drop_gen = torch.Generator(device="cpu").manual_seed(cfg.seed + cfg.prev_action_dropout_seed_offset)
     train_stream = ChunkStream(train_eps, cfg.seq_len, cfg.batch_seqs, gen, shuffle=True, device=dev)
     val_stream = (ChunkStream(val_eps, cfg.seq_len, cfg.batch_seqs, gen, shuffle=False, device=dev)
                   if val_eps else None)
@@ -270,8 +305,9 @@ def train_bc(train_eps: list[Episode], val_eps: list[Episode], spec: ObsSpec, mo
     with open(os.path.join(out_dir, METRICS_NAME), "a", encoding="utf-8") as mf:
         for epoch in range(cfg.epochs):
             tr, stopped = run_epoch(model, train_stream, weights, opt, cfg.max_grad_norm, should_stop,
-                                    cfg.use_pos_weight)
+                                    cfg.use_pos_weight, cfg.prev_action_dropout, drop_gen)
             row: dict[str, Any] = {"epoch": epoch + 1, "partial": stopped, "seconds": time.monotonic() - t0,
+                                   "prev_action_dropout": cfg.prev_action_dropout,
                                    **tr.metrics("train", names)}
             if val_stream is not None:
                 va, _ = run_epoch(model, val_stream, weights, None, cfg.max_grad_norm,
@@ -296,7 +332,7 @@ def train_bc(train_eps: list[Episode], val_eps: list[Episode], spec: ObsSpec, mo
                "seconds": time.monotonic() - t0, "head_names": names, "head_weights": list(weights),
                "constant_label_heads": {names[h]: v for h, v in const.items()},
                "value_head": VALUE_HEAD_NOTE, "sensor_signature_source": SIGNATURE_SOURCE,
-               "use_pos_weight": cfg.use_pos_weight,
+               "use_pos_weight": cfg.use_pos_weight, "prev_action_dropout": cfg.prev_action_dropout,
                "final_use_recall_precision": ({k: history[-1].get(k) for k in (
                    "train_use_recall", "train_use_precision", "val_use_recall", "val_use_precision")}
                    if history else None),
@@ -340,6 +376,9 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     a.add_argument("--max-dataset-gb", type=float, default=d.max_dataset_bytes / GIB)
     a.add_argument("--use-pos-weight", type=float, default=d.use_pos_weight,
                    help="USE head: weight of press-label steps in its cross-entropy; default 1 (unweighted)")
+    a.add_argument("--prev-action-dropout", type=float, default=d.prev_action_dropout, metavar="P",
+                   help="training only: per step, with probability P replace the prev_action input by "
+                        "the episode-start value (no previous action); default 0 (off)")
     return a.parse_args(argv)
 
 
@@ -347,7 +386,7 @@ def config_from_args(ns: argparse.Namespace) -> BCConfig:
     return BCConfig(epochs=ns.epochs, seq_len=ns.seq_len, batch_seqs=ns.batch_seqs, lr=ns.lr, seed=ns.seed,
                     val_frac=ns.val_frac, head_weights=tuple(ns.head_weights), max_seconds=ns.max_seconds,
                     torch_threads=ns.torch_threads, max_dataset_bytes=int(ns.max_dataset_gb * GIB),
-                    use_pos_weight=ns.use_pos_weight)
+                    use_pos_weight=ns.use_pos_weight, prev_action_dropout=ns.prev_action_dropout)
 
 
 def data_dirs_from_args(values: list[str] | str) -> list[str]:

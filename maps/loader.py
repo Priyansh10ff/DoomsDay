@@ -24,6 +24,15 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SPLITS_PATH = os.path.join(REPO_ROOT, "maps", "splits.json")
 HELDOUT_DIR = "heldout_maps"          # must equal env.config.HELDOUT_MAP_DIR (tested)
 SPLITS = ("train", "val", "heldout")
+DEFAULT_BUNDLE = "train-all"
+# Selects the training bundle when a caller names none (teachers/collect.py,
+# curriculum.scheduler.from_bundle -> train.run_doom). Unset = "train-all", so existing
+# runs and resumes are unchanged; e.g. DOOMSDAY_TRAIN_BUNDLE=train-all-b2.
+BUNDLE_ENV = "DOOMSDAY_TRAIN_BUNDLE"
+
+
+def default_bundle_id() -> str:
+    return os.environ.get(BUNDLE_ENV, "").strip() or DEFAULT_BUNDLE
 MODES = ("train", "val", "eval")      # which splits each mode may load:
 ALLOWED = {"train": {"train"}, "val": {"train", "val"}, "eval": {"train", "val", "heldout"}}
 
@@ -153,11 +162,16 @@ def resolve(map_id: str, mode: str, splits: Splits | None = None) -> str:
     return _verify(entry)
 
 
-def training_bundle(bundle_id: str = "train-all", splits: Splits | None = None):
+def training_bundle(bundle_id: str | None = None, splits: Splits | None = None):
     """(bundle path, {lump name: map id}, {lump name: stage}) for training. Verifies the
-    bundle hash and every member's hash, and that every member is a train map."""
+    bundle hash and every member's hash, and that every member is a train map.
+    bundle_id None = $DOOMSDAY_TRAIN_BUNDLE, else "train-all"."""
     splits = splits or load_splits()
-    b = next(x for x in splits.data["bundles"] if x["id"] == bundle_id)
+    bundle_id = bundle_id or default_bundle_id()
+    b = next((x for x in splits.data["bundles"] if x["id"] == bundle_id), None)
+    if b is None:
+        raise KeyError(f"no training bundle {bundle_id!r} in splits.json; have "
+                       f"{[x['id'] for x in splits.data['bundles']]}")
     if b["split"] != "train":
         raise HeldOutAccessError(f"bundle {bundle_id} is {b['split']}, not train")
     lumps, stages = {}, {}

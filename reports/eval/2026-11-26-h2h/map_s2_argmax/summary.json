@@ -1,0 +1,346 @@
+{
+ "config": {
+  "stages": [
+   "S0",
+   "S1",
+   "S2"
+  ],
+  "episodes_per_map": 2,
+  "out": "reports/eval/2026-11-26-h2h/map_s2_argmax",
+  "noise": 0.0,
+  "clean_every": 0,
+  "burst_max": 3,
+  "workers": 2,
+  "seed": 777,
+  "keep_failures": false,
+  "save": false,
+  "map_ids": [],
+  "trace": false,
+  "resume": false,
+  "student": "reports/runs/20261126-bc-map-s2/bc_model.pt",
+  "beta": 0.0,
+  "max_steps": 0,
+  "student_argmax": true
+ },
+ "env_config": "train_generated",
+ "bundle": "maps\\bundles\\train-all.wad",
+ "jobs": 120,
+ "episodes_finished": 120,
+ "wall_s": 134.9,
+ "errors": [],
+ "stopped_low_memory": false,
+ "worker_reductions": 0,
+ "complete": true,
+ "min_available_gib": 4.63,
+ "by_stage_noise": {
+  "S0@noise0.0": {
+   "episodes": 40,
+   "success": 32,
+   "success_rate": 0.8,
+   "decisions_all": 11520,
+   "mean_length_success": 97.5,
+   "saved": 0,
+   "decisions_saved": 0,
+   "use_label_share": 0.0019,
+   "attack_label_share": 0.0,
+   "attack_labels": 0,
+   "combat_decisions": 0,
+   "kills": 0,
+   "deaths": 0,
+   "timeouts": 8,
+   "damage_taken": 0.0,
+   "monsters_seen": 0,
+   "use_edges_exec": 570,
+   "press_open_target": 0,
+   "press_into_moving": 0,
+   "door_presses": 0,
+   "switch_presses": 18,
+   "ineffective_presses": 4,
+   "repress_after_close": 0,
+   "reversals_label": 0,
+   "reversals_other": 0,
+   "max_presses_per_closed_spell": 0,
+   "pressable_now": 26,
+   "pressable_but_use_held": 4,
+   "closed_door_ahead_far": 0,
+   "open_door_ahead": 0,
+   "near_closed_target_door": 0
+  },
+  "S1@noise0.0": {
+   "episodes": 40,
+   "success": 32,
+   "success_rate": 0.8,
+   "decisions_all": 10768,
+   "mean_length_success": 74.0,
+   "saved": 0,
+   "decisions_saved": 0,
+   "use_label_share": 0.0089,
+   "attack_label_share": 0.0,
+   "attack_labels": 0,
+   "combat_decisions": 0,
+   "kills": 0,
+   "deaths": 0,
+   "timeouts": 8,
+   "damage_taken": 0.0,
+   "monsters_seen": 0,
+   "use_edges_exec": 514,
+   "press_open_target": 4,
+   "press_into_moving": 0,
+   "door_presses": 82,
+   "switch_presses": 12,
+   "ineffective_presses": 4,
+   "repress_after_close": 18,
+   "reversals_label": 0,
+   "reversals_other": 0,
+   "max_presses_per_closed_spell": 2,
+   "pressable_now": 96,
+   "pressable_but_use_held": 0,
+   "closed_door_ahead_far": 268,
+   "open_door_ahead": 678,
+   "near_closed_target_door": 240
+  },
+  "S2@noise0.0": {
+   "episodes": 40,
+   "success": 30,
+   "success_rate": 0.75,
+   "decisions_all": 14476,
+   "mean_length_success": 132.5,
+   "saved": 0,
+   "decisions_saved": 0,
+   "use_label_share": 0.0072,
+   "attack_label_share": 0.0,
+   "attack_labels": 0,
+   "combat_decisions": 0,
+   "kills": 0,
+   "deaths": 0,
+   "timeouts": 10,
+   "damage_taken": 0.0,
+   "monsters_seen": 0,
+   "use_edges_exec": 1784,
+   "press_open_target": 2,
+   "press_into_moving": 0,
+   "door_presses": 88,
+   "switch_presses": 16,
+   "ineffective_presses": 4,
+   "repress_after_close": 4,
+   "reversals_label": 0,
+   "reversals_other": 2,
+   "max_presses_per_closed_spell": 1,
+   "pressable_now": 106,
+   "pressable_but_use_held": 2,
+   "closed_door_ahead_far": 280,
+   "open_door_ahead": 882,
+   "near_closed_target_door": 298
+  }
+ },
+ "decisions_saved": 0,
+ "episodes_saved": 0,
+ "failures": [
+  {
+   "map_id": "S0-train-100001",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100011",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100012",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100017",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S1-train-101008",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 2
+  },
+  {
+   "map_id": "S1-train-101010",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 3,
+   "anchors": 4
+  },
+  {
+   "map_id": "S1-train-101013",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-101019",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 2
+  },
+  {
+   "map_id": "S2-train-102004",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 7
+  },
+  {
+   "map_id": "S2-train-102008",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 5,
+   "anchors": 6
+  },
+  {
+   "map_id": "S2-train-102016",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 6
+  },
+  {
+   "map_id": "S2-train-102017",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 4
+  },
+  {
+   "map_id": "S2-train-102018",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 5
+  },
+  {
+   "map_id": "S0-train-100001",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100011",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100012",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100017",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S1-train-101008",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 2
+  },
+  {
+   "map_id": "S1-train-101010",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 3,
+   "anchors": 4
+  },
+  {
+   "map_id": "S1-train-101013",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-101019",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 2
+  },
+  {
+   "map_id": "S2-train-102004",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 7
+  },
+  {
+   "map_id": "S2-train-102008",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 5,
+   "anchors": 6
+  },
+  {
+   "map_id": "S2-train-102016",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 6
+  },
+  {
+   "map_id": "S2-train-102017",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 4
+  },
+  {
+   "map_id": "S2-train-102018",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 5
+  }
+ ],
+ "dagger": {
+  "student": "D:\\DoomsDay\\reports\\runs\\20261126-bc-map-s2\\bc_model.pt",
+  "beta": 0.0,
+  "max_steps": 0,
+  "student_argmax": true,
+  "success_by_stage": {
+   "S0": [
+    32,
+    40
+   ],
+   "S1": [
+    32,
+    40
+   ],
+   "S2": [
+    30,
+    40
+   ]
+  },
+  "unstick_label_share": 0.0007,
+  "student_decision_share": 1.0,
+  "agree_all": 0.1403,
+  "capped": 0
+ }
+}

@@ -40,6 +40,14 @@ class BCConfig:
     # cross-entropy (2026-11-25 strategy C1: presses are rare). 1.0 = unweighted, exactly
     # the earlier loss.
     use_pos_weight: float = 1.0
+    # Previous-action dropout (2026-11-26, fix for the wall-wedge regression in
+    # reports/eval/2026-11-26-bc-v3-regression.md): in BC TRAINING steps only, each
+    # (step, sequence) independently has its `prev_action` input replaced, with this
+    # probability, by the env's reset value (no previous action). 0 = off, exactly the
+    # earlier training. Draws come from their own generator, seeded seed + offset, so
+    # the episode shuffle is the same at every probability.
+    prev_action_dropout: float = 0.0
+    prev_action_dropout_seed_offset: int = 1
 
     def __post_init__(self) -> None:
         if self.seq_len < 1 or self.batch_seqs < 1 or self.epochs < 0:
@@ -50,3 +58,5 @@ class BCConfig:
             raise ValueError(f"head weights must be non-negative, got {self.head_weights}")
         if not self.use_pos_weight > 0:
             raise ValueError(f"use_pos_weight must be > 0, got {self.use_pos_weight}")
+        if not (0.0 <= self.prev_action_dropout <= 1.0):
+            raise ValueError(f"prev_action_dropout must be in [0, 1], got {self.prev_action_dropout}")

@@ -173,6 +173,76 @@ class BCAuxConfig:
 
 
 @dataclass(frozen=True)
+class RNDConfig:
+    """Random Network Distillation exploration bonus (Burda et al. 2018; train/rnd.py).
+    TRAINING ONLY: the bonus is a second reward stream inside the PPO update; nothing
+    here reaches an observation or the inference path.
+
+    `int_coef` 0 = off (no RND module is built and the update is bit-identical to a run
+    without it). On: advantages are `ext_coef * A_ext + int_coef * A_int`, where A_int
+    is a NON-episodic GAE over the intrinsic reward with the model's `value_int` head.
+
+    RND input (`train.rnd.rnd_features`): the NEXT observation's rays (all bands),
+    the self vector without `self_exclude` (ammo, damage pulse, selected-weapon one-hot:
+    pressing attack / being hit must not farm novelty), any of `extra_keys` present in
+    the observation (flattened), never `prev_action`."""
+    int_coef: float = 0.0
+    ext_coef: float = 1.0
+    gamma_int: float = 0.99               # paper: 0.99 (0.999 hurt)
+    gae_lambda_int: float = 0.95
+    hidden_dim: int = 256
+    out_dim: int = 128
+    predictor_lr: float = 1e-4            # paper: 1e-4
+    predictor_fraction: float = 0.25      # share of each rollout the predictor trains on (paper)
+    predictor_epochs: int = 3
+    predictor_minibatches: int = 4
+    predictor_max_grad_norm: float = 1.0
+    obs_clip: float = 5.0                 # whitened RND input clipped to [-5, 5] (paper)
+    obs_std_floor: float = 1e-2           # per-feature std floor (constant features stay finite)
+    return_std_floor: float = 1e-2        # floor of the intrinsic-return std the reward is divided by
+    norm_eps: float = 1e-4                # initial count of the running mean/std
+    self_exclude: tuple[int, ...] = tuple(range(2, 14))  # ammo 2, damage 3, weapon one-hot 4-13
+    extra_keys: tuple[str, ...] = ("egomap",)
+    extra_pool: int = 2                   # (C, H, W) extra keys: average-pool H and W by this factor
+    max_extra_dim: int = 4096             # refuse an extra key larger than this after pooling ("small")
+
+    def __post_init__(self) -> None:
+        if self.int_coef < 0 or self.ext_coef < 0:
+            raise ValueError("RND int_coef and ext_coef must be >= 0")
+        if not (0.0 < self.predictor_fraction <= 1.0):
+            raise ValueError(f"predictor_fraction must be in (0, 1], got {self.predictor_fraction}")
+        if not (0.0 <= self.gamma_int < 1.0):
+            raise ValueError(f"gamma_int must be in [0, 1), got {self.gamma_int}")
+        if self.predictor_epochs < 1 or self.predictor_minibatches < 1:
+            raise ValueError("predictor_epochs and predictor_minibatches must be >= 1")
+
+    @property
+    def enabled(self) -> bool:
+        return self.int_coef > 0.0
+
+
+@dataclass(frozen=True)
+class InvDynConfig:
+    """Inverse-dynamics auxiliary loss (idea from Pathak et al. 2017, ICM; used as a
+    representation loss only, NOT as a curiosity reward; train/inverse_dynamics.py).
+    A trainer-owned head predicts the six-head action a_t from the model's encoder
+    features of (o_t, o_{t+1}); `coef` 0 = off (nothing built, bit-identical).
+    Training only: the head is never used to act."""
+    coef: float = 0.0
+    hidden_dim: int = 256
+    lr: float = 3e-4
+    max_grad_norm: float = 1.0
+
+    def __post_init__(self) -> None:
+        if self.coef < 0:
+            raise ValueError(f"inverse-dynamics coef must be >= 0, got {self.coef}")
+
+    @property
+    def enabled(self) -> bool:
+        return self.coef > 0.0
+
+
+@dataclass(frozen=True)
 class CurriculumLogConfig:
     """Logging of the curriculum (train/curriculum_vec_env.py). Logging only: it never
     changes which map is chosen (curriculum/config.json owns that)."""
@@ -243,6 +313,10 @@ class RunConfig:
     curriculum_log: CurriculumLogConfig = field(default_factory=CurriculumLogConfig)
     # --bc-*: imitation auxiliary loss (off by default; train/bc_aux.py)
     bc_aux: BCAuxConfig = field(default_factory=BCAuxConfig)
+    # --rnd-*: RND exploration bonus; --inv-dyn-coef: inverse-dynamics auxiliary loss.
+    # Both off by default. A resume refuses a change of either switch.
+    rnd: RNDConfig = field(default_factory=RNDConfig)
+    inv_dyn: InvDynConfig = field(default_factory=InvDynConfig)
     ppo: PPOConfig = field(default_factory=PPOConfig)
     aux: AuxConfig = field(default_factory=AuxConfig)
     telemetry_mask: TelemetryMaskConfig = field(default_factory=TelemetryMaskConfig)

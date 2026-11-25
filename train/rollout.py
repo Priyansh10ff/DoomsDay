@@ -11,13 +11,15 @@ from dataclasses import dataclass, field, fields
 
 import torch
 
-from agent.obs_spec import ObsSpec
+from agent.obs_spec import EGOMAP_KEY, ObsSpec
 
 TensorDict = dict[str, torch.Tensor]
 
 
 def _obs_shapes(spec: ObsSpec) -> dict[str, tuple[tuple[int, ...], torch.dtype]]:
-    return {
+    """The model's observation keys; `egomap` (uint8, observation v3) only when the spec
+    has one, so a v1/v2 rollout is unchanged."""
+    shapes = {
         "rays": ((spec.ray_channels, spec.ray_width), torch.float32),
         "entities": ((spec.max_entities, spec.entity_feat_dim), torch.float32),
         "entity_type": ((spec.max_entities,), torch.long),
@@ -26,6 +28,10 @@ def _obs_shapes(spec: ObsSpec) -> dict[str, tuple[tuple[int, ...], torch.dtype]]
         "prev_action": ((spec.n_heads,), torch.long),
         "modality": ((spec.modality_dim,), torch.float32),
     }
+    egomap = getattr(spec, "egomap", None)
+    if egomap is not None:
+        shapes[EGOMAP_KEY] = (tuple(egomap), torch.uint8)
+    return shapes
 
 
 @dataclass
@@ -48,6 +54,11 @@ class Rollout:
     monsters: torch.Tensor            # (T, N)
     h0: torch.Tensor                  # (N, H)
     last_value: torch.Tensor = field(default_factory=lambda: torch.zeros(0))  # (N,)
+    # RND stream (train/rnd.py); empty tensors when RND is off.
+    rnd_feat: torch.Tensor = field(default_factory=lambda: torch.zeros(0))       # (T, N, D) raw input of o_{t+1}
+    rnd_ok: torch.Tensor = field(default_factory=lambda: torch.zeros(0, dtype=torch.bool))  # (T, N)
+    values_int: torch.Tensor = field(default_factory=lambda: torch.zeros(0))     # (T, N) normalised units
+    last_value_int: torch.Tensor = field(default_factory=lambda: torch.zeros(0))  # (N,)
 
     @property
     def shape(self) -> tuple[int, int]:
@@ -55,13 +66,19 @@ class Rollout:
 
 
 def allocate(spec: ObsSpec, t_len: int, n: int, hidden: int, n_keys: int,
-             device: torch.device | str = "cpu") -> Rollout:
+             device: torch.device | str = "cpu", rnd_dim: int = 0) -> Rollout:
+    """`rnd_dim` > 0 also allocates the RND stream (features of width `rnd_dim`)."""
     obs = {k: torch.zeros((t_len, n, *shp), dtype=dt, device=device) for k, (shp, dt) in _obs_shapes(spec).items()}
 
     def z(*shape: int, dtype: torch.dtype = torch.float32) -> torch.Tensor:
         return torch.zeros(shape, dtype=dtype, device=device)
 
+    rnd = {}
+    if rnd_dim > 0:
+        rnd = dict(rnd_feat=z(t_len, n, rnd_dim), rnd_ok=z(t_len, n, dtype=torch.bool),
+                   values_int=z(t_len, n), last_value_int=z(n))
     return Rollout(
+        **rnd,
         obs=obs,
         telemetry_dropped=z(t_len, n, dtype=torch.bool),
         episode_start=z(t_len, n),

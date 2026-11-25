@@ -166,7 +166,11 @@ def _bundle_members(wad_path: str) -> dict[str, str]:
 def diag_table(wad_path: str, lumps: Iterable[str]) -> tuple[tuple[str, DiagMap], ...]:
     """((lump, DiagMap), ...) for the named maps of a generated bundle. Picklable."""
     from maps.loader import REPO_ROOT, load_splits
-    from maps.qa.validate import load_map
+    from maps.wad import read_wad, unpack_map  # WAD reader only; train/ must not import maps.qa
+
+    def load_map(path: str, map_name: str = "MAP01") -> dict:
+        return unpack_map(read_wad(path), map_name)
+
     members = _bundle_members(wad_path)
     splits = load_splits()
     out = []

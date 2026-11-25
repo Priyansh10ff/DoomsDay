@@ -1,0 +1,152 @@
+[collect] 1/120 episodes, success 1/1, 836 decisions, 12s, avail 2.8 GiB
+[collect] 14/120 episodes, success 9/14, 9083 decisions, 43s, avail 3.3 GiB
+[collect] 30/120 episodes, success 19/30, 17659 decisions, 73s, avail 3.3 GiB
+[collect] 45/120 episodes, success 29/45, 27996 decisions, 104s, avail 3.3 GiB
+[collect] 59/120 episodes, success 35/59, 38782 decisions, 136s, avail 3.2 GiB
+[collect] available 2.22 GiB < 2.5 GiB: stopping worker 1 (1 left)
+[collect] 73/120 episodes, success 44/73, 48179 decisions, 167s, avail 2.2 GiB
+[collect] 81/120 episodes, success 46/81, 55003 decisions, 198s, avail 3.6 GiB
+[collect] 87/120 episodes, success 49/87, 60134 decisions, 229s, avail 4.1 GiB
+[collect] 97/120 episodes, success 57/97, 65814 decisions, 260s, avail 4.1 GiB
+[collect] 102/120 episodes, success 59/102, 70687 decisions, 290s, avail 4.1 GiB
+[collect] 107/120 episodes, success 60/107, 75308 decisions, 321s, avail 5.3 GiB
+[collect] 114/120 episodes, success 64/114, 80516 decisions, 351s, avail 5.4 GiB
+{
+ "env_config": "train_generated",
+ "bundle": "maps\\bundles\\train-all.wad",
+ "jobs": 120,
+ "episodes_finished": 120,
+ "wall_s": 379.3,
+ "errors": [],
+ "stopped_low_memory": false,
+ "worker_reductions": 1,
+ "complete": true,
+ "min_available_gib": 2.2,
+ "by_stage_noise": {
+  "S0@noise0.0": {
+   "episodes": 40,
+   "success": 21,
+   "success_rate": 0.525,
+   "decisions_all": 28634,
+   "mean_length_success": 413.5,
+   "saved": 0,
+   "decisions_saved": 0,
+   "use_label_share": 0.0004,
+   "attack_label_share": 0.0,
+   "attack_labels": 0,
+   "combat_decisions": 0,
+   "kills": 0,
+   "deaths": 0,
+   "timeouts": 19,
+   "damage_taken": 0.0,
+   "monsters_seen": 0,
+   "use_edges_exec": 1519,
+   "press_open_target": 0,
+   "press_into_moving": 0,
+   "door_presses": 0,
+   "switch_presses": 5,
+   "ineffective_presses": 0,
+   "repress_after_close": 0,
+   "reversals_label": 0,
+   "reversals_other": 0,
+   "max_presses_per_closed_spell": 0,
+   "pressable_now": 13,
+   "pressable_but_use_held": 1,
+   "closed_door_ahead_far": 0,
+   "open_door_ahead": 0,
+   "near_closed_target_door": 0
+  },
+  "S1@noise0.0": {
+   "episodes": 40,
+   "success": 28,
+   "success_rate": 0.7,
+   "decisions_all": 24358,
+   "mean_length_success": 419.9,
+   "saved": 0,
+   "decisions_saved": 0,
+   "use_label_share": 0.0466,
+   "attack_label_share": 0.0,
+   "attack_labels": 0,
+   "combat_decisions": 0,
+   "kills": 0,
+   "deaths": 0,
+   "timeouts": 12,
+   "damage_taken": 0.0,
+   "monsters_seen": 0,
+   "use_edges_exec": 1243,
+   "press_open_target": 145,
+   "press_into_moving": 0,
+   "door_presses": 309,
+   "switch_presses": 6,
+   "ineffective_presses": 0,
+   "repress_after_close": 218,
+   "reversals_label": 0,
+   "reversals_other": 39,
+   "max_presses_per_closed_spell": 1,
+   "pressable_now": 1134,
+   "pressable_but_use_held": 0,
+   "closed_door_ahead_far": 883,
+   "open_door_ahead": 2819,
+   "near_closed_target_door": 990
+  },
+  "S2@noise0.0": {
+   "episodes": 40,
+   "success": 16,
+   "success_rate": 0.4,
+   "decisions_all": 32966,
+   "mean_length_success": 485.4,
+   "saved": 0,
+   "decisions_saved": 0,
+   "use_label_share": 0.0376,
+   "attack_label_share": 0.0,
+   "attack_labels": 0,
+   "combat_decisions": 0,
+   "kills": 0,
+   "deaths": 0,
+   "timeouts": 24,
+   "damage_taken": 0.0,
+   "monsters_seen": 0,
+   "use_edges_exec": 1536,
+   "press_open_target": 146,
+   "press_into_moving": 0,
+   "door_presses": 376,
+   "switch_presses": 2,
+   "ineffective_presses": 0,
+   "repress_after_close": 270,
+   "reversals_label": 0,
+   "reversals_other": 64,
+   "max_presses_per_closed_spell": 1,
+   "pressable_now": 1240,
+   "pressable_but_use_held": 1,
+   "closed_door_ahead_far": 1996,
+   "open_door_ahead": 3545,
+   "near_closed_target_door": 3461
+  }
+ },
+ "decisions_saved": 0,
+ "episodes_saved": 0,
+ "dagger": {
+  "student": "D:\\DoomsDay\\reports\\runs\\20261126-night2-v2-bcppo\\checkpoints\\checkpoint-u0000382.pt",
+  "beta": 0.0,
+  "max_steps": 0,
+  "student_argmax": false,
+  "success_by_stage": {
+   "S0": [
+    21,
+    40
+   ],
+   "S1": [
+    28,
+    40
+   ],
+   "S2": [
+    16,
+    40
+   ]
+  },
+  "unstick_label_share": 0.0008,
+  "student_decision_share": 1.0,
+  "agree_all": 0.1466,
+  "capped": 0
+ }
+}

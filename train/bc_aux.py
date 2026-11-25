@@ -28,11 +28,12 @@ import numpy as np
 import torch
 
 from agent.model import A0Agent
-from agent.obs_spec import A0_KEYS, ObsSpec
+from agent.obs_spec import ObsSpec
+from agent.tensorize import torch_dtype
 from configs.train_config import BCAuxConfig
 
 from .bc import bc_loss, head_names, index_sha256
-from .bc_data import _TORCH_DTYPES, Episode, load_episodes, step_bytes
+from .bc_data import _TORCH_DTYPES, Episode, load_episodes, step_bytes  # noqa: F401 (re-exported for tests)
 from .bc_spec import DatasetMismatch
 
 BC_HEAD_WEIGHT = 1.0
@@ -122,6 +123,9 @@ class BCSampler:
         self.device = torch.device(device)
         self.gen = torch.Generator(device="cpu").manual_seed(seed)
         lengths = np.array([e.length for e in episodes], np.int64)
+        self.keys = tuple(episodes[0].obs)        # the model's keys (egomap included when loaded)
+        if any(tuple(e.obs) != self.keys for e in episodes):
+            raise ValueError(f"episodes carry different observation keys (first: {self.keys})")
         self.ends = np.cumsum(lengths)            # exclusive end of each episode in the flat step index
         self.total = int(self.ends[-1])
 
@@ -135,9 +139,9 @@ class BCSampler:
     def _stack(self, idx: np.ndarray, eps: list[Episode]) -> dict[str, torch.Tensor]:
         """idx (K, L) step rows per sequence -> obs tensors (L, K, ...)."""
         out = {}
-        for key in A0_KEYS:
-            arr = np.stack([eps[s].obs[key][idx[s]] for s in range(len(eps))], axis=1)
-            out[key] = torch.as_tensor(arr).to(device=self.device, dtype=_TORCH_DTYPES[key])
+        for key in self.keys:
+            arr = np.stack([eps[s].rows(key, idx[s]) for s in range(len(eps))], axis=1)   # unpacks egomap
+            out[key] = torch.as_tensor(arr).to(device=self.device, dtype=torch_dtype(key, arr))
         return out
 
     def build(self, starts: list[tuple[int, int]]) -> BCBatch:

@@ -20,7 +20,17 @@ teachers.use_label.wants_press from the current state only: 1 exactly when the v
 first hits a closed (gap 0) openable door face or the exit switch within USE range and
 the previous EXECUTED action had USE up (one fresh press edge, then a release). Never a
 press while that door is moving or open (a press would reverse it, probe R2.2).
-Attack is always 0 (no combat teacher yet).
+COMBAT (teachers/combat.py, 2026-11-26): when `info["monsters"]` (collect.py: live
+monsters the student can see, i.e. with an own pixel in the labels buffer) holds a target
+within range and the selected weapon has ammo, the label is the combat label instead of
+the route label: turn toward the target (privileged position, atan2), ATTACK held while
+the heading error is within the target's angular size (or a fine correction gets there
+this decision), no forward motion, back off from a close or melee-only monster, strafe
+away from an incoming projectile. The route state is frozen while engaged (no phase
+step), and the route resumes when no visible live monster remains: the teacher never
+chases a monster out of sight. With no monster in view the combat branch returns before
+touching any state, so S0-S2 labels are unchanged (tests/test_teachers_combat.py pins
+them). Attack is 0 in every non-combat label.
 
 Turning: TURN_LEFT_RIGHT_DELTA is degrees per tic, positive turns right (ANGLE, which
 is counter-clockwise, decreases); one decision holds it for `frame_skip` tics, so bin
@@ -34,6 +44,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from teachers.combat import (MELEE_ONLY, CombatConfig, aim_tolerance, choose_target, incoming)
 from teachers.navigator import VOID, Anchor, Route, descend, segment_clear
 from teachers.use_label import (CLOSED_GAP, USE_RANGE_LABEL, lines_from_grid, press_target,
                                 wants_press)
@@ -71,6 +82,7 @@ class ControllerConfig:
     # (a function of the state, not a coin flip).
     student_driven: bool = False
     side_probe: tuple[float, ...] = (24.0, 48.0, 72.0)   # lateral probe distances for (3)
+    combat: CombatConfig = CombatConfig()
 
 
 def wrap_deg(a: float) -> float:
@@ -115,14 +127,20 @@ class TeacherController:
         self.key_close_steps = 0
         self.events: list[tuple[int, str]] = []
         self.t = 0
-        self.label_source = "nav"      # "nav" or "unstick": what produced the last label
+        self.label_source = "nav"      # "nav", "unstick" or "combat": what produced the last label
+        self.engaged: dict[int, int] = {}   # target id -> decisions engaged (combat)
+        self.given_up: set[int] = set()     # targets engaged too long without dying
+        self.target_id: int | None = None
+        self.attack_labels = 0
+        self.combat_decisions = 0
 
     @property
     def anchor(self) -> Anchor:
         return self.route.anchors[min(self.k, len(self.route.anchors) - 1)]
 
-    def _action(self, move=MOVE_NONE, strafe=STRAFE_NONE, turn=None, use=0, speed=0) -> np.ndarray:
-        return np.array([move, strafe, self.zero_turn if turn is None else turn, 0, use, speed],
+    def _action(self, move=MOVE_NONE, strafe=STRAFE_NONE, turn=None, use=0, speed=0,
+                attack=0) -> np.ndarray:
+        return np.array([move, strafe, self.zero_turn if turn is None else turn, attack, use, speed],
                         dtype=np.int64)
 
     def _set_phase(self, p: str) -> None:
@@ -150,9 +168,11 @@ class TeacherController:
         self.pos_hist.append((x, y, int(executed[H_MOVE]) == MOVE_FWD))
         del self.pos_hist[:-c.stuck_window]
         self.t += 1
-        self.phase_steps += 1
-        self.label_source = "nav"
-        a = self._decide(x, y, ang, info)
+        a = self._combat(obs, info, x, y, ang)
+        if a is None:
+            self.phase_steps += 1
+            self.label_source = "nav"
+            a = self._decide(x, y, ang, info)
         a = self._use_overlay(a, x, y, ang, info, use_exec)
         self.last_label = a
         return a
@@ -176,6 +196,84 @@ class TeacherController:
                     a[H_TURN] = self.zero_turn
             self.events.append((self.t, f"a{self.k}:press:{self.press_target[0]}{self.press_target[1]}"))
         return a
+
+    # ------------------------------------------------------------ combat
+    @staticmethod
+    def _has_ammo(obs: dict) -> bool:
+        """Selected weapon has ammo (self vector [2] = selected ammo / 200). The fist
+        (slot 1) never counts: with no ammo the teacher keeps to the route."""
+        sv = obs.get("self")
+        if sv is None:
+            return True
+        sv = np.asarray(sv)
+        return float(sv[2]) > 0.0 and float(sv[5]) < 0.5      # [4 + 1] = fist selected
+
+    def _combat(self, obs: dict, info: dict, x: float, y: float, ang: float) -> np.ndarray | None:
+        """The combat label, or None (route label) when no visible live monster is in
+        range. Touches no state when it returns None without a target."""
+        mons = info.get("monsters")
+        if not mons:
+            self.target_id = None
+            return None
+        cc = self.cfg.combat
+        live = [m for m in mons if m.id not in self.given_up]
+        m = choose_target(live, x, y, cc) if live and self._has_ammo(obs) else None
+        if m is None:
+            self.target_id = None
+            return None
+        n = self.engaged.get(m.id, 0) + 1
+        self.engaged[m.id] = n
+        if n > cc.max_engage_decisions:
+            self.given_up.add(m.id)
+            self.events.append((self.t, f"combat:give_up:{m.id}"))
+            return self._combat(obs, info, x, y, ang)
+        if self.target_id != m.id:
+            self.events.append((self.t, f"combat:target:{m.name}{m.id}"))
+        self.target_id = m.id
+        self.label_source = "combat"
+        self.combat_decisions += 1
+        fs = self.cfg.frame_skip
+        dist = math.hypot(m.x - x, m.y - y)
+        err = wrap_deg(math.degrees(math.atan2(m.y - y, m.x - x)) - ang)
+        turn = turn_bin(err, self.turn_bins, fs)
+        resid = err + fs * self.turn_bins[turn]          # error left after this decision's turn
+        tol = aim_tolerance(m, dist, cc)
+        attack = int(abs(err) <= tol or (abs(resid) <= tol and abs(err) <= cc.fire_turn_max_deg))
+        move = MOVE_NONE
+        if dist < cc.close_range or (m.name in MELEE_ONLY and dist < cc.melee_backoff_range):
+            if self._free_dir(x, y, ang + 180.0, (cc.back_probe,)):
+                move = MOVE_BACK
+        strafe = STRAFE_NONE
+        hit = incoming(info.get("projectiles") or [], x, y, cc)
+        if hit is not None:
+            strafe = self._dodge_side(x, y, ang, hit)
+        self.attack_labels += attack
+        return self._action(move=move, strafe=strafe, turn=turn, attack=attack)
+
+    def _free_dir(self, x: float, y: float, heading: float, dists) -> bool:
+        g = self.route.grid
+        r = math.radians(heading)
+        for d in dists:
+            cc = g.cell_of(x + d * math.cos(r), y + d * math.sin(r))
+            if not (g.inside(*cc) and g.walkable(*cc)):
+                return False
+        return True
+
+    def _dodge_side(self, x: float, y: float, ang: float, hit) -> int:
+        """Strafe away from the projectile's closest-approach point (or, dead centre,
+        to the freer side); STRAFE_NONE if neither side has room."""
+        _, ox, oy, vx, vy = hit
+        lr = math.radians(ang + 90.0)
+        side_dot = -(ox * math.cos(lr) + oy * math.sin(lr))       # away from the offset
+        if abs(side_dot) < 4.0:
+            first = self._freer_side(x, y, ang)
+        else:
+            first = STRAFE_LEFT if side_dot > 0 else STRAFE_RIGHT
+        probe = self.cfg.combat.dodge_probe
+        for side in (first, STRAFE_RIGHT if first == STRAFE_LEFT else STRAFE_LEFT):
+            if self._free_dir(x, y, ang + (90.0 if side == STRAFE_LEFT else -90.0), probe):
+                return side
+        return STRAFE_NONE
 
     def _decide(self, x: float, y: float, ang: float, info: dict) -> np.ndarray:
         c = self.cfg

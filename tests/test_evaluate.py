@@ -211,7 +211,9 @@ def test_seed_rule_is_arithmetic() -> None:
 # ---------------------------------------------------------------- engine, end to end
 def _fresh_loaded() -> LoadedCheckpoint:
     c = a0_eval_env_config()
-    spec = ObsSpec(ray_channels=O.ray_channels(len(c.ray_bands), c.obs_version), ray_width=O.N_RAY_COLS,
+    from env import egomap as E   # observation v3: the model consumes `egomap` (agent.obs_spec.EgoMapObsSpec)
+    extra = {"egomap_shape": tuple(E.EGOMAP_SHAPE)} if c.egomap else {}
+    spec = ObsSpec(**extra, ray_channels=O.ray_channels(len(c.ray_bands), c.obs_version), ray_width=O.N_RAY_COLS,
                    max_entities=c.max_entities, entity_feat_dim=8, n_entity_types=len(O.ENTITY_TYPES),
                    self_dim=O.self_dim(c.obs_version),
                    modality_dim=3, head_sizes=head_sizes(len(c.turn_bins)))

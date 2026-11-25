@@ -143,6 +143,7 @@ def test_from_bundle_uses_only_train_maps():
     from maps.loader import load_splits
     sp = load_splits()
     s = CurriculumScheduler.from_bundle()
+    b = next(x for x in sp.data["bundles"] if x["id"] == s.bundle_id)
     train = {e["id"] for _, e in sp.entries("train")}
     pooled = {mid for v in s.pool.values() for _, mid in v}
-    assert pooled == train
+    assert pooled == set(b["members"]) and pooled <= train

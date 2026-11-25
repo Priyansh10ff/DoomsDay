@@ -31,6 +31,8 @@ from dataclasses import dataclass, field
 
 import vizdoom as vzd
 
+from .observation import OBS_VERSIONS
+
 # ADR 0002 turn bins, as TURN_LEFT_RIGHT_DELTA values in degrees per tic.
 # Probe result: positive = turn right (clockwise, ANGLE decreases).
 TURN_BINS: tuple[float, ...] = (-10.0, -4.0, -1.0, 0.0, 1.0, 4.0, 10.0)
@@ -133,6 +135,7 @@ class EnvConfig:
     # Observation contract (env/observation.py OBS_VERSIONS). 1 = rays (3, 80), self (28,).
     # 2 = v1 + line-of-sight door channel (rays row 4) + key bits (self 34,), and the
     # engine's sector info switched on for the door channel ONLY (env/door_cue.py).
+    # 3 = v2 + `egomap` (5, 32, 32) ego-centric occupancy map (env/egomap.py).
     # Default 1 here; configs/a0_env.py OBS_VERSION decides what training/eval use.
     obs_version: int = 1
     # --- vanilla rules (must stay at these values under EVAL) ---
@@ -153,6 +156,11 @@ class EnvConfig:
     @property
     def door_channel(self) -> bool:
         return self.obs_version >= 2
+
+    @property
+    def egomap(self) -> bool:
+        """Observation v3: the ego-centric occupancy map (env/egomap.py)."""
+        return self.obs_version >= 3
 
     @property
     def engine_sectors_enabled(self) -> bool:
@@ -206,8 +214,8 @@ class EnvConfig:
         # info{} / logging) stays forbidden.
         if self.sectors_info:
             problems.append("sectors_info enabled (whole-level god-view)")
-        if self.obs_version not in (1, 2):
-            problems.append(f"obs_version {self.obs_version!r} not in (1, 2)")
+        if self.obs_version not in OBS_VERSIONS:
+            problems.append(f"obs_version {self.obs_version!r} not in {OBS_VERSIONS}")
         if tuple(self.engine_rewards) != VANILLA_ENGINE_REWARDS:
             problems.append(f"engine_rewards altered: {self.engine_rewards!r}")
         if self.extra:
@@ -236,8 +244,8 @@ class EnvConfig:
                 raise ValueError(f"unknown engine reward knob {k!r}")
         if self.frame_skip < 1:
             raise ValueError("frame_skip must be >= 1")
-        if self.obs_version not in (1, 2):
-            raise ValueError(f"obs_version {self.obs_version!r} not in (1, 2)")
+        if self.obs_version not in OBS_VERSIONS:
+            raise ValueError(f"obs_version {self.obs_version!r} not in {OBS_VERSIONS}")
         if self.map_wad is not None and self.scenario_wad is not None:
             raise ValueError("map_wad and scenario_wad cannot both be set")
         if self.vanilla_eval:

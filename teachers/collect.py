@@ -23,7 +23,9 @@ Dataset contract (one file per episode, `ep_<6 digits>.npz`, np.savez_compressed
   every key of the env observation dict except `screen`, stacked to (T, ...) with the
   env's dtype (obs[t] is the observation action[t] was chosen from); `action` int64
   (T, 6) teacher label; `executed_action` int64 (T, 6); `engine_reward` float32 (T,);
-  `done` bool (T,) true on the last step. `index.jsonl`: one line per saved episode
+  `done` bool (T,) true on the last step; `label_combat` bool (T,) true where the label
+  came from the combat branch (extra key: train/bc_data.py loads only the keys it
+  knows). `index.jsonl`: one line per saved episode
   {"file", "map_id", "stage", "length", "success", "seed", "noise"}. Failed teacher
   episodes are dropped unless `--keep-failures`; they are always counted in
   `summary.json`.
@@ -61,7 +63,8 @@ import psutil
 MAX_WORKERS = 8
 MIN_AVAILABLE_GIB = 2.5
 MEMORY_POLL_S = 2.0
-STAGES_SUPPORTED = ("S0", "S1", "S2")     # S3 needs the combat teacher (not built)
+STAGES_SUPPORTED = ("S0", "S1", "S2", "S3")   # S3: combat teacher (teachers/combat.py)
+DEFAULT_STAGES = ("S0", "S1", "S2")      # --stages default: unchanged from before S3 support
 SCREEN_KEY = "screen"
 INDEX_NAME = "index.jsonl"
 SUMMARY_NAME = "summary.json"
@@ -313,7 +316,6 @@ def run_episode(env, route, job: Job, burst_max: int, trace: bool = False,
     DAgger mode: at each decision the student's action is executed, except with
     probability `beta` the teacher's label is; the label is always the teacher's."""
     from teachers.controller import ControllerConfig, TeacherController
-    from teachers.use_label import door_gaps_of
     sizes = tuple(int(n) for n in env.action_space.nvec)
     rng = np.random.default_rng(job.seed)
     ctrl = TeacherController(env.cfg.turn_bins, ControllerConfig(student_driven=student is not None),
@@ -321,13 +323,14 @@ def run_episode(env, route, job: Job, burst_max: int, trace: bool = False,
     obs, info = env.reset(seed=job.seed, options={"map": job.lump})
     if info.get("map") != job.lump:
         raise RuntimeError(f"env loaded {info.get('map')!r}, wanted {job.lump!r}")
-    info = dict(info, door_gaps=door_gaps_of(env.game))
+    info = _augment(env, info)
     ctrl.reset(route)
     ustat = UseStats(route)
     if student is not None:
         student.begin(job.seed)
     obs_buf: dict[str, list] = {k: [] for k in obs if k != SCREEN_KEY}
-    labels, executed, rewards, unstick, by_student = [], [], [], [], []
+    labels, executed, rewards, unstick, by_student, combat = [], [], [], [], [], []
+    seen: set[int] = set()
     burst, noisy = 0, 0
     capped = False
     while True:
@@ -349,6 +352,8 @@ def run_episode(env, route, job: Job, burst_max: int, trace: bool = False,
                 ex = label.copy()
             by_student.append(False)
         unstick.append(ctrl.label_source == "unstick")
+        combat.append(ctrl.label_source == "combat")
+        seen.update(m.id for m in info.get("monsters") or ())
         for k in obs_buf:
             obs_buf[k].append(np.array(obs[k], copy=True))
         labels.append(label)
@@ -357,7 +362,7 @@ def run_episode(env, route, job: Job, burst_max: int, trace: bool = False,
         obs, r, term, trunc, info = env.step(ex)
         rewards.append(r)
         if not (term or trunc):
-            info = dict(info, door_gaps=door_gaps_of(env.game))
+            info = _augment(env, info)
         ustat.step(ctrl, info_before, label, ex, None if (term or trunc) else info["door_gaps"],
                    ended=bool(term or trunc))
         if term or trunc:
@@ -375,6 +380,7 @@ def run_episode(env, route, job: Job, burst_max: int, trace: bool = False,
     arrays["done"] = done
     arrays["label_unstick"] = np.asarray(unstick, dtype=bool)
     arrays["student_driven"] = np.asarray(by_student, dtype=bool)
+    arrays["label_combat"] = np.asarray(combat, dtype=bool)
     success = bool(info.get("level_exit", False)) and not capped
     lab, exa = arrays["action"], arrays["executed_action"]
     summ = {"episode": job.episode, "map_id": job.map_id, "stage": job.stage, "seed": job.seed,
@@ -386,13 +392,29 @@ def run_episode(env, route, job: Job, burst_max: int, trace: bool = False,
             "anchor_reached": ctrl.k, "anchors": len(route.anchors),
             "anchor_kind": route.anchors[min(ctrl.k, len(route.anchors) - 1)].kind,
             "phase": ctrl.phase, "unsticks": sum(1 for _, e in ctrl.events if e.endswith("unstick")),
-            "final_pos": [round(float(info.get("pos_x", 0.0))), round(float(info.get("pos_y", 0.0)))]}
+            "final_pos": [round(float(info.get("pos_x", 0.0))), round(float(info.get("pos_y", 0.0)))],
+            # combat (S3); kills from the last live info (a kill on the final decision is missed)
+            "attack_labels": int(lab[:, 3].sum()), "attack_exec": int(exa[:, 3].sum()),
+            "combat_decisions": int(sum(combat)), "monsters_seen": len(seen),
+            "kills": int(info.get("killcount", 0) or 0),
+            "damage_taken": round(float(info.get("damage_taken_total", 0.0) or 0.0), 1),
+            "combat_give_ups": len(ctrl.given_up)}
     summ.update(ustat.summary())
     if trace:
         summ["events"] = ctrl.events
     elif not success:
         summ["events"] = ctrl.events[-40:]
     return arrays, summ
+
+
+def _augment(env, info: dict) -> dict:
+    """PRIVILEGED labelling inputs added to a live info dict: live door gaps, and the
+    monsters / projectiles the student can see (teachers.combat.sightings_of; world
+    positions for aiming). Never written to the dataset's observations."""
+    from teachers.combat import sightings_of
+    from teachers.use_label import door_gaps_of
+    mons, proj = sightings_of(env.game)
+    return dict(info, door_gaps=door_gaps_of(env.game), monsters=mons, projectiles=proj)
 
 
 # ------------------------------------------------------------------ worker
@@ -451,6 +473,15 @@ def _stats(eps: list[dict]) -> dict:
             "decisions_saved": int(sum(e["length"] for e in sel if e.get("saved"))),
             "use_label_share": round(sum(e.get("use_labels", 0) for e in sel)
                                      / max(sum(e["length"] for e in sel), 1), 4),
+            "attack_label_share": round(sum(e.get("attack_labels", 0) for e in sel)
+                                        / max(sum(e["length"] for e in sel), 1), 4),
+            "attack_labels": int(sum(e.get("attack_labels", 0) for e in sel)),
+            "combat_decisions": int(sum(e.get("combat_decisions", 0) for e in sel)),
+            "kills": int(sum(e.get("kills", 0) for e in sel)),
+            "deaths": int(sum(bool(e.get("dead")) for e in sel)),
+            "timeouts": int(sum(bool(e.get("timeout")) for e in sel)),
+            "damage_taken": round(float(sum(e.get("damage_taken", 0.0) for e in sel)), 1),
+            "monsters_seen": int(sum(e.get("monsters_seen", 0) for e in sel)),
         }
         for k in USE_STAT_KEYS:
             if k == "max_presses_per_closed_spell":
@@ -592,7 +623,7 @@ def collect(cfg: CollectConfig) -> dict:
 
 def parse_args(argv: list[str] | None = None) -> CollectConfig:
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("--stages", nargs="+", default=list(STAGES_SUPPORTED))
+    ap.add_argument("--stages", nargs="+", default=list(DEFAULT_STAGES))
     ap.add_argument("--episodes-per-map", type=int, required=True)
     ap.add_argument("--out", default=None)
     ap.add_argument("--noise", type=float, default=0.0)

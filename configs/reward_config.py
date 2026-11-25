@@ -85,6 +85,19 @@ class RewardConfig:
     # (straferunning ~23.4 units/tic x frame_skip 4 ~ 94), so a step that skips the
     # 32-unit slab is still seen on both sides.
     door_near_margin: float = 128.0
+    # --- USE / door discipline (preset full_level_doors_v2; rewards/use_doors.py) ---
+    # All 0 / False = off: nothing is computed, the action is not read, nothing is
+    # logged, so the older presets behave exactly as before. Magnitudes; the raw
+    # values are negative counts. Definitions are those of train/episode_diag.py.
+    # Penalty per USE press edge (0 -> 1) whose USE trace (64 units along the view
+    # heading, pre-step pose) crosses no closed door face and no exit switch line.
+    use_miss: float = 0.0
+    use_miss_cap: float = 0.0          # most use_miss penalty of one episode
+    # Penalty per door that starts closing again within ~1 s of a player press on it.
+    door_reversal: float = 0.0
+    door_reversal_cap: float = 0.0     # most door_reversal penalty of one episode
+    # True: `door` pays only for doors on the start -> key -> exit route; others pay 0.
+    door_on_path_only: bool = False
     # --- how the bonus reaches the trainer ----------------------------------------
     # True (v1): reward = extrinsic + coef * intrinsic, one value head.
     # False: reward = extrinsic only; the trainer reads info["shaping"]["intrinsic"]
@@ -126,6 +139,28 @@ FULL_LEVEL_COVERAGE = CoverageConfig()
 # rewards.validate.check_door_setup): door pay is once per door and is never forgone
 # by exiting after passing them, so it does not reward delaying the exit.
 FULL_LEVEL_DOORS_REWARD = replace(FULL_LEVEL_REWARD, name="full_level_doors", door=0.3)
+
+# `full_level_doors` plus USE / door discipline (requested 2026-11-26; ADR pending).
+# Measured on reports/runs/20261126-night2-v2-bcppo (826 door episodes): USE press
+# edges that hit nothing per episode: q10 2, q25 12, median 35, q75 70, q90 87; door
+# reversals: median 0, q75 1, q90 2, q99 4, max 6; 374 episodes had an off-path door.
+#  * use_miss 0.003, cap 0.15: the median spamming episode (35 misses) loses 0.105,
+#    the cap binds at 50 misses (38 % of episodes), a clean episode (q10: 2) loses
+#    0.006. The suggested 0.005 would hit the cap at 30 misses, i.e. in 55 % of
+#    episodes, where one more useless press costs nothing: no gradient for the
+#    majority. The cap (0.15) is half of one on-path door (0.3), so pressing to get
+#    through a door is always worth it, even with every press before it wasted.
+#  * door_reversal 0.05, cap 0.2: one reversal costs a sixth of the door it delays;
+#    the cap covers 4 reversals (q99). Opening a door and reversing it once still
+#    nets +0.25 when the player then gets through.
+#  * door_on_path_only: side doors pay 0 (gap 6: a 5-door map could pay 1.5 > exit).
+# Worst case of the two penalties together is 0.35: with the time penalty over a full
+# episode (0.21) that stays below death (0.75) and below the exit (1.0); both are
+# checked by rewards.validate.
+FULL_LEVEL_DOORS_V2_REWARD = replace(FULL_LEVEL_DOORS_REWARD, name="full_level_doors_v2",
+                                     use_miss=0.003, use_miss_cap=0.15,
+                                     door_reversal=0.05, door_reversal_cap=0.2,
+                                     door_on_path_only=True)
 
 # Bundled `my_way_home`: the scenario pays the goal (+1 through ACS) and the time cost
 # (living_reward), so both of ours are off. The other terms are off as well: the map

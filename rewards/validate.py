@@ -8,6 +8,10 @@ Each check corresponds to one exploit in the ADR's list:
   suicide        - dying is cheaper than paying the time penalty to the time limit
   door           - (door term only) one door must pay less than the exit; see
                    `check_door_setup` for why doors are outside the summed bound
+  use / door     - (full_level_doors_v2 only) the USE-miss and door-reversal penalties
+                   are capped per episode; with both caps spent, dying must still cost
+                   more than timing out, an exit must still net positive, and passing
+                   one on-path door must still out-pay each cap; `check_use_door_setup`
 """
 from __future__ import annotations
 
@@ -70,6 +74,49 @@ def check_door_setup(reward: RewardConfig, paid_by_engine: set[str]) -> None:
                                 f"the exit must stay the largest single payment")
 
 
+def use_door_penalty_cap(reward: RewardConfig) -> float:
+    """Most the USE-miss and door-reversal penalties can take from one episode."""
+    return float(reward.use_miss_cap) + float(reward.door_reversal_cap)
+
+
+def check_use_door_setup(reward: RewardConfig, paid_by_engine: set[str]) -> None:
+    """The USE / door discipline terms (rewards/use_doors.py). All off = nothing to check.
+
+    Checked: finite non-negative weights and caps; every penalty that is on has a cap
+    of at least one event (so it is bounded and does something); on-path-only needs
+    the door term; the exit pays more than both caps together (a successful episode
+    nets positive however clumsy); death costs more than both caps together; one door
+    pays more than EACH cap (never pressing USE to dodge use_miss, or never opening a
+    door to dodge reversals, always loses to getting through one on-path door). The
+    bound with the time penalty added is in `check_reward_setup` (suicide)."""
+    for w, c in (("use_miss", "use_miss_cap"), ("door_reversal", "door_reversal_cap")):
+        wv, cv = float(getattr(reward, w)), float(getattr(reward, c))
+        for n, v in ((w, wv), (c, cv)):
+            if not math.isfinite(v) or v < 0.0:
+                raise RewardConfigError(f"{n} = {v}: scales are non-negative finite magnitudes")
+        if wv == 0.0 and cv != 0.0:
+            raise RewardConfigError(f"{c} = {cv} but {w} is off: a cap without its term")
+        if wv > 0.0 and cv < wv:
+            raise RewardConfigError(f"{w} = {wv} needs an episode cap {c} >= one event, got {cv}")
+    if reward.door_on_path_only and float(reward.door) == 0.0:
+        raise RewardConfigError("door_on_path_only is set but the door term is off")
+    cap = use_door_penalty_cap(reward)
+    if cap == 0.0:
+        return
+    ev = exit_value(reward, paid_by_engine)
+    if not cap < ev:
+        raise RewardConfigError(f"{reward.name!r}: USE/door penalty caps sum to {cap} but the exit pays "
+                                f"{ev}: a successful episode could net negative")
+    if "death" not in paid_by_engine and not cap < float(reward.death):
+        raise RewardConfigError(f"{reward.name!r}: USE/door penalty caps sum to {cap} but death costs "
+                                f"{reward.death}: dying would be cheaper than a clumsy episode")
+    if float(reward.door) != 0.0:
+        for c in ("use_miss_cap", "door_reversal_cap"):
+            if not float(getattr(reward, c)) < float(reward.door):
+                raise RewardConfigError(f"{reward.name!r}: {c} = {getattr(reward, c)} but one door pays "
+                                        f"{reward.door}: avoiding USE (or doors) would beat getting through one")
+
+
 def check_reward_setup(reward: RewardConfig, coverage: CoverageConfig,
                        engine_rewards: Iterable[tuple[str, float]] = (),
                        max_episode_decisions: int | None = None) -> None:
@@ -97,6 +144,7 @@ def check_reward_setup(reward: RewardConfig, coverage: CoverageConfig,
         raise RewardConfigError("the scenario pays the exit: declare scenario_exit_value")
 
     check_door_setup(reward, paid)
+    check_use_door_setup(reward, paid)
 
     # --- two-signal exit rule needs the second signal to exist
     need = reward.exit_confirm_engine_reward
@@ -137,9 +185,11 @@ def check_reward_setup(reward: RewardConfig, coverage: CoverageConfig,
     if reward.time > 0.0:
         if max_episode_decisions is None:
             raise RewardConfigError("a time penalty needs max_episode_decisions for the suicide check")
-        worst = reward.time * max_episode_decisions
+        extra = use_door_penalty_cap(reward)
+        worst = reward.time * max_episode_decisions + extra
         if "death" not in paid and not reward.death > worst:
             raise RewardConfigError(
                 f"death costs {reward.death} but the time penalty over a full episode "
-                f"({max_episode_decisions} decisions) costs {worst}: dying early would be cheaper. "
+                f"({max_episode_decisions} decisions){' plus the USE/door penalty caps' if extra else ''} "
+                f"costs {worst}: dying early would be cheaper. "
                 f"Lower `time`, raise `death`, or shorten the training episode limit")

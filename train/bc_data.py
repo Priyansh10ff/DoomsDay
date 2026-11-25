@@ -22,35 +22,70 @@ from __future__ import annotations
 import json
 import os
 from collections.abc import Iterator
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 import torch
 
-from agent.obs_spec import A0_KEYS, ObsSpec
+from agent.obs_spec import EGOMAP_KEY, ObsSpec, model_keys
+from agent.tensorize import TORCH_DTYPES, torch_dtype
 
 from .bc_spec import LABEL_KEY, DatasetMismatch, validate_arrays
 
 INDEX_NAME = "index.jsonl"
 INDEX_FIELDS = ("file", "map_id", "stage", "length", "success", "seed", "noise")
-_TORCH_DTYPES: dict[str, torch.dtype] = {
-    "rays": torch.float32, "entities": torch.float32, "entity_type": torch.long,
-    "entity_mask": torch.bool, "self": torch.float32, "prev_action": torch.long,
-    "modality": torch.float32,
-}
+# Model-side dtype per observation key (agent.tensorize; `egomap` stays uint8 until
+# its encoder). Old name kept: train/bc_aux.py and its tests import it.
+_TORCH_DTYPES: dict[str, torch.dtype] = TORCH_DTYPES
+# Saved dtype of optional model keys, used when train/bc_spec.py does not list them.
+_OPTIONAL_NP_DTYPES: dict[str, np.dtype] = {EGOMAP_KEY: np.dtype(np.uint8)}
+# 0/1 uint8 keys held BIT-PACKED in RAM (np.packbits over the flattened step; 8x
+# smaller) and unpacked per batch. The npz files on disk are untouched.
+BIT_PACKED_KEYS: tuple[str, ...] = (EGOMAP_KEY,)
+
+
+def packed_step_bytes(step_shape: tuple[int, ...]) -> int:
+    """Bytes per step of a bit-packed 0/1 array: ceil(prod(shape) / 8)."""
+    return (int(np.prod(step_shape)) + 7) // 8
+
+
+def pack_steps(a: np.ndarray, where: str = "array") -> np.ndarray:
+    """(T, *step_shape) uint8 0/1 -> (T, packed_step_bytes) uint8. Refuses values other
+    than 0/1 (packbits would silently turn them into 1)."""
+    if a.dtype != np.uint8:
+        raise DatasetMismatch(f"{where}: bit-packing needs uint8, got {a.dtype}")
+    if a.size and int(a.max()) > 1:
+        raise DatasetMismatch(f"{where}: bit-packing needs values 0/1, found max {int(a.max())}")
+    out = np.packbits(a.reshape(a.shape[0], -1), axis=1)
+    assert out.shape == (a.shape[0], packed_step_bytes(a.shape[1:])),         f"packed expected (T, {packed_step_bytes(a.shape[1:])}), got {out.shape}"
+    return out
+
+
+def unpack_steps(p: np.ndarray, step_shape: tuple[int, ...]) -> np.ndarray:
+    """(..., packed_step_bytes) uint8 -> (..., *step_shape) uint8 0/1 (inverse of pack_steps)."""
+    n = int(np.prod(step_shape))
+    assert p.shape[-1] == packed_step_bytes(step_shape),         f"packed last dim expected {packed_step_bytes(step_shape)}, got {p.shape[-1]}"
+    return np.unpackbits(p, axis=-1, count=n).reshape(*p.shape[:-1], *step_shape)
 
 
 @dataclass
 class Episode:
-    obs: dict[str, np.ndarray]     # A0 keys, each (T, ...)
+    obs: dict[str, np.ndarray]     # the model's keys (agent.obs_spec.model_keys), each (T, ...)
     labels: np.ndarray             # (T, n_heads) int64
     map_id: str
     stage: str
     file: str
+    # key -> per-step shape, for keys stored bit-packed in `obs` ((T, packed bytes) uint8)
+    packed: dict[str, tuple[int, ...]] = field(default_factory=dict)
 
     @property
     def length(self) -> int:
         return int(self.labels.shape[0])
+
+    def rows(self, key: str, idx: np.ndarray) -> np.ndarray:
+        """obs[key] at step rows `idx`, unpacked if stored bit-packed."""
+        a = self.obs[key][idx]
+        return unpack_steps(a, self.packed[key]) if key in self.packed else a
 
 
 def read_index(data_dir: str) -> list[dict]:
@@ -72,35 +107,68 @@ def read_index(data_dir: str) -> list[dict]:
     return rows
 
 
-def step_bytes(spec: ObsSpec) -> int:
-    """RAM per stored step (A0 observation keys + label), for the dataset-size guard."""
-    from .bc_spec import OBS_DTYPES, expected_step_shapes
-    shapes = expected_step_shapes(spec)
-    total = 0
-    for k, s in shapes.items():
-        item = 8 if k == LABEL_KEY else OBS_DTYPES[k].itemsize
-        total += int(np.prod(s)) * item
-    return total
+def _step_shapes_and_dtypes(spec: ObsSpec) -> dict[str, tuple[tuple[int, ...], np.dtype]]:
+    """Per-step (shape, saved dtype) of every model key and the label: train/bc_spec's
+    table, plus any model key it does not list (e.g. `egomap` from the spec itself)."""
+    from .bc_spec import LABEL_DTYPE, OBS_DTYPES, expected_step_shapes
+    out = {k: (tuple(s), LABEL_DTYPE if k == LABEL_KEY else OBS_DTYPES[k])
+           for k, s in expected_step_shapes(spec).items()}
+    if spec.egomap is not None and EGOMAP_KEY not in out:
+        out[EGOMAP_KEY] = (tuple(spec.egomap), OBS_DTYPES.get(EGOMAP_KEY, _OPTIONAL_NP_DTYPES[EGOMAP_KEY]))
+    return out
 
 
-def load_episodes(data_dir: str, spec: ObsSpec, max_bytes: int) -> list[Episode]:
+def step_bytes(spec: ObsSpec, pack: bool = True) -> int:
+    """RAM per stored step (the model's observation keys + label), for the dataset-size
+    guard. `egomap` counts its bit-packed size (640 bytes at (5, 32, 32)) when `pack`,
+    as load_episodes stores it; its full size (5120) otherwise."""
+    return sum(packed_step_bytes(s) if (pack and k in BIT_PACKED_KEYS) else int(np.prod(s)) * dt.itemsize
+               for k, (s, dt) in _step_shapes_and_dtypes(spec).items())
+
+
+def _validate_extra(arrays: dict[str, np.ndarray], spec: ObsSpec, t: int, where: str) -> None:
+    """Check model keys that train/bc_spec.validate_arrays does not cover."""
+    from .bc_spec import expected_step_shapes
+    covered = set(expected_step_shapes(spec))
+    for k, (shape, dt) in _step_shapes_and_dtypes(spec).items():
+        if k in covered:
+            continue
+        if k not in arrays:
+            raise DatasetMismatch(f"{where}: missing key {k!r} required by the model (has {sorted(arrays)})")
+        a = arrays[k]
+        if a.shape != (t, *shape):
+            raise DatasetMismatch(f"{where}: {k} shape {a.shape}, expected {(t, *shape)}")
+        if a.dtype != dt:
+            raise DatasetMismatch(f"{where}: {k} dtype {a.dtype}, expected {dt}")
+
+
+def load_episodes(data_dir: str, spec: ObsSpec, max_bytes: int, pack: bool = True) -> list[Episode]:
     """Load and validate every indexed episode. Refuses before loading if the index's
-    lengths imply more than `max_bytes` of arrays."""
+    lengths imply more than `max_bytes` of arrays. `pack`: keep BIT_PACKED_KEYS
+    bit-packed in RAM (Episode.packed); batches unpack them, giving identical tensors."""
     rows = read_index(data_dir)
-    est = sum(int(r["length"]) for r in rows) * step_bytes(spec)
+    est = sum(int(r["length"]) for r in rows) * step_bytes(spec, pack)
     if est > max_bytes:
         raise MemoryError(f"dataset {data_dir!r} needs about {est / 2**30:.2f} GiB in RAM, above the "
                           f"{max_bytes / 2**30:.2f} GiB cap (BCConfig.max_dataset_bytes)")
+    keys = model_keys(spec)
     eps = []
     for r in rows:
         path = os.path.join(data_dir, r["file"])
         with np.load(path, allow_pickle=False) as z:
-            arrays = {k: z[k] for k in (*A0_KEYS, LABEL_KEY) if k in z.files}
+            arrays = {k: z[k] for k in (*keys, LABEL_KEY) if k in z.files}
         t = validate_arrays(arrays, spec, path)
+        _validate_extra(arrays, spec, t, path)
         if t != int(r["length"]):
             raise DatasetMismatch(f"{path}: length {t} but index says {r['length']}")
-        eps.append(Episode({k: arrays[k] for k in A0_KEYS}, arrays[LABEL_KEY], str(r["map_id"]),
-                           str(r["stage"]), str(r["file"])))
+        obs, packed = {k: arrays[k] for k in keys}, {}
+        if pack:
+            for k in BIT_PACKED_KEYS:
+                if k in obs:
+                    packed[k] = tuple(obs[k].shape[1:])
+                    obs[k] = pack_steps(obs[k], f"{path}: {k}")
+        eps.append(Episode(obs, arrays[LABEL_KEY], str(r["map_id"]), str(r["stage"]), str(r["file"]),
+                           packed))
     return eps
 
 
@@ -135,6 +203,9 @@ class ChunkStream:
         self.eps, self.t, self.b = episodes, seq_len, batch_seqs
         self.gen, self.shuffle, self.device = generator, shuffle, torch.device(device)
         self.filler = episodes[0]   # source of padding for slots with no episode left
+        self.keys = tuple(episodes[0].obs)
+        if any(tuple(e.obs) != self.keys for e in episodes):
+            raise ValueError(f"episodes carry different observation keys (first: {self.keys})")
 
     def __iter__(self) -> Iterator[Chunk]:
         order = (torch.randperm(len(self.eps), generator=self.gen).tolist() if self.shuffle
@@ -173,9 +244,9 @@ class ChunkStream:
             valid[s, :real] = True
             start[s, 0] = 1.0 if off == 0 else 0.0
         obs = {}
-        for k in A0_KEYS:
-            stacked = np.stack([srcs[s].obs[k][idx[s]] for s in range(b)], axis=1)   # (T, B, ...)
-            obs[k] = torch.as_tensor(stacked).to(device=self.device, dtype=_TORCH_DTYPES[k])
+        for k in self.keys:
+            stacked = np.stack([srcs[s].rows(k, idx[s]) for s in range(b)], axis=1)   # (T, B, ...)
+            obs[k] = torch.as_tensor(stacked).to(device=self.device, dtype=torch_dtype(k, stacked))
         labels = np.stack([srcs[s].labels[idx[s]] for s in range(b)], axis=1)
         out = Chunk(obs, torch.as_tensor(labels, device=self.device).long(),
                     torch.as_tensor(valid.T.copy(), device=self.device),

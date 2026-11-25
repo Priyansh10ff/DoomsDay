@@ -1,0 +1,277 @@
+"""Observation v3: the ego-centric OCCUPANCY MAP (`egomap`), spatial memory across rooms.
+
+OUTPUT (the only thing that leaves this module toward the policy)
+  `egomap`: uint8 (5, 32, 32), values 0/1. Cell size 48 map units, so the crop spans
+  1536 x 1536 units. The agent sits at the centre cell (row 16, col 16) facing UP:
+  row decreasing = straight ahead, column increasing = to the agent's right. The crop is
+  re-rotated with the agent's heading every decision.
+    channel 0  seen free space   (a depth ray passed through the cell)
+    channel 1  seen wall/obstacle (a depth ray ended in the cell, not on a door)
+    channel 2  visited            (the agent's own position occupied the cell this episode)
+    channel 3  closed door seen   (a ray ended on a column the v2 door channel lights)
+    channel 4  key seen, not yet picked up (a visible key entity's estimated position)
+  Memory persists for the whole episode and is cleared at reset.
+
+WHY THIS IS ALLOWED (rules 4.1 / 4.4, CLAUDE.md working interpretation)
+  * It is a SENSORY ENCODING: everything written into the map is what the agent itself
+    perceived through the depth buffer (its own field of view, line of sight only) or
+    where its own body went. Nothing unseen is ever written; no automap, no sector or
+    line geometry, no object list is read here.
+  * It is EGO-CENTRIC: internally the map is kept in a SPAWN-RELATIVE frame (origin =
+    the agent's position at episode start, x axis = its heading at start). The agent's
+    pose in that frame comes from pose deltas (the engine's position / angle minus the
+    spawn pose: perfect odometry relative to spawn). The output is a crop of that grid
+    re-expressed in the agent's CURRENT frame. Absolute coordinates, map ids, sector ids
+    and line ids never appear in the output: shifting the same layout elsewhere on the
+    map gives an identical egomap (tested), and the spawn-frame pose itself is never
+    output either.
+  * It PRE-COMPUTES NO ACTION: cells only say "free / wall / door / been here / a key was
+    seen here". There is
+    no path, no goal direction, no frontier target, no turn or fire suggestion; deciding
+    where to go from the map is left to the network.
+
+HOW THE MAP IS FILLED (every decision, numpy-vectorised)
+  * Per screen column (80 columns, 2 px each, the same columns as `rays`), the reading is
+    the nearest depth over the middle ray band (horizon +-4 rows) over WORLD pixels only:
+    pixels with a non-zero labels-buffer value (any thing: monsters, items, decorations,
+    the player's own weapon) or depth 0 are excluded, so moving things are never stamped
+    as walls. A column with no world pixel has no reading and marks nothing.
+  * Column angle: atan((2k+1-80)/80) off the view axis (horizontal FOV 90 degrees,
+    probe R5.2), screen right = clockwise.
+  * Distance: perpendicular distance = (level - DEPTH_OFFSET) / DEPTH_PER_UNIT (probe R5.2
+    fit, level = 0.13979 x units - 1.134); range along the ray = perpendicular / cos(angle).
+  * Cells along the ray up to the hit -> free (capped at RAY_MAX_UNITS); the cell just
+    beyond the hit point -> wall, or door when the v2 door channel lights the column.
+  * SENSOR RANGE (measured 2026-11-26, synthetic corridor): world depth is linear only up
+    to level 62 (~450 units); every farther surface reads 63 (or 255). A saturated column
+    marks free space out to ~455 units (perpendicular) and no wall. So walls are mapped
+    within ~450 units of where the agent has been; RAY_MAX_UNITS (1500) never binds.
+    WALL_MAX_PERP_UNITS (800) is kept as a second guard: beyond ~820 units floor/ceiling
+    pixels in the +-4-row band would be nearer than any wall (probe R5.2 / door_cue).
+  * A free pass through a cell clears its door bit (a door seen open is no longer a closed
+    door); a door hit clears the cell's wall bit. Walls are never cleared.
+  * Key seen (channel 4): for each visible key entity row of the observation (entity_type
+    key-blue / key-yellow / key-red; the labels-buffer line-of-sight entity set), its
+    bearing from the row's screen-x (u = tan of the angle off the view axis, FOV 90) and
+    its distance from the row's own-pixel depth via the same fit as the rays; one internal
+    cell is marked, in a per-colour bit. A saturated (>= 63) or missing depth marks nothing.
+    When the keys-held bit of a colour turns on (v2 key bits), every key-seen cell of THAT
+    colour is cleared, and that colour is no longer marked this episode. Output channel 4 =
+    OR of the three colour bits.
+  * Visited: the agent's cell, with the segment from the previous pose, every decision.
+  * Internal grid: INT_CELL = 24 units (half an output cell), INT_GRID = 512 cells per side
+    (+-6144 units around spawn); writes outside it (and on its outer ring) are dropped. Each output cell ORs a 2x2
+    grid of sample points (the centres of the four 24-unit internal cells it covers when
+    axis-aligned; nearest internal cell per point after rotation).
+  * Without depth/labels (e.g. `+viz_nocheat 1`) nothing is written: the map stays zeros.
+"""
+from __future__ import annotations
+
+import numpy as np
+
+from .door_cue import DEPTH_OFFSET, DEPTH_PER_UNIT
+from .observation import ENTITY_TYPES, N_RAY_COLS, SCREEN_W
+
+# ---------------------------------------------------------------- contract (fixed)
+EGOMAP_CHANNELS = 5
+EGOMAP_SIZE = 32
+EGOMAP_SHAPE = (EGOMAP_CHANNELS, EGOMAP_SIZE, EGOMAP_SIZE)
+EGOMAP_CELL_UNITS = 48.0
+EGOMAP_AGENT_CELL = (16, 16)          # (row, col); facing up (row decreasing)
+CH_FREE, CH_WALL, CH_VISITED, CH_DOOR, CH_KEY = 0, 1, 2, 3, 4
+
+# ---------------------------------------------------------------- internals
+INT_CELL = 24.0
+INT_GRID = 512
+_HALF = INT_GRID // 2
+RAY_MAX_UNITS = 1500.0
+WALL_MAX_PERP_UNITS = 800.0
+# Measured 2026-11-26 (synthetic corridor, side walls at known distance, vizdoom 1.3.3):
+# world depth is linear in perpendicular distance only up to level 62; from about 455
+# units every wall reads exactly 63 (and a few far pixels 255). A reading >= 63 is
+# therefore "nothing within ~455 units": free up to there, no wall stamped.
+SATURATED_LEVEL = 63
+SATURATED_PERP_UNITS = (SATURATED_LEVEL - 0.5 - DEPTH_OFFSET) / DEPTH_PER_UNIT   # ~455
+FREE_STEP_UNITS = 12.0                # sample spacing along a ray (half an internal cell)
+WALL_NUDGE_UNITS = 3.0                # hit point pushed this far into the surface
+FREE_STOP_UNITS = 12.0                # free samples stop this short of the hit point
+
+_BIT = {CH_FREE: 1, CH_WALL: 2, CH_VISITED: 4, CH_DOOR: 8}
+# Key colours get their own internal bits (blue, yellow, red); output channel 4 ORs them.
+KEY_COLOURS = ("blue", "yellow", "red")
+_KEY_BITS = (16, 32, 64)
+_KEY_ANY = 16 | 32 | 64
+_KEY_TYPE_IDS = tuple(ENTITY_TYPES.index(f"key-{c}") for c in KEY_COLOURS)
+assert _KEY_TYPE_IDS == tuple(range(_KEY_TYPE_IDS[0], _KEY_TYPE_IDS[0] + 3))
+_KEY_LO, _KEY_HI = _KEY_TYPE_IDS[0], _KEY_TYPE_IDS[-1]
+U_COL, D_COL = 0, 4           # entity feature columns: u (screen x in [-1, 1]), d (depth / 255)
+
+_COL_X = np.arange(N_RAY_COLS, dtype=np.float64) * (SCREEN_W // N_RAY_COLS) + (SCREEN_W // N_RAY_COLS) / 2.0
+_COL_TAN = (_COL_X - SCREEN_W / 2.0) / (SCREEN_W / 2.0)     # + = right of the view axis
+_COL_ANG = np.arctan(_COL_TAN)                               # radians, + = right
+_COL_INV_COS = np.sqrt(1.0 + _COL_TAN ** 2)
+
+_N_FREE = int(np.ceil(RAY_MAX_UNITS / FREE_STEP_UNITS)) + 1
+_FREE_T = np.arange(_N_FREE, dtype=np.float64) * FREE_STEP_UNITS          # (S,)
+
+# output crop sample points in the agent frame: forward (up), left
+_r = np.arange(EGOMAP_SIZE, dtype=np.float64)
+_ROW_FWD = (EGOMAP_AGENT_CELL[0] - _r) * EGOMAP_CELL_UNITS                 # row -> forward
+_COL_LEFT = (EGOMAP_AGENT_CELL[1] - _r) * EGOMAP_CELL_UNITS                # col -> left
+# 2x2 sample points per output cell at the centres of its four internal cells (offsets
+# +-12 never fall on an internal cell boundary, also after 90-degree rotations)
+_SUB = np.array([-INT_CELL / 2, INT_CELL / 2])
+_GRID4 = (EGOMAP_SIZE, EGOMAP_SIZE, 2, 2)    # row, col, sub-forward, sub-left
+_FWD = np.broadcast_to(_ROW_FWD[:, None, None, None] + _SUB[None, None, :, None], _GRID4).reshape(-1)
+_LEFT = np.broadcast_to(_COL_LEFT[None, :, None, None] + _SUB[None, None, None, :], _GRID4).reshape(-1)
+_N_SUB = 4
+_FWD_C, _LEFT_C = _FWD / INT_CELL, _LEFT / INT_CELL     # in internal-cell units
+_SHIFTS = np.arange(4, dtype=np.uint8)[:, None, None]
+
+
+def world_column_levels(depth: np.ndarray, labels_buf: np.ndarray, band: tuple[int, int]) -> np.ndarray:
+    """(80,) float64 raw depth levels per column, nearest WORLD pixel of the middle ray
+    band rows [r0, r1) (EnvConfig.ray_bands[1]); 0.0 = no world pixel (no reading)."""
+    r0, r1 = band
+    d = depth[r0:r1].astype(np.int16)
+    world = (labels_buf[r0:r1] == 0) & (d > 0)
+    d = np.where(world, d, np.int16(1000))
+    m = d.reshape(r1 - r0, N_RAY_COLS, SCREEN_W // N_RAY_COLS).min(axis=(0, 2))
+    return np.where(m >= 1000, 0, m).astype(np.float64)
+
+
+class EgoMap:
+    """Per-episode occupancy memory. Private state: the packed spawn-frame grid and the
+    agent's spawn-relative pose. Only `crop()` output reaches the observation."""
+
+    def __init__(self):
+        self.grid = np.zeros((INT_GRID, INT_GRID), dtype=np.uint8)   # bit-packed channels
+        self.reset()
+
+    def reset(self):
+        self.grid.fill(0)
+        self._spawn = None        # (x0, y0, heading0_deg): private, never output
+        self._pose = None         # (x, y, heading_rad) in the spawn frame
+        self._prev_xy = None
+        self._held = [False, False, False]   # keys held at the last update (b, y, r)
+
+    # ------------------------------------------------------------ pose
+    def _set_pose(self, px: float, py: float, heading_deg: float):
+        if self._spawn is None:
+            self._spawn = (float(px), float(py), float(heading_deg))
+        x0, y0, h0 = self._spawn
+        t0 = np.radians(h0)
+        c0, s0 = np.cos(t0), np.sin(t0)
+        dx, dy = float(px) - x0, float(py) - y0
+        self._pose = (dx * c0 + dy * s0, -dx * s0 + dy * c0, np.radians(float(heading_deg) - h0))
+
+    # ------------------------------------------------------------ writes
+    def _cells(self, x: np.ndarray, y: np.ndarray):
+        ix = np.floor(x / INT_CELL).astype(np.int64) + _HALF
+        iy = np.floor(y / INT_CELL).astype(np.int64) + _HALF
+        # the outermost ring of cells is never written, so crop() can clip instead of mask
+        ok = (ix >= 1) & (ix < INT_GRID - 1) & (iy >= 1) & (iy < INT_GRID - 1)
+        return iy[ok] * INT_GRID + ix[ok]
+
+    def update(self, px: float, py: float, heading_deg: float, levels: np.ndarray,
+               door_cols: np.ndarray | None, entities: np.ndarray | None = None,
+               entity_type: np.ndarray | None = None, entity_mask: np.ndarray | None = None,
+               keys_held=None) -> None:
+        """One decision. levels: (80,) raw depth levels (0 = no reading); door_cols: (80,)
+        v2 door channel (1 = door face) or None. entities / entity_type / entity_mask: the
+        observation's entity set (only key rows are used); keys_held: 3 booleans (b, y, r),
+        the v2 keys-held bits."""
+        self._set_pose(px, py, heading_deg)
+        x, y, h = self._pose
+        flat = self.grid.reshape(-1)
+
+        # visited: segment from the previous pose to this one
+        if self._prev_xy is None:
+            vx, vy = np.array([x]), np.array([y])
+        else:
+            n = int(np.ceil(np.hypot(x - self._prev_xy[0], y - self._prev_xy[1]) / FREE_STEP_UNITS)) + 1
+            n = min(n, 64)
+            t = np.linspace(0.0, 1.0, n)
+            vx = self._prev_xy[0] + t * (x - self._prev_xy[0])
+            vy = self._prev_xy[1] + t * (y - self._prev_xy[1])
+        self._prev_xy = (x, y)
+
+        lv = np.asarray(levels, dtype=np.float64)
+        has = lv > 0
+        if has.any():
+            sat = lv[has] >= SATURATED_LEVEL
+            perp = np.where(sat, SATURATED_PERP_UNITS, (lv[has] - DEPTH_OFFSET) / DEPTH_PER_UNIT)
+            rng = perp * _COL_INV_COS[has]
+            ang = h - _COL_ANG[has]                       # screen right = clockwise
+            ca, sa = np.cos(ang), np.sin(ang)
+            # free: samples strictly before the hit (saturated: up to the sensor range), capped
+            stop = np.minimum(np.where(sat, rng, rng - FREE_STOP_UNITS), RAY_MAX_UNITS)
+            ft = _FREE_T[:int(np.max(stop) // FREE_STEP_UNITS) + 1] if stop.size else _FREE_T[:0]
+            m = ft[None, :] <= stop[:, None]
+            fx = x + (ca[:, None] * ft[None, :])[m]
+            fy = y + (sa[:, None] * ft[None, :])[m]
+            free_idx = self._cells(fx, fy)
+            flat[free_idx] = (flat[free_idx] | _BIT[CH_FREE]) & np.uint8(~_BIT[CH_DOOR] & 0xFF)
+            # hits: wall or door
+            hit = (~sat) & (perp <= WALL_MAX_PERP_UNITS)
+            if hit.any():
+                hr = rng[hit] + WALL_NUDGE_UNITS
+                hx, hy = x + ca[hit] * hr, y + sa[hit] * hr
+                if door_cols is not None:
+                    is_door = np.asarray(door_cols)[has][hit] > 0.5
+                else:
+                    is_door = np.zeros(hr.shape, dtype=bool)
+                w_idx = self._cells(hx[~is_door], hy[~is_door])
+                flat[w_idx] |= _BIT[CH_WALL]
+                d_idx = self._cells(hx[is_door], hy[is_door])
+                flat[d_idx] = (flat[d_idx] & np.uint8(~_BIT[CH_WALL] & 0xFF)) | _BIT[CH_DOOR]
+        v_idx = self._cells(vx, vy)
+        flat[v_idx] |= _BIT[CH_VISITED]
+        self._update_keys(flat, x, y, h, entities, entity_type, entity_mask, keys_held)
+
+    def _update_keys(self, flat, x, y, h, ents, types, mask, keys_held):
+        if keys_held is not None:
+            for i, held in enumerate(keys_held):
+                held = bool(held)
+                if held and not self._held[i]:       # picked up: forget that colour's cells
+                    self.grid &= np.uint8(~_KEY_BITS[i] & 0xFF)
+                self._held[i] = held
+        if ents is None or types is None or mask is None:
+            return
+        types = np.asarray(types)
+        sel = np.asarray(mask, dtype=bool) & (types >= _KEY_LO) & (types <= _KEY_HI)
+        if not sel.any():
+            return
+        e = np.asarray(ents, dtype=np.float64)[sel]
+        lv = e[:, D_COL] * 255.0
+        ok = (lv > 0) & (lv < SATURATED_LEVEL)
+        if not ok.any():
+            return
+        u, lv, t = e[ok, U_COL], lv[ok], types[sel][ok]
+        perp = (lv - DEPTH_OFFSET) / DEPTH_PER_UNIT
+        ang = h - np.arctan(u)                                 # screen right = clockwise
+        kx, ky = x + np.cos(ang) * perp * np.sqrt(1.0 + u * u), y + np.sin(ang) * perp * np.sqrt(1.0 + u * u)
+        for i, tid in enumerate(_KEY_TYPE_IDS):
+            if self._held[i]:
+                continue
+            m = t == tid
+            if m.any():
+                flat[self._cells(kx[m], ky[m])] |= np.uint8(_KEY_BITS[i])
+
+    # ------------------------------------------------------------ read
+    def crop(self) -> np.ndarray:
+        """(5, 32, 32) uint8 ego-centric crop; zeros before the first update."""
+        if self._pose is None:
+            return np.zeros(EGOMAP_SHAPE, dtype=np.uint8)
+        x, y, h = self._pose
+        c, s = np.cos(h), np.sin(h)
+        sx = (x / INT_CELL + _HALF) + (_FWD_C * c - _LEFT_C * s)
+        sy = (y / INT_CELL + _HALF) + (_FWD_C * s + _LEFT_C * c)
+        ix = np.clip(np.floor(sx), 0, INT_GRID - 1).astype(np.intp)   # border ring is all zero
+        iy = np.clip(np.floor(sy), 0, INT_GRID - 1).astype(np.intp)
+        vals = self.grid[iy, ix]
+        packed = np.bitwise_or.reduce(vals.reshape(EGOMAP_SIZE, EGOMAP_SIZE, _N_SUB), axis=2)
+        out = np.empty(EGOMAP_SHAPE, dtype=np.uint8)
+        out[:4] = (packed[None] >> _SHIFTS) & 1
+        out[CH_KEY] = (packed & _KEY_ANY) != 0
+        return out

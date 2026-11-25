@@ -16,6 +16,13 @@ _build_obs(), and only as finished arrays from env/door_cue.py:
     "needs key" pulse (from the vanilla locked-door message). Only booleans; never the
     notification text.
 
+Observation v3 (cfg.obs_version == 3) = v2 + `egomap` (5, 32, 32) uint8, added in
+_add_v3_egomap() from env/egomap.py: an ego-centric occupancy crop (free / wall / visited
+/ closed door / key seen) built from the middle depth band, the v2 door row, the
+entity set (key rows) and the v2 keys-held bits. The pose (InfoVars)
+is consumed inside EgoMap only, as odometry relative to the episode's spawn pose; no
+coordinate leaves it (translation invariance tested).
+
 Per-step `info` keys for the trainer (privileged; never an observation):
   final_obs_fresh (bool, every step and reset): True if `obs` was built from the engine
       state after this step's action. False only when the episode ended by death,
@@ -45,6 +52,7 @@ import vizdoom as vzd
 from gymnasium import spaces
 
 from . import door_cue as D
+from . import egomap as E
 from . import observation as O
 from .actions import BUTTONS, as_index_array, encode, head_sizes
 from .config import EVAL_CONFIG, EnvConfig
@@ -148,10 +156,13 @@ class DoomEnv(gym.Env):
         if config.screen_enabled:
             space["screen"] = spaces.Box(0, 255, (3, 60, 80), np.uint8)
         space["modality"] = spaces.Box(0.0, 1.0, (3,), np.float32)
+        if config.egomap:
+            space["egomap"] = spaces.Box(0, 1, E.EGOMAP_SHAPE, np.uint8)
         self.observation_space = spaces.Dict(space)
         self.action_space = spaces.MultiDiscrete(head_sizes(len(config.turn_bins)))
         self._tracker = O.EntityTracker()
         self._doors = D.DoorTracker()   # v2: per-episode door memory (private, never output)
+        self._egomap = E.EgoMap() if config.egomap else None   # v3: only crop() is output
         self._keys_needed: set[str] = set()
         self._last_obs = None
         self._last_info: dict = {}
@@ -229,6 +240,8 @@ class DoomEnv(gym.Env):
         self.game.new_episode()
         self._tracker.reset()
         self._doors.reset()
+        if self._egomap is not None:
+            self._egomap.reset()
         self._keys_needed = set()
         self._prev_heading = None
         self._prev_damage = None
@@ -331,6 +344,8 @@ class DoomEnv(gym.Env):
         obs = self._build_obs(state, obs_vars)
         if self.cfg.door_channel:
             obs = self._add_v2_cues(obs, state, info_vars)
+        if self._egomap is not None:
+            obs = self._add_v3_egomap(obs, state, info_vars)
         info = self._build_info(state, info_vars)
         self._last_obs, self._last_info = obs, info
         return obs, info
@@ -379,9 +394,23 @@ class DoomEnv(gym.Env):
         sectors = state.sectors if telemetry_ok else None
         if sectors:  # absent under +viz_nocheat (and with telemetry off): all zeros
             mid = np.rint(obs["rays"][1] * 255.0)  # middle band, raw levels; 0 = no reading
-            door = D.door_channel(self._doors.faces_now(sectors), v.pos_x, v.pos_y, v.angle, mid)
+            faces, occ = self._doors.scene_now(sectors)
+            door = D.door_channel(faces, v.pos_x, v.pos_y, v.angle, mid, occ, v.pos_z + D.EYE_HEIGHT)
         obs["rays"] = np.concatenate([obs["rays"], door[None, :]], axis=0)
         obs["self"] = np.concatenate([obs["self"], D.key_bits(self._keys_held, self._keys_needed)])
+        return obs
+
+    def _add_v3_egomap(self, obs: dict, state, v: InfoVars) -> dict:
+        """Observation v3. The pose goes into env/egomap.EgoMap only (spawn-relative
+        odometry, never output); what is added is the (5, 32, 32) ego-centric crop.
+        Without depth/labels (e.g. +viz_nocheat) nothing is written: all zeros."""
+        if bool(obs["modality"][0]):
+            levels = E.world_column_levels(state.depth_buffer, state.labels_buffer,
+                                           self.cfg.ray_bands[1])
+            held = obs["self"][-O.N_KEY_BITS:-O.N_KEY_BITS + 3] > 0.5   # v2 keys-held bits
+            self._egomap.update(v.pos_x, v.pos_y, v.angle, levels, obs["rays"][3],
+                                obs["entities"], obs["entity_type"], obs["entity_mask"], held)
+        obs["egomap"] = self._egomap.crop()
         return obs
 
     def _build_info(self, state, v: InfoVars) -> dict:

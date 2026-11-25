@@ -1,0 +1,330 @@
+{
+ "attempt": 0,
+ "batch": 2,
+ "config_file": "maps/gen_config_b2.json",
+ "counts": {
+  "corridors": 8,
+  "doors": 5,
+  "linedefs": 106,
+  "locked_doors": 1,
+  "loops": 1,
+  "monsters": 4,
+  "pickups": 2,
+  "rooms": 8,
+  "sectors": 24,
+  "things": 8
+ },
+ "failed_attempts": [],
+ "generator": "doomsday-mapgen",
+ "generator_version": "0.1.1",
+ "graph": {
+  "corridors": [
+   {
+    "a": 0,
+    "b": 1,
+    "door": "normal",
+    "loop": false
+   },
+   {
+    "a": 1,
+    "b": 2,
+    "door": null,
+    "loop": false
+   },
+   {
+    "a": 2,
+    "b": 3,
+    "door": "normal",
+    "loop": false
+   },
+   {
+    "a": 2,
+    "b": 4,
+    "door": null,
+    "loop": false
+   },
+   {
+    "a": 4,
+    "b": 5,
+    "door": "normal",
+    "loop": false
+   },
+   {
+    "a": 4,
+    "b": 6,
+    "door": "blue",
+    "loop": false
+   },
+   {
+    "a": 6,
+    "b": 7,
+    "door": "normal",
+    "loop": false
+   },
+   {
+    "a": 2,
+    "b": 5,
+    "door": "normal",
+    "loop": true
+   }
+  ],
+  "exit_kind": "switch",
+  "exit_room": 7,
+  "key_room": 5,
+  "lock": 5,
+  "lock_color": "blue",
+  "lock_door_sector": 18,
+  "room_sector": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rooms": [
+   {
+    "h": 13,
+    "w": 12,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "h": 9,
+    "w": 11,
+    "x": 4,
+    "y": -12
+   },
+   {
+    "h": 10,
+    "w": 14,
+    "x": 19,
+    "y": -10
+   },
+   {
+    "h": 12,
+    "w": 10,
+    "x": 25,
+    "y": -27
+   },
+   {
+    "h": 12,
+    "w": 14,
+    "x": 37,
+    "y": -5
+   },
+   {
+    "h": 6,
+    "w": 12,
+    "x": 23,
+    "y": 3
+   },
+   {
+    "h": 14,
+    "w": 9,
+    "x": 54,
+    "y": -8
+   },
+   {
+    "h": 9,
+    "w": 14,
+    "x": 50,
+    "y": -19
+   }
+  ],
+  "start_room": 0
+ },
+ "mods": [],
+ "params": {
+  "alt_theme_prob": 0.2,
+  "chain_bias": 0.5,
+  "corr_heights": [
+   72,
+   96,
+   128
+  ],
+  "corr_len": [
+   1,
+   6
+  ],
+  "corr_width": [
+   2,
+   3
+  ],
+  "door_prob": 0.5,
+  "exit_kinds": [
+   "pad",
+   "switch"
+  ],
+  "floor_steps": [
+   -24,
+   -16,
+   -8,
+   0,
+   0,
+   0,
+   8,
+   16,
+   24
+  ],
+  "key_colors": [
+   "blue",
+   "yellow",
+   "red"
+  ],
+  "keys": true,
+  "layout_tries": 300,
+  "light": [
+   112,
+   240
+  ],
+  "loop_prob": 0.6,
+  "max_attempts": 12,
+  "max_loops": 2,
+  "monster_weights": {
+   "imp": 0.25,
+   "shotgunguy": 0.25,
+   "zombieman": 0.5
+  },
+  "monsters": [
+   2,
+   5
+  ],
+  "pickup_weights": {
+   "clip": 0.3,
+   "greenarmor": 0.05,
+   "healthbonus": 0.1,
+   "medikit": 0.1,
+   "shells": 0.1,
+   "shotgun": 0.1,
+   "stimpack": 0.25
+  },
+  "pickups": [
+   2,
+   5
+  ],
+  "room_heights": [
+   96,
+   128,
+   160,
+   192,
+   256
+  ],
+  "room_size": [
+   6,
+   14
+  ],
+  "rooms": [
+   4,
+   8
+  ],
+  "skull_key_prob": 0.3,
+  "stage_name": "full"
+ },
+ "seed": 140025,
+ "split": "train",
+ "stage": "S3",
+ "themes": [
+  "tech",
+  "brick",
+  "wood",
+  "cement",
+  "brown",
+  "rock"
+ ],
+ "things": [
+  {
+   "class": "DoomPlayer",
+   "role": "start",
+   "room": 0,
+   "type": 1,
+   "x": 176,
+   "y": 144
+  },
+  {
+   "class": "BlueSkull",
+   "role": "key",
+   "room": 5,
+   "type": 40,
+   "x": 848,
+   "y": 176
+  },
+  {
+   "class": "Zombieman",
+   "role": "monster",
+   "room": 2,
+   "type": 3004,
+   "x": 912,
+   "y": -272
+  },
+  {
+   "class": "ShotgunGuy",
+   "role": "monster",
+   "room": 5,
+   "type": 9,
+   "x": 944,
+   "y": 208
+  },
+  {
+   "class": "Zombieman",
+   "role": "monster",
+   "room": 1,
+   "type": 3004,
+   "x": 336,
+   "y": -336
+  },
+  {
+   "class": "Zombieman",
+   "role": "monster",
+   "room": 6,
+   "type": 3004,
+   "x": 1936,
+   "y": 16
+  },
+  {
+   "class": "HealthBonus",
+   "role": "pickup",
+   "room": 6,
+   "type": 2014,
+   "x": 1872,
+   "y": -48
+  },
+  {
+   "class": "GreenArmor",
+   "role": "pickup",
+   "room": 7,
+   "type": 2018,
+   "x": 1648,
+   "y": -560
+  }
+ ],
+ "validation": {
+  "engine": {
+   "exit_finished": true,
+   "exit_reward": 1.0,
+   "locked_with_key_ceil": 40.0,
+   "locked_without_key": {
+    "ceil_after": -8.0,
+    "ceil_before": -8.0,
+    "message": "Blue key needed for this door."
+   },
+   "objects": {
+    "BlueSkull": 1,
+    "DoomPlayer": 1,
+    "GreenArmor": 1,
+    "HealthBonus": 1,
+    "ShotgunGuy": 1,
+    "Zombieman": 3
+   },
+   "ok": true,
+   "problems": [],
+   "spawn": [
+    176.0,
+    144.0
+   ]
+  },
+  "static_problems": []
+ }
+}

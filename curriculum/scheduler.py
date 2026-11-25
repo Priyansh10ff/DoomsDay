@@ -81,14 +81,17 @@ class CurriculumScheduler:
     def from_bundle(cls, config: dict | None = None, seed: int | None = None, splits=None):
         """Pool from the verified training bundle (maps/loader.training_bundle: train
         split only, hashes checked, held-out refused)."""
-        from maps.loader import training_bundle
+        from maps.loader import BUNDLE_ENV, training_bundle
         config = config or load_config()
-        path, lumps, stages = training_bundle(config.get("bundle_id", "train-all"), splits)
+        # $DOOMSDAY_TRAIN_BUNDLE (if set) overrides config "bundle_id"; unset = config.
+        bundle_id = os.environ.get(BUNDLE_ENV, "").strip() or config.get("bundle_id", "train-all")
+        path, lumps, stages = training_bundle(bundle_id, splits)
         pool: dict[str, list] = {}
         for lump, mid in lumps.items():
             pool.setdefault(stages[lump], []).append((lump, mid))
         sch = cls(config, pool, seed)
         sch.bundle_path = path
+        sch.bundle_id = bundle_id
         return sch
 
     # ---------------------------------------------------------------- core

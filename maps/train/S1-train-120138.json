@@ -1,0 +1,205 @@
+{
+ "attempt": 0,
+ "batch": 2,
+ "config_file": "maps/gen_config_b2.json",
+ "counts": {
+  "corridors": 3,
+  "doors": 1,
+  "linedefs": 44,
+  "locked_doors": 0,
+  "loops": 0,
+  "monsters": 0,
+  "pickups": 0,
+  "rooms": 4,
+  "sectors": 10,
+  "things": 1
+ },
+ "failed_attempts": [],
+ "generator": "doomsday-mapgen",
+ "generator_version": "0.1.1",
+ "graph": {
+  "corridors": [
+   {
+    "a": 0,
+    "b": 1,
+    "door": null,
+    "loop": false
+   },
+   {
+    "a": 1,
+    "b": 2,
+    "door": "normal",
+    "loop": false
+   },
+   {
+    "a": 0,
+    "b": 3,
+    "door": null,
+    "loop": false
+   }
+  ],
+  "exit_kind": "pad",
+  "exit_room": 2,
+  "key_room": null,
+  "lock": null,
+  "lock_color": null,
+  "lock_door_sector": null,
+  "room_sector": [
+   0,
+   1,
+   2,
+   3
+  ],
+  "rooms": [
+   {
+    "h": 7,
+    "w": 13,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "h": 6,
+    "w": 11,
+    "x": 19,
+    "y": 1
+   },
+   {
+    "h": 13,
+    "w": 9,
+    "x": 24,
+    "y": 10
+   },
+   {
+    "h": 8,
+    "w": 10,
+    "x": 3,
+    "y": 10
+   }
+  ],
+  "start_room": 0
+ },
+ "mods": [],
+ "params": {
+  "alt_theme_prob": 0.2,
+  "chain_bias": 0.5,
+  "corr_heights": [
+   72,
+   96,
+   128
+  ],
+  "corr_len": [
+   1,
+   6
+  ],
+  "corr_width": [
+   2,
+   3
+  ],
+  "door_prob": 0.6,
+  "exit_kinds": [
+   "pad",
+   "switch"
+  ],
+  "floor_steps": [
+   -24,
+   -16,
+   -8,
+   0,
+   0,
+   0,
+   8,
+   16,
+   24
+  ],
+  "key_colors": [
+   "blue",
+   "yellow",
+   "red"
+  ],
+  "keys": false,
+  "layout_tries": 300,
+  "light": [
+   112,
+   240
+  ],
+  "loop_prob": 0.6,
+  "max_attempts": 12,
+  "max_loops": 2,
+  "monster_weights": {
+   "imp": 0.25,
+   "shotgunguy": 0.25,
+   "zombieman": 0.5
+  },
+  "monsters": [
+   0,
+   0
+  ],
+  "pickup_weights": {
+   "clip": 0.3,
+   "greenarmor": 0.05,
+   "healthbonus": 0.1,
+   "medikit": 0.1,
+   "shells": 0.1,
+   "shotgun": 0.1,
+   "stimpack": 0.25
+  },
+  "pickups": [
+   0,
+   0
+  ],
+  "room_heights": [
+   96,
+   128,
+   160,
+   192,
+   256
+  ],
+  "room_size": [
+   6,
+   14
+  ],
+  "rooms": [
+   3,
+   8
+  ],
+  "skull_key_prob": 0.3,
+  "stage_name": "doors"
+ },
+ "seed": 120138,
+ "split": "train",
+ "stage": "S1",
+ "themes": [
+  "tech",
+  "brick",
+  "wood",
+  "cement",
+  "brown",
+  "rock"
+ ],
+ "things": [
+  {
+   "class": "DoomPlayer",
+   "role": "start",
+   "room": 0,
+   "type": 1,
+   "x": 48,
+   "y": 144
+  }
+ ],
+ "validation": {
+  "engine": {
+   "exit_finished": true,
+   "exit_reward": 1.0,
+   "objects": {
+    "DoomPlayer": 1
+   },
+   "ok": true,
+   "problems": [],
+   "spawn": [
+    48.0,
+    144.0
+   ]
+  },
+  "static_problems": []
+ }
+}

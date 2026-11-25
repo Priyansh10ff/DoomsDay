@@ -101,6 +101,118 @@ def test_tolerance_bounds():
     assert not lit(p - D.DOOR_TOL_NEAR_ABS - D.DOOR_TOL_NEAR_REL * p - 0.6)
 
 
+# ---------------------------------------------------------------- occlusion gate (audit 02 F1)
+FACE = np.array([[200.0, -40.0, 200.0, 40.0]])
+EYE = 41.0                                      # floor 0 + EYE_HEIGHT
+
+
+def _occ(lines):
+    """lines: [(x1, y1, x2, y2, lo, hi)] -> occlusion table as DoorTracker.scene_now gives."""
+    a = np.array(lines, dtype=np.float64).reshape(-1, 6)
+    return a[:, :4], a[:, 4], a[:, 5]
+
+
+ONE_SIDED = (np.inf, -np.inf)
+# the scene's own geometry: the closed door face (two-sided, opening 0) and its jambs
+SCENE = [(200.0, -40.0, 200.0, 40.0, 0.0, 0.0), (200.0, -40.0, 216.0, -40.0, *ONE_SIDED),
+         (200.0, 40.0, 216.0, 40.0, *ONE_SIDED), (216.0, -40.0, 216.0, 40.0, 0.0, 0.0)]
+
+
+@pytest.mark.parametrize("gap", [8.0, 16.0, 24.0, 30.0])
+def test_face_behind_nearer_wall_is_zero_with_gate(gap):
+    """Audit 02 case: a one-sided wall `gap` units in front of the face, reading = the wall's
+    predicted level. The depth check alone lights it; the gate must not."""
+    wall = (200.0 - gap, -60.0, 200.0 - gap, 60.0, *ONE_SIDED)
+    mid = np.full(80, round(_pred(200.0 - gap)))
+    assert D.door_channel(FACE, 0.0, 0.0, 0.0, mid, _occ(SCENE + [wall]), EYE).sum() == 0
+    # a closed door in front of the face blocks the same way (two-sided, opening 0)
+    door2 = (200.0 - gap, -60.0, 200.0 - gap, 60.0, 0.0, 0.0)
+    assert D.door_channel(FACE, 0.0, 0.0, 0.0, mid, _occ(SCENE + [door2]), EYE).sum() == 0
+
+
+def test_old_leak_reproduced_without_gate():
+    for gap in (8.0, 16.0, 24.0, 30.0):
+        face = np.array([[400.0, -40.0, 400.0, 40.0]])
+        mid = np.full(80, round(_pred(400.0 - gap)))
+        assert D.door_channel(face, 0.0, 0.0, 0.0, mid).sum() > 0, gap
+
+
+def test_visible_face_unchanged_by_gate():
+    mid = np.full(80, round(_pred(200.0)))
+    ref = D.door_channel(FACE, 0.0, 0.0, 0.0, mid)
+    assert ref.sum() >= 15
+    assert np.array_equal(D.door_channel(FACE, 0.0, 0.0, 0.0, mid, _occ(SCENE), EYE), ref)
+    # lines beyond the face, behind the player, or beside the ray do not matter
+    extra = [(300.0, -100.0, 300.0, 100.0, *ONE_SIDED), (-50.0, -100.0, -50.0, 100.0, *ONE_SIDED),
+             (100.0, 150.0, 190.0, 150.0, *ONE_SIDED)]
+    assert np.array_equal(D.door_channel(FACE, 0.0, 0.0, 0.0, mid, _occ(SCENE + extra), EYE), ref)
+
+
+@pytest.mark.parametrize("dist", [40.0, 120.0, 200.0, 320.0, 400.0])
+@pytest.mark.parametrize("heading", [-35.0, 0.0, 30.0])
+def test_visible_face_lights_at_distances_and_angles(dist, heading):
+    face = np.array([[dist, -40.0, dist, 40.0]])
+    scene = [(dist, -40.0, dist, 40.0, 0.0, 0.0), (dist, -40.0, dist + 16, -40.0, *ONE_SIDED),
+             (dist, 40.0, dist + 16, 40.0, *ONE_SIDED),
+             (0.5 * dist, -200.0, 0.5 * dist, 200.0, 0.0, 128.0)]   # open archway in between
+    f, ok = D._cast(*D._to_player_frame(face, 0.0, 0.0, heading), np.arange(80))
+    mid = np.where(ok[:, 0], np.rint(np.clip(_pred(np.where(ok, f, 1.0)[:, 0]), 1, 255)), 0.0)
+    ref = D.door_channel(face, 0.0, 0.0, heading, mid)
+    gated = D.door_channel(face, 0.0, 0.0, heading, mid, _occ(scene), EYE)
+    assert ref.sum() > 0 and np.array_equal(gated, ref)
+
+
+def test_two_sided_openings():
+    mid = np.full(80, round(_pred(190.0)))           # reading consistent with the face (-10 u)
+    lit = lambda line: D.door_channel(FACE, 0.0, 0.0, 0.0, mid, _occ(SCENE + [line]), EYE).sum()
+    x = 190.0
+    assert lit((x, -60.0, x, 60.0, 0.0, 128.0)) > 0     # open doorway: no block
+    assert lit((x, -60.0, x, 60.0, 16.0, 128.0)) > 0    # 16-unit step: band clears
+    assert lit((x, -60.0, x, 60.0, 0.0, 48.0)) == 0     # lintel 7 above eye: inside the band at 190
+    assert lit((x, -60.0, x, 60.0, 0.0, 40.0)) == 0     # lintel below eye: blocks
+    assert lit((x, -60.0, x, 60.0, 40.0, 128.0)) == 0   # floor at eye level: blocks
+    # far in front of the face (depth check carries it): a lintel 7 above eye does not block
+    mid_face = np.full(80, round(_pred(200.0)))
+    far = (20.0, -60.0, 20.0, 60.0, 0.0, 48.0)
+    assert D.door_channel(FACE, 0.0, 0.0, 0.0, mid_face, _occ(SCENE + [far]), EYE).sum() > 0
+
+
+@pytest.mark.parametrize("dx,dy,dz,rot", [(0, 0, 0, 0), (1234.5, -987.0, 64.0, 37.0),
+                                          (-3000, 512, -200.0, 271.3)])
+def test_gate_rigid_motion_and_height_invariance(dx, dy, dz, rot):
+    gap = 20.0
+    scene = SCENE + [(200.0 - gap, -60.0, 200.0 - gap, -10.0, *ONE_SIDED),   # hides the left half
+                     (100.0, -300.0, 100.0, 300.0, 24.0, 100.0)]
+    mid = np.concatenate([np.full(40, round(_pred(200.0))), np.full(40, round(_pred(200.0 - gap)))])
+    seg, lo, hi = _occ(scene)
+    ref = D.door_channel(FACE, 0.0, 0.0, 0.0, mid, (seg, lo, hi), EYE)
+    c, s = math.cos(math.radians(rot)), math.sin(math.radians(rot))
+
+    def move(a):
+        b = a.copy()
+        for j in (0, 2):
+            x, y = a[:, j], a[:, j + 1]
+            b[:, j], b[:, j + 1] = x * c - y * s + dx, x * s + y * c + dy
+        return b
+    out = D.door_channel(move(FACE), dx, dy, rot, mid, (move(seg), lo + dz, hi + dz), EYE + dz)
+    assert np.array_equal(out, ref) and 0 < ref.sum() < D.door_channel(FACE, 0.0, 0.0, 0.0, mid).sum()
+
+
+def test_gated_columns_give_no_egomap_door_cells():
+    from env import egomap as E
+    gap = 20.0
+    mid = np.full(80, round(_pred(200.0 - gap)))
+    occ = _occ(SCENE + [(200.0 - gap, -60.0, 200.0 - gap, 60.0, *ONE_SIDED)])
+    door = D.door_channel(FACE, 0.0, 0.0, 0.0, mid, occ, EYE)
+    m = E.EgoMap()
+    m.update(0.0, 0.0, 0.0, mid, door)
+    assert m.crop()[E.CH_DOOR].sum() == 0 and m.crop()[E.CH_WALL].sum() > 0
+    old = D.door_channel(FACE, 0.0, 0.0, 0.0, mid)       # ungated: the leak reached channel 3
+    m2 = E.EgoMap()
+    m2.update(0.0, 0.0, 0.0, mid, old)
+    assert m2.crop()[E.CH_DOOR].sum() > 0
+
+
 class _L:
     def __init__(self, x1, y1, x2, y2, b):
         self.x1, self.y1, self.x2, self.y2, self.is_blocking = x1, y1, x2, y2, b
@@ -121,6 +233,30 @@ def test_tracker_remembers_closed_doors_uses_faces_only_and_drops_open_ones():
     assert t.faces_now([_S(2, 0, 48, lines)]).shape == (0, 4)               # passage visible
     t.reset()
     assert t.faces_now([_S(2, 0, 40, lines)]).shape == (0, 4)               # memory cleared
+
+
+def test_tracker_scene_openings_from_two_sectors_not_is_blocking():
+    # room 1 (floor 0, ceil 128) | door 2 (closed) | room 3 (floor 16, ceil 96); an
+    # impassable window line (is_blocking True) between rooms 1 and 3 still counts as open.
+    face_a, face_b = _L(0, 0, 0, 64, False), _L(16, 0, 16, 64, False)
+    jamb1, jamb2 = _L(0, 0, 16, 0, True), _L(0, 64, 16, 64, True)
+    window = _L(-100, 200, 100, 200, True)
+    wall = _L(-100, -50, 100, -50, True)
+    secs = [_S(1, 0, 128, [face_a, window, wall]), _S(2, 0, 0, [face_a, face_b, jamb1, jamb2]),
+            _S(3, 16, 96, [_L(16, 64, 16, 0, False), window])]   # face_b listed reversed
+    t = D.DoorTracker()
+    faces, (seg, lo, hi) = t.scene_now(secs)
+    assert faces.shape == (2, 4)
+    op = {tuple(s): (l, h) for s, l, h in zip(seg.tolist(), lo.tolist(), hi.tolist())}
+    assert len(op) == 6
+    assert op[(0.0, 0.0, 0.0, 64.0)] == (0.0, 0.0)          # face A: closed door
+    assert op[(16.0, 0.0, 16.0, 64.0)] == (16.0, 0.0)       # face B: empty opening
+    assert op[(-100.0, 200.0, 100.0, 200.0)] == (16.0, 96.0)  # window: open, despite is_blocking
+    assert op[(-100.0, -50.0, 100.0, -50.0)] == (np.inf, -np.inf)   # one-sided
+    secs[1] = _S(2, 0, 72, secs[1].lines)                   # door opened: only heights change
+    _, (_, lo2, hi2) = t.scene_now(secs)
+    op2 = {tuple(s): (l, h) for s, l, h in zip(seg.tolist(), lo2.tolist(), hi2.tolist())}
+    assert op2[(0.0, 0.0, 0.0, 64.0)] == (0.0, 72.0)
 
 
 # ---------------------------------------------------------------- keys
@@ -161,8 +297,8 @@ def test_versions_have_different_signatures_and_do_not_mix():
 
 def test_obs_version_switch_applies_to_every_builder(monkeypatch, tmp_path):
     from configs import a0_env as A
-    assert A.OBS_VERSION == 2
-    for raw, want in (("", 2), ("1", 1), ("2", 2)):
+    assert A.OBS_VERSION == 3            # v3 (egomap) is the default since 2026-11-26
+    for raw, want in (("", 3), ("1", 1), ("2", 2), ("3", 3)):
         monkeypatch.setenv(A.OBS_VERSION_ENV_VAR, raw)
         tr, ev = A.a0_train_env_config(), A.a0_eval_env_config()
         assert tr.obs_version == ev.obs_version == want
@@ -173,7 +309,7 @@ def test_obs_version_switch_applies_to_every_builder(monkeypatch, tmp_path):
                         + b"\0" * 8 + b"DD0001\0\0" + b"\0" * 8 + b"THINGS\0\0")
         gen = A.generated_maps_env_config(tr, str(wad), ("DD0001",))
         assert gen.obs_version == want and gen.sensor_signature() == tr.sensor_signature()
-    monkeypatch.setenv(A.OBS_VERSION_ENV_VAR, "3")
+    monkeypatch.setenv(A.OBS_VERSION_ENV_VAR, "4")
     with pytest.raises(ValueError):
         A.a0_train_env_config()
 
@@ -184,8 +320,9 @@ def test_eval_v2_is_vanilla_but_raw_sector_field_is_not():
     assert ev2.engine_sectors_enabled and not EVAL_CONFIG.engine_sectors_enabled
     with pytest.raises(AssertionError):
         ev2.replace(sectors_info=True).assert_vanilla()
+    EVAL_CONFIG.replace(obs_version=3).assert_vanilla()   # v3 egomap: same engine inputs as v2
     with pytest.raises(AssertionError):
-        EVAL_CONFIG.replace(obs_version=3).assert_vanilla()
+        EVAL_CONFIG.replace(obs_version=4).assert_vanilla()
 
 
 def test_evaluate_reads_v1_and_v2_checkpoint_signatures():
@@ -230,7 +367,10 @@ def test_v2_cues_add_only_door_and_key_arrays():
     used = [ln for ln in code if "sectors" in ln]
     assert used == ["sectors = state.sectors if telemetry_ok else None",
                     "if sectors:",
-                    "door = D.door_channel(self._doors.faces_now(sectors), v.pos_x, v.pos_y, v.angle, mid)"]
+                    "faces, occ = self._doors.scene_now(sectors)"]
+    # the gate is always on in the env: faces, occlusion table and eye height are passed
+    calls = [ln for ln in code if "D.door_channel(" in ln]
+    assert calls == ["door = D.door_channel(faces, v.pos_x, v.pos_y, v.angle, mid, occ, v.pos_z + D.EYE_HEIGHT)"]
     info_body = _method(src, "_build_info")
     assert "sector" not in info_body and "door" not in info_body
 

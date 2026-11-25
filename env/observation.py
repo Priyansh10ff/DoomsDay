@@ -17,7 +17,9 @@ N_RAY_COLS = 80
 N_WEAPONS = 10
 SELF_DIM = 28          # observation v1 self vector (unchanged)
 N_KEY_BITS = 6         # v2 appends: keys held (b, y, r), needs key (b, y, r); env/door_cue.py
-OBS_VERSIONS = (1, 2)  # v2 = v1 + door ray channel (last row of `rays`) + key bits in `self`
+# v2 = v1 + door ray channel (last row of `rays`) + key bits in `self`
+# v3 = v2 + `egomap` (5, 32, 32) uint8 ego-centric occupancy memory (env/egomap.py)
+OBS_VERSIONS = (1, 2, 3)
 
 
 def check_obs_version(v: int) -> int:

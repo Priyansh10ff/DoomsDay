@@ -69,7 +69,8 @@ import time
 from typing import Any
 
 from configs.a0_env import a0_train_env_config, generated_maps_env_config
-from configs.train_config import BC_DECAY_MODES, GIB, BCAuxConfig, PPOConfig, RunConfig, SafetyConfig
+from configs.train_config import (BC_DECAY_MODES, GIB, BCAuxConfig, InvDynConfig, PPOConfig, RNDConfig, RunConfig,
+                                  SafetyConfig)
 
 from . import process_control as PC
 from .doom_factory import DoomEnvFactory
@@ -92,6 +93,8 @@ SHAPING_PRESETS: dict[str, tuple[str, str, dict[str, Any]]] = {
     # full_level + a once-per-door progress term (rewards/doors.py); door geometry is
     # read from the generated bundle in the main process, for reward only.
     "full_level_doors": ("FULL_LEVEL_DOORS_REWARD", "FULL_LEVEL_COVERAGE", {}),
+    # + USE-miss and door-reversal penalties, door pay for on-path doors only (rewards/use_doors.py).
+    "full_level_doors_v2": ("FULL_LEVEL_DOORS_V2_REWARD", "FULL_LEVEL_COVERAGE", {}),
 }
 MAPS_PRESETS: tuple[str, ...] = ("my_way_home", "generated")
 # Which --shaping presets fit which --maps (None = engine reward only, always allowed).
@@ -105,7 +108,7 @@ MAPS_PRESETS: tuple[str, ...] = ("my_way_home", "generated")
 #    map_exit_reward, so the two-signal exit term could never pay.
 SHAPING_FOR_MAPS: dict[str, tuple[str, ...]] = {
     "my_way_home": ("my_way_home", "passthrough"),
-    "generated": ("full_level", "full_level_doors"),
+    "generated": ("full_level", "full_level_doors", "full_level_doors_v2"),
 }
 EXIT_DEVICE_UNAVAILABLE = 6
 EXIT_RESUME_REFUSED = 5
@@ -203,7 +206,18 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     a.add_argument("--bc-batch-seqs", type=int, default=b.batch_seqs)
     a.add_argument("--bc-seq-len", type=int, default=b.seq_len)
     a.add_argument("--bc-max-gb", type=float, default=b.max_bytes / GIB)
+    r, iv = RNDConfig(), InvDynConfig()
+    a.add_argument("--rnd-int-coef", type=float, default=r.int_coef,
+                   help="RND exploration bonus: weight of the intrinsic advantage; 0 = off (default)")
+    a.add_argument("--rnd-ext-coef", type=float, default=r.ext_coef,
+                   help="weight of the extrinsic advantage when RND is on; default 1")
+    a.add_argument("--inv-dyn-coef", type=float, default=iv.coef,
+                   help="inverse-dynamics auxiliary loss weight; 0 = off (default)")
     ns = a.parse_args(argv)
+    if not (ns.rnd_int_coef >= 0 and ns.rnd_ext_coef >= 0 and ns.inv_dyn_coef >= 0):
+        a.error("--rnd-int-coef, --rnd-ext-coef and --inv-dyn-coef must be >= 0")
+    if ns.rnd_ext_coef != r.ext_coef and ns.rnd_int_coef == 0:
+        a.error("--rnd-ext-coef only applies with RND on (--rnd-int-coef > 0)")
     if ns.bc_coef_final is None:
         ns.bc_coef_final = ns.bc_coef
     if ns.bc_data and not (ns.bc_coef > 0 or ns.bc_coef_final > 0):
@@ -257,7 +271,10 @@ def build_run_config(ns: argparse.Namespace) -> RunConfig:
     return dataclasses.replace(RunConfig(), seed=ns.seed, num_workers=ns.workers,
                                envs_per_worker=ns.envs_per_worker, torch_threads=ns.torch_threads,
                                ppo=ppo, safety=safety, shaping=ns.shaping, maps=ns.maps,
-                               start_stage=getattr(ns, "start_stage", None), bc_aux=bc_aux_from_args(ns))
+                               start_stage=getattr(ns, "start_stage", None), bc_aux=bc_aux_from_args(ns),
+                               rnd=dataclasses.replace(RNDConfig(), int_coef=getattr(ns, "rnd_int_coef", 0.0),
+                                                       ext_coef=getattr(ns, "rnd_ext_coef", RNDConfig.ext_coef)),
+                               inv_dyn=dataclasses.replace(InvDynConfig(), coef=getattr(ns, "inv_dyn_coef", 0.0)))
 
 
 def bc_aux_from_args(ns: argparse.Namespace) -> BCAuxConfig:
@@ -290,6 +307,7 @@ def run_settings_line(run: RunConfig, device_choice: str) -> str:
             f"start_stage={run.start_stage} lr={run.ppo.lr} clip={run.ppo.clip} epochs={run.ppo.epochs} "
             f"lr_warmup_updates={run.ppo.lr_warmup_updates} kl_stop={run.ppo.kl_stop} "
             f"bc_coef={run.bc_aux.coef if run.bc_aux.enabled else 0} "
+            f"rnd_int_coef={run.rnd.int_coef} rnd_ext_coef={run.rnd.ext_coef} inv_dyn_coef={run.inv_dyn.coef} "
             f"device={run.device} (--device {device_choice}) seed={run.seed} "
             f"layout={run.num_workers}x{run.envs_per_worker}")
 
@@ -310,7 +328,8 @@ def write_run_start(run_dir: str, run: RunConfig, ns: argparse.Namespace, argv: 
            "lr": run.ppo.lr, "clip": run.ppo.clip, "ppo_epochs": run.ppo.epochs,
            "lr_warmup_updates": run.ppo.lr_warmup_updates, "kl_stop": run.ppo.kl_stop,
            "checkpoint_every_updates": run.safety.checkpoint_every_updates,
-           "bc_aux": dataclasses.asdict(run.bc_aux)}
+           "bc_aux": dataclasses.asdict(run.bc_aux),
+           "rnd": dataclasses.asdict(run.rnd), "inv_dyn": dataclasses.asdict(run.inv_dyn)}
     with open(os.path.join(run_dir, RUN_START_NAME), "a", encoding="utf-8") as f:
         f.write(json.dumps(rec) + "\n")
 
@@ -384,8 +403,9 @@ def main(argv: list[str] | None = None) -> int:
         try:
             check_shaping_matches(info, ns.shaping, info["loaded_from"])
             check_maps_matches(info["maps"], run.maps, info["loaded_from"])
-            from .checkpoint import check_bc_matches
+            from .checkpoint import check_bc_matches, check_switches_match, switches_requested
             check_bc_matches(info["bc_aux"], run.bc_aux, info["loaded_from"])
+            check_switches_match(info["switches"], switches_requested(run), info["loaded_from"])
             if scheduler is not None and info["curriculum_json"] is None:
                 raise CheckpointMismatch(f"checkpoint {info['loaded_from']!r} is a generated-maps run "
                                          f"without curriculum state; refusing to restart the curriculum")
@@ -462,6 +482,10 @@ def main(argv: list[str] | None = None) -> int:
                 return EXIT_INIT_REFUSED
             print(f"fresh run initialised from {init_src.loaded_from}; value warm-up "
                   f"{run.ppo.value_warmup_updates} updates")
+            if run.rnd.enabled or run.inv_dyn.enabled:
+                print(f"init-from: model weights only; RND networks and normalisers "
+                      f"({'on' if run.rnd.enabled else 'off'}) and the inverse-dynamics head "
+                      f"({'on' if run.inv_dyn.enabled else 'off'}) start fresh, nothing copied from the file")
         if ns.resume:
             blob = resume(trainer, ns.resume, signature)
             print(f"resumed from {blob['loaded_from']} at update {trainer.update_idx}, session {trainer.session}, "

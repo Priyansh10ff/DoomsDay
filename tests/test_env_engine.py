@@ -112,7 +112,5 @@ def test_no_absolute_value_appears_in_obs(rollout):
     assert not hits, hits[:10]
 
 
-@pytest.mark.skip(reason="needs a custom map with the same local scene at two absolute "
-                         "locations (owned by map-forge, maps/); does not exist yet")
-def test_same_observation_under_map_translation():
-    pass
+# Same observation under map translation: implemented (with a test-built translated
+# corridor WAD) as tests/test_env_egomap.py::test_engine_same_observation_under_map_translation.

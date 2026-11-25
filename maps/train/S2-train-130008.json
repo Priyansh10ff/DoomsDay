@@ -1,0 +1,277 @@
+{
+ "attempt": 4,
+ "batch": 2,
+ "config_file": "maps/gen_config_b2.json",
+ "counts": {
+  "corridors": 7,
+  "doors": 6,
+  "linedefs": 103,
+  "locked_doors": 1,
+  "loops": 0,
+  "monsters": 0,
+  "pickups": 0,
+  "rooms": 8,
+  "sectors": 24,
+  "things": 2
+ },
+ "failed_attempts": [
+  "attempt 0: no side branch for the key off the start->lock path",
+  "attempt 1: no side branch for the key off the start->lock path",
+  "attempt 2: no side branch for the key off the start->lock path",
+  "attempt 3: no side branch for the key off the start->lock path"
+ ],
+ "generator": "doomsday-mapgen",
+ "generator_version": "0.1.1",
+ "graph": {
+  "corridors": [
+   {
+    "a": 0,
+    "b": 1,
+    "door": "normal",
+    "loop": false
+   },
+   {
+    "a": 1,
+    "b": 2,
+    "door": "normal",
+    "loop": false
+   },
+   {
+    "a": 2,
+    "b": 3,
+    "door": "normal",
+    "loop": false
+   },
+   {
+    "a": 3,
+    "b": 4,
+    "door": "normal",
+    "loop": false
+   },
+   {
+    "a": 2,
+    "b": 5,
+    "door": "normal",
+    "loop": false
+   },
+   {
+    "a": 5,
+    "b": 6,
+    "door": "normal",
+    "loop": false
+   },
+   {
+    "a": 6,
+    "b": 7,
+    "door": "red",
+    "loop": false
+   }
+  ],
+  "exit_kind": "switch",
+  "exit_room": 7,
+  "key_room": 4,
+  "lock": 6,
+  "lock_color": "red",
+  "lock_door_sector": 22,
+  "room_sector": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7
+  ],
+  "rooms": [
+   {
+    "h": 8,
+    "w": 12,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "h": 10,
+    "w": 12,
+    "x": -14,
+    "y": -4
+   },
+   {
+    "h": 10,
+    "w": 9,
+    "x": -27,
+    "y": -6
+   },
+   {
+    "h": 8,
+    "w": 6,
+    "x": -28,
+    "y": 6
+   },
+   {
+    "h": 10,
+    "w": 13,
+    "x": -32,
+    "y": 18
+   },
+   {
+    "h": 12,
+    "w": 6,
+    "x": -39,
+    "y": 0
+   },
+   {
+    "h": 11,
+    "w": 9,
+    "x": -53,
+    "y": 1
+   },
+   {
+    "h": 14,
+    "w": 11,
+    "x": -52,
+    "y": -17
+   }
+  ],
+  "start_room": 0
+ },
+ "mods": [],
+ "params": {
+  "alt_theme_prob": 0.2,
+  "chain_bias": 0.5,
+  "corr_heights": [
+   72,
+   96,
+   128
+  ],
+  "corr_len": [
+   1,
+   6
+  ],
+  "corr_width": [
+   2,
+   3
+  ],
+  "door_prob": 0.5,
+  "exit_kinds": [
+   "pad",
+   "switch"
+  ],
+  "floor_steps": [
+   -24,
+   -16,
+   -8,
+   0,
+   0,
+   0,
+   8,
+   16,
+   24
+  ],
+  "key_colors": [
+   "blue",
+   "yellow",
+   "red"
+  ],
+  "keys": true,
+  "layout_tries": 300,
+  "light": [
+   112,
+   240
+  ],
+  "loop_prob": 0.6,
+  "max_attempts": 12,
+  "max_loops": 2,
+  "monster_weights": {
+   "imp": 0.25,
+   "shotgunguy": 0.25,
+   "zombieman": 0.5
+  },
+  "monsters": [
+   0,
+   0
+  ],
+  "pickup_weights": {
+   "clip": 0.3,
+   "greenarmor": 0.05,
+   "healthbonus": 0.1,
+   "medikit": 0.1,
+   "shells": 0.1,
+   "shotgun": 0.1,
+   "stimpack": 0.25
+  },
+  "pickups": [
+   0,
+   0
+  ],
+  "room_heights": [
+   96,
+   128,
+   160,
+   192,
+   256
+  ],
+  "room_size": [
+   6,
+   14
+  ],
+  "rooms": [
+   4,
+   8
+  ],
+  "skull_key_prob": 0.3,
+  "stage_name": "keycard+locked-door"
+ },
+ "seed": 130008,
+ "split": "train",
+ "stage": "S2",
+ "themes": [
+  "tech",
+  "brick",
+  "wood",
+  "cement",
+  "brown",
+  "rock"
+ ],
+ "things": [
+  {
+   "class": "DoomPlayer",
+   "role": "start",
+   "room": 0,
+   "type": 1,
+   "x": 48,
+   "y": 48
+  },
+  {
+   "class": "RedCard",
+   "role": "key",
+   "room": 4,
+   "type": 13,
+   "x": -880,
+   "y": 624
+  }
+ ],
+ "validation": {
+  "engine": {
+   "exit_finished": true,
+   "exit_reward": 1.0,
+   "locked_with_key_ceil": 72.0,
+   "locked_without_key": {
+    "ceil_after": 24.0,
+    "ceil_before": 24.0,
+    "message": "Red key needed for this door."
+   },
+   "objects": {
+    "DoomPlayer": 1,
+    "RedCard": 1
+   },
+   "ok": true,
+   "problems": [],
+   "spawn": [
+    48.0,
+    48.0
+   ]
+  },
+  "static_problems": []
+ }
+}

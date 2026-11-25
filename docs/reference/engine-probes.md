@@ -366,6 +366,11 @@ Probe script: `maps/probes/probe_doors.py` (one engine, TRAIN config with sector
 - **Tolerance used:** lit iff `pred - (2 + 0.05 pred) <= reading <= pred + 1.5` (levels). Over the probe set this lights 7,736 of 8,198 closed-door pairs, and 628 of the 941 beyond 150 units; most of the rest are occluded.
 - **Range limit (derived from geometry, not measured):** the middle band is horizon +-4 rows. Beyond about 820 units (level ~113, eye height 41) floor and ceiling pixels in the band should be nearer than a door, so far doors would not light. The probe pairs reach only about 400 units.
 
+### R5.2b Line sidedness in sector info, and the occlusion gate (2026-11-26, audit 02 F1)
+
+- freedoom2 MAP01: 1,274 unique segments over all `sec.lines`; 705 non-blocking and 57 blocking segments are listed by exactly two sectors (two-sided), 510 blocking and 2 non-blocking by one sector; no sector lists a segment twice. So sidedness = listing count, and a two-sided line's opening = highest floor to lowest ceiling of its two sectors. `is_blocking` also marks impassable two-sided lines (57), which can be seen through, so it is not used for sight.
+- With the gate (`env/door_cue._occluded`), on 998 teacher frames over 7 generated TRAIN maps: lit columns 17,607 -> 17,601, new a subset of old; the 6 removed are a one-sided wall 24-27 units in front of the face (residual -3.3, inside the old tolerance). MAP01 (2,299 random frames): 4,566 -> 4,490, about 31 of the removed likely visible (recess corners, very near blockers, ledges near the band edge). Geometrically visible faces beyond 150 units still show readings at -2 .. -6 (16 / 2,082 generated, 41 / 1,647 MAP01), so the 5% term stays. Details: `reports/runs/2026-11-26-door-cue-occlusion-gate-bench.md`.
+
 ### R5.3 Locked-door message and key pickup in the notifications buffer
 
 - Pressing USE at the blue-locked door of S2-train-102001 without the key (key anchor removed): the notifications buffer holds `Blue key needed for this door.` on **every decision whose USE press acted**, and nothing on the decision after. Box-drawing separator lines (`\x1d\x1e...\x1f`) surround it. So the "needs key" bit is naturally a one-decision pulse.

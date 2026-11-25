@@ -42,12 +42,12 @@ def init_gru_update_bias(cell: nn.GRUCell, cfg: ModelConfig, chunk: int = GRU_UP
 @torch.no_grad()
 def apply_orthogonal_init(model: nn.Module, cfg: ModelConfig, policy_heads: nn.ModuleList,
                           unit_gain_modules: list[nn.Module], gru: nn.GRUCell) -> None:
-    """0007-recipe scheme: hidden Linear/Conv1d orthogonal gain sqrt 2, GRU and the
+    """0007-recipe scheme: hidden Linear/Conv1d/Conv2d orthogonal gain sqrt 2, GRU and the
     value/aux heads gain 1, policy heads policy_head_init_gain; biases 0. Attention
     in-projection weights (not Linear modules) keep torch's default."""
     special = {id(m) for m in [*policy_heads, *unit_gain_modules]}
     for m in model.modules():
-        if isinstance(m, (nn.Linear, nn.Conv1d)) and id(m) not in special:
+        if isinstance(m, (nn.Linear, nn.Conv1d, nn.Conv2d)) and id(m) not in special:
             nn.init.orthogonal_(m.weight, gain=cfg.orthogonal_hidden_gain)
             if m.bias is not None:
                 nn.init.zeros_(m.bias)

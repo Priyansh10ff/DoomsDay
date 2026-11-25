@@ -12,6 +12,7 @@ from agent.distributions import FactorizedCategorical
 from agent.model import A0Agent
 from configs.train_config import AuxConfig, PPOConfig
 
+from .inverse_dynamics import InvDynTerm, inverse_dynamics_loss
 from .rollout import Rollout, select_envs
 from .telemetry_mask import mask_telemetry
 
@@ -31,9 +32,15 @@ class MinibatchResult:
 
 def evaluate_minibatch(model: A0Agent, ro: Rollout, idx: torch.Tensor, adv: torch.Tensor,
                        returns_scaled: torch.Tensor, ppo: PPOConfig, aux: AuxConfig,
-                       policy_loss_scale: float = 1.0) -> MinibatchResult:
+                       policy_loss_scale: float = 1.0, int_returns: torch.Tensor | None = None,
+                       inv_dyn: InvDynTerm | None = None) -> MinibatchResult:
     """`policy_loss_scale` multiplies the policy-gradient and entropy terms (0 during
-    the value warm-up, PPOConfig.value_warmup_updates)."""
+    the value warm-up, PPOConfig.value_warmup_updates).
+
+    `int_returns` (T, N) (RND on; None = off): adds value_coef x the `value_int` loss
+    against these targets (already in normalised units). `inv_dyn` (None = off): adds
+    coef x the inverse-dynamics loss (train/inverse_dynamics.py). With both None the
+    loss is exactly the one without them."""
     obs = {k: select_envs(v, idx) for k, v in ro.obs.items()}
     dropped = select_envs(ro.telemetry_dropped, idx)
     obs_in = mask_telemetry(obs, dropped, model.cfg)
@@ -69,6 +76,16 @@ def evaluate_minibatch(model: A0Agent, ro: Rollout, idx: torch.Tensor, adv: torc
     loss = (policy_loss_scale * (pg_loss - ppo.entropy_coef * entropy) + ppo.value_coef * v_loss
             + aux.keys_weight * keys_loss + aux.damage_weight * damage_loss
             + aux.monsters_weight * monsters_loss)
+    extra_stats: dict[str, float] = {}
+    if int_returns is not None:
+        v_int_loss = masked_mean(0.5 * (out.value_int - select_envs(int_returns, idx)) ** 2, valid)
+        loss = loss + ppo.value_coef * v_int_loss
+        extra_stats["v_int_loss"] = float(v_int_loss.detach())
+    if inv_dyn is not None:
+        inv_loss, inv_stats = inverse_dynamics_loss(model, inv_dyn.head, obs_in, actions,
+                                                    select_envs(ro.episode_start, idx), valid)
+        loss = loss + inv_dyn.coef * inv_loss
+        extra_stats.update(inv_stats)
     with torch.no_grad():
         approx_kl = masked_mean((ratio - 1.0) - log_ratio, valid)
         clipfrac = masked_mean(((ratio - 1.0).abs() > ppo.clip).float(), valid)
@@ -83,6 +100,7 @@ def evaluate_minibatch(model: A0Agent, ro: Rollout, idx: torch.Tensor, adv: torc
     }
     for i in range(ent_heads.shape[-1]):
         stats[f"entropy_head{i}"] = float(masked_mean(ent_heads[..., i].detach(), valid))
+    stats.update(extra_stats)
     return MinibatchResult(loss, stats, ratio.detach(), logp.detach())
 
 
@@ -92,8 +110,12 @@ BCTerm = Callable[[A0Agent], tuple[torch.Tensor, dict[str, float]]]
 def ppo_update(model: A0Agent, optimizer: torch.optim.Optimizer, ro: Rollout, adv: torch.Tensor,
                returns_scaled: torch.Tensor, ppo: PPOConfig, aux: AuxConfig,
                generator: torch.Generator, policy_loss_scale: float = 1.0,
-               bc_term: BCTerm | None = None, bc_coef: float = 0.0) -> dict[str, float]:
-    """`bc_term` (train/bc_aux.py; None = off, the code path is then unchanged) is
+               bc_term: BCTerm | None = None, bc_coef: float = 0.0,
+               int_returns: torch.Tensor | None = None, inv_dyn: InvDynTerm | None = None) -> dict[str, float]:
+    """`int_returns` / `inv_dyn`: see `evaluate_minibatch` (None = off, unchanged path).
+    The inverse-dynamics head has its own optimizer and gradient clip, so the model's
+    optimizer state and `clip_grad_norm_(model.parameters())` are the same as without it.
+    `bc_term` (train/bc_aux.py; None = off, the code path is then unchanged) is
     called once per minibatch step and its loss added x `bc_coef`. `loss` in the stats
     is the PPO loss without it. `ppo.kl_stop` > 0: a minibatch whose approx KL exceeds
     it is not stepped, and the rest of the update is skipped (`kl_stopped`,
@@ -109,7 +131,8 @@ def ppo_update(model: A0Agent, optimizer: torch.optim.Optimizer, ro: Rollout, ad
         perm = torch.randperm(n, generator=generator)
         for mb in range(ppo.num_minibatches):
             idx = perm[mb * per:(mb + 1) * per].to(ro.h0.device)
-            res = evaluate_minibatch(model, ro, idx, adv, returns_scaled, ppo, aux, policy_loss_scale)
+            res = evaluate_minibatch(model, ro, idx, adv, returns_scaled, ppo, aux, policy_loss_scale,
+                                     int_returns=int_returns, inv_dyn=inv_dyn)
             if epoch == 0 and mb == 0:
                 v = select_envs(ro.valid, idx)
                 first_ratio_dev = float((res.ratio - 1.0).abs()[v].max()) if bool(v.any()) else 0.0
@@ -123,9 +146,14 @@ def ppo_update(model: A0Agent, optimizer: torch.optim.Optimizer, ro: Rollout, ad
                 loss = loss + bc_coef * bc_loss_t
                 res.stats.update(bc_stats)
             optimizer.zero_grad(set_to_none=True)
+            if inv_dyn is not None:
+                inv_dyn.optimizer.zero_grad(set_to_none=True)
             loss.backward()
             gnorm = torch.nn.utils.clip_grad_norm_(model.parameters(), ppo.max_grad_norm)
             optimizer.step()
+            if inv_dyn is not None:
+                torch.nn.utils.clip_grad_norm_(inv_dyn.head.parameters(), inv_dyn.max_grad_norm)
+                inv_dyn.optimizer.step()
             res.stats["grad_norm"] = float(gnorm)
             for k, val in res.stats.items():
                 agg[k] = agg.get(k, 0.0) + val

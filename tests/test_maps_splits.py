@@ -123,8 +123,11 @@ def test_loader_and_env_config_agree(sp):
 
 def test_training_bundle_is_train_only(sp):
     path, lumps, stages = L.training_bundle("train-all", sp)
-    train_ids = {e["id"] for _, e in sp.entries("train")}
-    assert set(lumps.values()) == train_ids
+    batch1_ids = {e["id"] for _, e in sp.entries("train") if e.get("batch", 1) == 1}
+    assert set(lumps.values()) == batch1_ids      # train-all: batch 1 only, unchanged
+    if any(b["id"] == "train-all-b2" for b in sp.data["bundles"]):
+        _, lumps2, _ = L.training_bundle("train-all-b2", sp)
+        assert set(lumps2.values()) == {e["id"] for _, e in sp.entries("train")}
     assert set(stages.values()) == {"S0", "S1", "S2", "S3"}
     assert not L.under_heldout_dir(path)
 
@@ -147,10 +150,14 @@ def test_every_map_regenerates_byte_identically_from_its_record(sp, tmp_path):
     them exactly; check that for every entry of every split."""
     from maps import generator as G
     from maps.wad import write_wad
-    cfg = json.load(open(os.path.join(L.REPO_ROOT, "maps", "gen_config.json"), encoding="utf-8"))
+    cfgs = {}
     for split, e in sp.entries():
         assert e["generator_version"] == G.GEN_VERSION
-        lumps, rec = G.generate(cfg, split, e["stage"], e["seed"])
+        cf = e.get("config_file", "maps/gen_config.json")   # batch 2: maps/gen_config_b2.json
+        if cf not in cfgs:
+            cfgs[cf] = json.load(open(os.path.join(L.REPO_ROOT, cf), encoding="utf-8"))
+            assert L.sha256_file(os.path.join(L.REPO_ROOT, cf)) == e["config_sha256"], cf
+        lumps, rec = G.generate(cfgs[cf], split, e["stage"], e["seed"])
         assert rec["attempt"] == e["attempt"]
         p = tmp_path / "r.wad"
         write_wad(str(p), lumps)

@@ -1,0 +1,29 @@
+{
+ "comment": "Cumulative progression for the submission write-up (val split only). Rows run in this order, one engine at a time, same seeds for every row. obs_version must equal the checkpoint's sensor signature (the script refuses a mismatch and sets DOOMSDAY_OBS_VERSION per row in the child process). status 'pending' = not on disk yet; fill in checkpoint and obs_version, then set status 'ready'.",
+ "protocol": {"split": "val", "episodes_per_map": 6, "seed": 11},
+ "out_dir": "reports/eval/2026-11-26-ablation",
+ "reuse_search_dirs": [
+  "reports/eval/2026-11-26-val",
+  "reports/eval/2026-11-25-bc-v1",
+  "reports/eval/2026-11-25-bc-dagger"
+ ],
+ "reuse_caveat": "reused directories were produced before the uncommitted env/ and agent/ edits now in the working tree (git status 2026-11-26); they match the protocol, checkpoint sha256 and val map hashes exactly, but not necessarily the current observation code. Re-run with --no-reuse for a single-code-version table.",
+ "rows": [
+  {"name": "random", "checkpoint": "random", "obs_version": null, "decode": "random", "status": "ready",
+   "note": "uniform random action per head; the floor"},
+  {"name": "ppo-pure-v1", "checkpoint": "reports/runs/20261125-nogit-45275c79/checkpoint.pt", "obs_version": 1, "decode": "sample", "status": "ready",
+   "note": "pure PPO from scratch on generated maps (gen run 1), obs v1"},
+  {"name": "bc-dagger-r1-v1", "checkpoint": "reports/runs/20261125-bc-dagger-r1/bc_model.pt", "obs_version": 1, "decode": "sample", "status": "ready",
+   "note": "imitation of the scripted teacher + DAgger round 1, obs v1"},
+  {"name": "bc-v2-doorcue", "checkpoint": "reports/runs/20261125-bc-v2/bc_model.pt", "obs_version": 2, "decode": "sample", "status": "ready",
+   "note": "+ door cue observation (obs v2)"},
+  {"name": "bc-v2-usew8", "checkpoint": "reports/runs/20261125-bc-v2-usew8/bc_model.pt", "obs_version": 2, "decode": "sample", "status": "ready",
+   "note": "+ USE-head loss weighting x8, obs v2"},
+  {"name": "bcppo-v2-u382", "checkpoint": "reports/runs/20261126-night2-v2-bcppo/checkpoints/checkpoint-u0000382.pt", "obs_version": 2, "decode": "sample", "status": "ready",
+   "note": "+ PPO fine-tune with imitation loss (night 2), last numbered checkpoint u382; not yet chosen by --select"},
+  {"name": "v3-map-model", "checkpoint": null, "obs_version": 3, "decode": "sample", "status": "pending",
+   "note": "pending: obs v3 (ego map) model not on disk. reports/runs/20261126-bc-v3-usew8/bc_model.pt exists but its signature reads obs_version 2, so it is not this row"},
+  {"name": "final", "checkpoint": null, "obs_version": null, "decode": "sample", "status": "pending",
+   "note": "pending: frozen submission checkpoint"}
+ ]
+}

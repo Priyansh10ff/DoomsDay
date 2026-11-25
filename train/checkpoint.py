@@ -33,6 +33,9 @@
   (`trainer.model`, configs, obs spec, sensor signature), no optimizer or RNG state,
   and a `bc_json` record (`WEIGHTS_ONLY_KEY`). `resume` and `checkpoint_resume_info`
   refuse them: such a file starts a fresh PPO run through `--init-from` only.
+- RND (`--rnd-int-coef`) and the inverse-dynamics loss (`--inv-dyn-coef`): their
+  state rides in the trainer state (`rnd`, `inv_dyn`); `resume` refuses turning
+  either switch on or off (`check_switches_match`). Older checkpoints read as off.
 """
 from __future__ import annotations
 
@@ -207,6 +210,31 @@ def check_bc_matches(stored: BCAuxConfig, requested: BCAuxConfig, src: str = "")
             f"asks for {b}. Resuming does not change --bc-data / --bc-coef settings.")
 
 
+def switches_of(blob: dict[str, Any]) -> dict[str, bool]:
+    """RND and inverse-dynamics switches a checkpoint was trained with (a checkpoint
+    written before they existed reads as both off)."""
+    rc = json.loads(blob["run_config_json"])
+    rnd = rc.get("rnd") or {}
+    inv = rc.get("inv_dyn") or {}
+    return {"rnd": float(rnd.get("int_coef", 0.0)) > 0.0, "inv_dyn": float(inv.get("coef", 0.0)) > 0.0}
+
+
+def switches_requested(run: Any) -> dict[str, bool]:
+    return {"rnd": bool(run.rnd.enabled), "inv_dyn": bool(run.inv_dyn.enabled)}
+
+
+def check_switches_match(stored: dict[str, bool], requested: dict[str, bool], src: str = "") -> None:
+    """Refuse a resume that turns RND (--rnd-int-coef) or the inverse-dynamics loss
+    (--inv-dyn-coef) on or off: their networks, normalisers and optimizer state are
+    part of the run state. A coefficient change with the switch unchanged is allowed."""
+    for name, flag in (("rnd", "--rnd-int-coef"), ("inv_dyn", "--inv-dyn-coef")):
+        if stored[name] != requested[name]:
+            raise CheckpointMismatch(
+                f"refusing to resume: checkpoint {src!r} was trained with {name} "
+                f"{'on' if stored[name] else 'off'}, this run asks for {'on' if requested[name] else 'off'} "
+                f"({flag}). Start a fresh run (e.g. --init-from) to change it.")
+
+
 def checkpoint_resume_info(path: str) -> dict[str, Any]:
     """Read before the vec env is built: decisions done, the file read, the shaping
     record (preset and the env count of the per-env decision clock), the map source
@@ -215,7 +243,7 @@ def checkpoint_resume_info(path: str) -> dict[str, Any]:
     refuse_weights_only(blob)
     return {"decisions_done": int(blob["trainer"]["decisions_done"]), "loaded_from": blob[LOADED_FROM_KEY],
             **shaping_record(blob), "maps": maps_of(blob), "curriculum_json": blob.get(CURRICULUM_KEY),
-            "bc_aux": bc_aux_of(blob)}
+            "bc_aux": bc_aux_of(blob), "switches": switches_of(blob)}
 
 
 def checkpoint_decisions_done(path: str) -> int:
@@ -238,6 +266,7 @@ def resume(trainer: Trainer, path: str, sensor_signature: tuple) -> dict[str, An
     check_shaping_matches(shaping_record(blob), trainer.run.shaping, blob[LOADED_FROM_KEY])
     check_maps_matches(maps_of(blob), trainer.run.maps, blob[LOADED_FROM_KEY])
     check_bc_matches(bc_aux_of(blob), trainer.run.bc_aux, blob[LOADED_FROM_KEY])
+    check_switches_match(switches_of(blob), switches_requested(trainer.run), blob[LOADED_FROM_KEY])
     trainer.load_state_dict(blob["trainer"])
     blob["session_env_seed"] = trainer.resume_session()
     return blob

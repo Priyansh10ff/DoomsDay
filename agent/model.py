@@ -16,8 +16,8 @@ from torch import nn
 from configs.model_config import ModelConfig
 
 from .init_schemes import apply_orthogonal_init, init_gru_update_bias
-from .encoders import EntitySetEncoder, PrevActionEncoder, RayEncoder, SelfEncoder
-from .obs_spec import ObsSpec
+from .encoders import EgoMapEncoder, EntitySetEncoder, PrevActionEncoder, RayEncoder, SelfEncoder
+from .obs_spec import EGOMAP_KEY, ObsSpec
 
 TensorDict = dict[str, torch.Tensor]
 
@@ -42,6 +42,12 @@ class A0Agent(nn.Module):
         self.prev_action = PrevActionEncoder(spec.head_sizes, cfg)
         fused_in = (self.rays.out_dim + self.entities.out_dim + self.self_enc.out_dim
                     + self.prev_action.out_dim + spec.modality_dim)
+        # Observation v3 only: built ONLY when the spec has an egomap, so a v1/v2 spec
+        # builds exactly the earlier module list (and draws the same init RNG).
+        self.egomap: EgoMapEncoder | None = None
+        if spec.egomap is not None:
+            self.egomap = EgoMapEncoder(spec.egomap, cfg)
+            fused_in += self.egomap.out_dim
         self.fusion = nn.Sequential(nn.Linear(fused_in, cfg.fusion_dim), nn.ReLU())
         self.core = nn.GRUCell(cfg.fusion_dim, cfg.core_hidden)
         h = cfg.core_hidden
@@ -70,13 +76,17 @@ class A0Agent(nn.Module):
     def encode(self, obs: TensorDict) -> torch.Tensor:
         """obs tensors with one leading batch dim -> (B, fusion_dim)."""
         b = obs["self"].shape[0]
-        z = torch.cat([
+        parts = [
             self.rays(obs["rays"]),
             self.entities(obs["entities"], obs["entity_type"], obs["entity_mask"]),
             self.self_enc(obs["self"]),
             self.prev_action(obs["prev_action"]),
             obs["modality"].float(),
-        ], dim=-1)
+        ]
+        if self.egomap is not None:   # appended last: the v2 part of the fusion input is unchanged
+            assert EGOMAP_KEY in obs, f"this model's spec has {EGOMAP_KEY!r} but the observation lacks it"
+            parts.append(self.egomap(obs[EGOMAP_KEY]))
+        z = torch.cat(parts, dim=-1)
         x = self.fusion(z)
         assert x.shape == (b, self.cfg.fusion_dim), f"fused expected (B, {self.cfg.fusion_dim})"
         return x

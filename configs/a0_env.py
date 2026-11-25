@@ -12,22 +12,26 @@ import os
 A0_SCREEN_ENABLED: bool = False
 
 # Observation contract used by training, BC/teacher datasets and evaluation (the ONE switch).
-#   2 (default): rays (4, 80) = 3 depth bands + line-of-sight door channel; self (34,) =
+#   3 (default): v2 + `egomap` (5, 32, 32) uint8, the ego-centric occupancy map (spatial
+#                memory across rooms; env/egomap.py).
+#   2: rays (4, 80) = 3 depth bands + line-of-sight door channel; self (34,) =
 #                v1 + keys held (b, y, r) + needs key (b, y, r). Engine sector info on,
 #                for the door channel only (env/door_cue.py).
 #   1: the old contract exactly: rays (3, 80), self (28,), sector info off.
-# Override with the environment variable DOOMSDAY_OBS_VERSION=1 (read on every call, so a
-# process and the workers it spawns follow the value set when they build their configs;
-# the version then travels inside EnvConfig, env/ never reads the variable).
-OBS_VERSION: int = 2
+# Override with the environment variable DOOMSDAY_OBS_VERSION=1 or 2 (read on every call,
+# so a process and the workers it spawns follow the value set when they build their
+# configs; the version then travels inside EnvConfig, env/ never reads the variable).
+OBS_VERSION: int = 3
 OBS_VERSION_ENV_VAR = "DOOMSDAY_OBS_VERSION"
+OBS_VERSION_CHOICES = (1, 2, 3)
 
 
 def obs_version() -> int:
     raw = os.environ.get(OBS_VERSION_ENV_VAR, "").strip()
     v = int(raw) if raw else OBS_VERSION
-    if v not in (1, 2):
-        raise ValueError(f"{OBS_VERSION_ENV_VAR}={raw!r}: observation version must be 1 or 2")
+    if v not in OBS_VERSION_CHOICES:
+        raise ValueError(f"{OBS_VERSION_ENV_VAR}={raw!r}: observation version must be one of "
+                         f"{OBS_VERSION_CHOICES}")
     return v
 
 

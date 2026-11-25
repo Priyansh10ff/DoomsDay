@@ -60,8 +60,20 @@ def main(argv=None) -> int:
     ap.add_argument("--no-engine", action="store_true", help="skip the engine load check")
     ap.add_argument("--max-seeds", type=int, default=60, help="seeds tried per stage/split cap")
     ap.add_argument("--report", default=None)
+    ap.add_argument("--discard-batch2", action="store_true",
+                    help="allow rebuilding even though splits.json lists batch-2 maps (they "
+                         "would be deleted from maps/train and from splits.json)")
     a = ap.parse_args(argv)
-    counts = dict(zip(("train", "val", "heldout"), (int(x) for x in a.counts.split(","))))
+    if os.path.isfile(os.path.join(REPO_ROOT, "maps", "splits.json")) and not a.discard_batch2:
+        with open(os.path.join(REPO_ROOT, "maps", "splits.json"), encoding="utf-8") as f:
+            cur = json.load(f)
+        if any(e.get("batch", 1) != 1 for e in cur["splits"]["train"]) or \
+                any(b["id"] != "train-all" for b in cur.get("bundles", [])):
+            print("maps.build would delete the batch-2 train maps and bundles listed in "
+                  "splits.json. To rebuild missing (git-ignored) held-out WADs use "
+                  "`python -m maps.build_batch2 regen`; pass --discard-batch2 to override.")
+            return 2
+    counts =dict(zip(("train", "val", "heldout"), (int(x) for x in a.counts.split(","))))
     cfg = json.load(open(CFG_PATH, encoding="utf-8"))
     from env.config import iwad_path
     from maps.qa.validate import check_record, engine_check, load_map

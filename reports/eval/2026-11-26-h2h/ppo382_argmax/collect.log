@@ -1,0 +1,150 @@
+[collect] 1/120 episodes, success 1/1, 739 decisions, 12s, avail 2.8 GiB
+[collect] 13/120 episodes, success 7/13, 8738 decisions, 42s, avail 3.4 GiB
+[collect] 26/120 episodes, success 14/26, 16777 decisions, 73s, avail 3.3 GiB
+[collect] 50/120 episodes, success 33/50, 27689 decisions, 103s, avail 3.3 GiB
+[collect] 62/120 episodes, success 37/62, 37870 decisions, 134s, avail 3.3 GiB
+[collect] available 2.22 GiB < 2.5 GiB: stopping worker 1 (1 left)
+[collect] 77/120 episodes, success 45/77, 47102 decisions, 165s, avail 2.2 GiB
+[collect] 84/120 episodes, success 48/84, 52309 decisions, 195s, avail 3.0 GiB
+[collect] 97/120 episodes, success 58/97, 58321 decisions, 226s, avail 4.1 GiB
+[collect] 107/120 episodes, success 65/107, 63417 decisions, 258s, avail 4.1 GiB
+[collect] 115/120 episodes, success 70/115, 68536 decisions, 289s, avail 4.1 GiB
+{
+ "env_config": "train_generated",
+ "bundle": "maps\\bundles\\train-all.wad",
+ "jobs": 120,
+ "episodes_finished": 120,
+ "wall_s": 314.2,
+ "errors": [],
+ "stopped_low_memory": false,
+ "worker_reductions": 1,
+ "complete": true,
+ "min_available_gib": 2.16,
+ "by_stage_noise": {
+  "S0@noise0.0": {
+   "episodes": 40,
+   "success": 20,
+   "success_rate": 0.5,
+   "decisions_all": 26498,
+   "mean_length_success": 274.9,
+   "saved": 0,
+   "decisions_saved": 0,
+   "use_label_share": 0.0006,
+   "attack_label_share": 0.0,
+   "attack_labels": 0,
+   "combat_decisions": 0,
+   "kills": 0,
+   "deaths": 0,
+   "timeouts": 20,
+   "damage_taken": 0.0,
+   "monsters_seen": 0,
+   "use_edges_exec": 914,
+   "press_open_target": 0,
+   "press_into_moving": 0,
+   "door_presses": 0,
+   "switch_presses": 4,
+   "ineffective_presses": 0,
+   "repress_after_close": 0,
+   "reversals_label": 0,
+   "reversals_other": 0,
+   "max_presses_per_closed_spell": 0,
+   "pressable_now": 16,
+   "pressable_but_use_held": 0,
+   "closed_door_ahead_far": 0,
+   "open_door_ahead": 0,
+   "near_closed_target_door": 0
+  },
+  "S1@noise0.0": {
+   "episodes": 40,
+   "success": 30,
+   "success_rate": 0.75,
+   "decisions_all": 20270,
+   "mean_length_success": 325.7,
+   "saved": 0,
+   "decisions_saved": 0,
+   "use_label_share": 0.0378,
+   "attack_label_share": 0.0,
+   "attack_labels": 0,
+   "combat_decisions": 0,
+   "kills": 0,
+   "deaths": 0,
+   "timeouts": 10,
+   "damage_taken": 0.0,
+   "monsters_seen": 0,
+   "use_edges_exec": 818,
+   "press_open_target": 66,
+   "press_into_moving": 0,
+   "door_presses": 272,
+   "switch_presses": 6,
+   "ineffective_presses": 0,
+   "repress_after_close": 178,
+   "reversals_label": 0,
+   "reversals_other": 16,
+   "max_presses_per_closed_spell": 1,
+   "pressable_now": 768,
+   "pressable_but_use_held": 2,
+   "closed_door_ahead_far": 832,
+   "open_door_ahead": 2456,
+   "near_closed_target_door": 628
+  },
+  "S2@noise0.0": {
+   "episodes": 40,
+   "success": 21,
+   "success_rate": 0.525,
+   "decisions_all": 26169,
+   "mean_length_success": 296.1,
+   "saved": 0,
+   "decisions_saved": 0,
+   "use_label_share": 0.0285,
+   "attack_label_share": 0.0,
+   "attack_labels": 0,
+   "combat_decisions": 0,
+   "kills": 0,
+   "deaths": 0,
+   "timeouts": 19,
+   "damage_taken": 0.0,
+   "monsters_seen": 0,
+   "use_edges_exec": 995,
+   "press_open_target": 127,
+   "press_into_moving": 0,
+   "door_presses": 285,
+   "switch_presses": 9,
+   "ineffective_presses": 0,
+   "repress_after_close": 178,
+   "reversals_label": 0,
+   "reversals_other": 17,
+   "max_presses_per_closed_spell": 1,
+   "pressable_now": 745,
+   "pressable_but_use_held": 0,
+   "closed_door_ahead_far": 1608,
+   "open_door_ahead": 2498,
+   "near_closed_target_door": 2289
+  }
+ },
+ "decisions_saved": 0,
+ "episodes_saved": 0,
+ "dagger": {
+  "student": "D:\\DoomsDay\\reports\\runs\\20261126-night2-v2-bcppo\\checkpoints\\checkpoint-u0000382.pt",
+  "beta": 0.0,
+  "max_steps": 0,
+  "student_argmax": true,
+  "success_by_stage": {
+   "S0": [
+    20,
+    40
+   ],
+   "S1": [
+    30,
+    40
+   ],
+   "S2": [
+    21,
+    40
+   ]
+  },
+  "unstick_label_share": 0.001,
+  "student_decision_share": 1.0,
+  "agree_all": 0.1781,
+  "capped": 0
+ }
+}

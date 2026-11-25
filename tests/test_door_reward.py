@@ -60,7 +60,9 @@ def walk(d: DoorSpec, frm: float, to: float, step: float = 16.0) -> list[tuple[f
 # ------------------------------------------------------------------ geometry
 def test_door_count_matches_generator_record_on_every_train_map() -> None:
     paths = sorted(glob.glob(os.path.join(ROOT, "maps", "train", "*.wad")))
-    assert len(paths) == 80
+    # Every TRAIN map listed in maps/splits.json (batch 1: 80, batch 2 adds 700).
+    from maps.loader import load_splits
+    assert len(paths) == len(list(load_splits().entries("train")))
     for p in paths:
         c = json.load(open(p[:-4] + ".json", encoding="utf-8"))["counts"]
         ds = door_specs(load_map(p))

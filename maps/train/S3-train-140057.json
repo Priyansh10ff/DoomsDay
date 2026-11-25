@@ -1,0 +1,303 @@
+{
+ "attempt": 1,
+ "batch": 2,
+ "config_file": "maps/gen_config_b2.json",
+ "counts": {
+  "corridors": 4,
+  "doors": 2,
+  "linedefs": 61,
+  "locked_doors": 1,
+  "loops": 0,
+  "monsters": 5,
+  "pickups": 3,
+  "rooms": 5,
+  "sectors": 14,
+  "things": 10
+ },
+ "failed_attempts": [
+  "attempt 0: no side branch for the key off the start->lock path"
+ ],
+ "generator": "doomsday-mapgen",
+ "generator_version": "0.1.1",
+ "graph": {
+  "corridors": [
+   {
+    "a": 0,
+    "b": 1,
+    "door": "normal",
+    "loop": false
+   },
+   {
+    "a": 0,
+    "b": 2,
+    "door": "normal",
+    "loop": false
+   },
+   {
+    "a": 2,
+    "b": 3,
+    "door": null,
+    "loop": false
+   },
+   {
+    "a": 3,
+    "b": 4,
+    "door": "blue",
+    "loop": false
+   }
+  ],
+  "exit_kind": "switch",
+  "exit_room": 4,
+  "key_room": 1,
+  "lock": 3,
+  "lock_color": "blue",
+  "lock_door_sector": 13,
+  "room_sector": [
+   0,
+   1,
+   2,
+   3,
+   4
+  ],
+  "rooms": [
+   {
+    "h": 13,
+    "w": 13,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "h": 7,
+    "w": 13,
+    "x": -19,
+    "y": 5
+   },
+   {
+    "h": 14,
+    "w": 13,
+    "x": -2,
+    "y": 18
+   },
+   {
+    "h": 8,
+    "w": 11,
+    "x": 15,
+    "y": 19
+   },
+   {
+    "h": 11,
+    "w": 6,
+    "x": 30,
+    "y": 14
+   }
+  ],
+  "start_room": 0
+ },
+ "mods": [],
+ "params": {
+  "alt_theme_prob": 0.2,
+  "chain_bias": 0.5,
+  "corr_heights": [
+   72,
+   96,
+   128
+  ],
+  "corr_len": [
+   1,
+   6
+  ],
+  "corr_width": [
+   2,
+   3
+  ],
+  "door_prob": 0.5,
+  "exit_kinds": [
+   "pad",
+   "switch"
+  ],
+  "floor_steps": [
+   -24,
+   -16,
+   -8,
+   0,
+   0,
+   0,
+   8,
+   16,
+   24
+  ],
+  "key_colors": [
+   "blue",
+   "yellow",
+   "red"
+  ],
+  "keys": true,
+  "layout_tries": 300,
+  "light": [
+   112,
+   240
+  ],
+  "loop_prob": 0.6,
+  "max_attempts": 12,
+  "max_loops": 2,
+  "monster_weights": {
+   "imp": 0.25,
+   "shotgunguy": 0.25,
+   "zombieman": 0.5
+  },
+  "monsters": [
+   2,
+   5
+  ],
+  "pickup_weights": {
+   "clip": 0.3,
+   "greenarmor": 0.05,
+   "healthbonus": 0.1,
+   "medikit": 0.1,
+   "shells": 0.1,
+   "shotgun": 0.1,
+   "stimpack": 0.25
+  },
+  "pickups": [
+   2,
+   5
+  ],
+  "room_heights": [
+   96,
+   128,
+   160,
+   192,
+   256
+  ],
+  "room_size": [
+   6,
+   14
+  ],
+  "rooms": [
+   4,
+   8
+  ],
+  "skull_key_prob": 0.3,
+  "stage_name": "full"
+ },
+ "seed": 140057,
+ "split": "train",
+ "stage": "S3",
+ "themes": [
+  "tech",
+  "brick",
+  "wood",
+  "cement",
+  "brown",
+  "rock"
+ ],
+ "things": [
+  {
+   "class": "DoomPlayer",
+   "role": "start",
+   "room": 0,
+   "type": 1,
+   "x": 48,
+   "y": 80
+  },
+  {
+   "class": "BlueSkull",
+   "role": "key",
+   "room": 1,
+   "type": 40,
+   "x": -240,
+   "y": 272
+  },
+  {
+   "class": "Zombieman",
+   "role": "monster",
+   "room": 4,
+   "type": 3004,
+   "x": 1008,
+   "y": 560
+  },
+  {
+   "class": "Zombieman",
+   "role": "monster",
+   "room": 3,
+   "type": 3004,
+   "x": 752,
+   "y": 656
+  },
+  {
+   "class": "Zombieman",
+   "role": "monster",
+   "room": 2,
+   "type": 3004,
+   "x": 272,
+   "y": 656
+  },
+  {
+   "class": "DoomImp",
+   "role": "monster",
+   "room": 3,
+   "type": 3001,
+   "x": 592,
+   "y": 656
+  },
+  {
+   "class": "DoomImp",
+   "role": "monster",
+   "room": 4,
+   "type": 3001,
+   "x": 1072,
+   "y": 528
+  },
+  {
+   "class": "Clip",
+   "role": "pickup",
+   "room": 2,
+   "type": 2007,
+   "x": 80,
+   "y": 880
+  },
+  {
+   "class": "Clip",
+   "role": "pickup",
+   "room": 1,
+   "type": 2007,
+   "x": -464,
+   "y": 272
+  },
+  {
+   "class": "GreenArmor",
+   "role": "pickup",
+   "room": 0,
+   "type": 2018,
+   "x": 272,
+   "y": 144
+  }
+ ],
+ "validation": {
+  "engine": {
+   "exit_finished": true,
+   "exit_reward": 1.0,
+   "locked_with_key_ceil": 48.0,
+   "locked_without_key": {
+    "ceil_after": 0.0,
+    "ceil_before": 0.0,
+    "message": "Blue key needed for this door."
+   },
+   "objects": {
+    "BlueSkull": 1,
+    "Clip": 2,
+    "DoomImp": 2,
+    "DoomPlayer": 1,
+    "GreenArmor": 1,
+    "Zombieman": 3
+   },
+   "ok": true,
+   "problems": [],
+   "spawn": [
+    48.0,
+    80.0
+   ]
+  },
+  "static_problems": []
+ }
+}

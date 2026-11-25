@@ -1,0 +1,329 @@
+{
+ "attempt": 0,
+ "batch": 2,
+ "config_file": "maps/gen_config_b2.json",
+ "counts": {
+  "corridors": 6,
+  "doors": 1,
+  "linedefs": 74,
+  "locked_doors": 1,
+  "loops": 0,
+  "monsters": 5,
+  "pickups": 3,
+  "rooms": 7,
+  "sectors": 16,
+  "things": 10
+ },
+ "failed_attempts": [],
+ "generator": "doomsday-mapgen",
+ "generator_version": "0.1.1",
+ "graph": {
+  "corridors": [
+   {
+    "a": 0,
+    "b": 1,
+    "door": null,
+    "loop": false
+   },
+   {
+    "a": 0,
+    "b": 2,
+    "door": null,
+    "loop": false
+   },
+   {
+    "a": 2,
+    "b": 3,
+    "door": null,
+    "loop": false
+   },
+   {
+    "a": 0,
+    "b": 4,
+    "door": "normal",
+    "loop": false
+   },
+   {
+    "a": 4,
+    "b": 5,
+    "door": null,
+    "loop": false
+   },
+   {
+    "a": 5,
+    "b": 6,
+    "door": "blue",
+    "loop": false
+   }
+  ],
+  "exit_kind": "pad",
+  "exit_room": 6,
+  "key_room": 3,
+  "lock": 5,
+  "lock_color": "blue",
+  "lock_door_sector": 13,
+  "room_sector": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "rooms": [
+   {
+    "h": 12,
+    "w": 10,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "h": 7,
+    "w": 11,
+    "x": -14,
+    "y": 3
+   },
+   {
+    "h": 7,
+    "w": 8,
+    "x": 3,
+    "y": -9
+   },
+   {
+    "h": 12,
+    "w": 9,
+    "x": -1,
+    "y": -22
+   },
+   {
+    "h": 12,
+    "w": 7,
+    "x": 1,
+    "y": 16
+   },
+   {
+    "h": 6,
+    "w": 10,
+    "x": 11,
+    "y": 16
+   },
+   {
+    "h": 11,
+    "w": 13,
+    "x": 14,
+    "y": 25
+   }
+  ],
+  "start_room": 0
+ },
+ "mods": [],
+ "params": {
+  "alt_theme_prob": 0.2,
+  "chain_bias": 0.5,
+  "corr_heights": [
+   72,
+   96,
+   128
+  ],
+  "corr_len": [
+   1,
+   6
+  ],
+  "corr_width": [
+   2,
+   3
+  ],
+  "door_prob": 0.5,
+  "exit_kinds": [
+   "pad",
+   "switch"
+  ],
+  "floor_steps": [
+   -24,
+   -16,
+   -8,
+   0,
+   0,
+   0,
+   8,
+   16,
+   24
+  ],
+  "key_colors": [
+   "blue",
+   "yellow",
+   "red"
+  ],
+  "keys": true,
+  "layout_tries": 300,
+  "light": [
+   112,
+   240
+  ],
+  "loop_prob": 0.6,
+  "max_attempts": 12,
+  "max_loops": 2,
+  "monster_weights": {
+   "imp": 0.25,
+   "shotgunguy": 0.25,
+   "zombieman": 0.5
+  },
+  "monsters": [
+   2,
+   5
+  ],
+  "pickup_weights": {
+   "clip": 0.3,
+   "greenarmor": 0.05,
+   "healthbonus": 0.1,
+   "medikit": 0.1,
+   "shells": 0.1,
+   "shotgun": 0.1,
+   "stimpack": 0.25
+  },
+  "pickups": [
+   2,
+   5
+  ],
+  "room_heights": [
+   96,
+   128,
+   160,
+   192,
+   256
+  ],
+  "room_size": [
+   6,
+   14
+  ],
+  "rooms": [
+   4,
+   8
+  ],
+  "skull_key_prob": 0.3,
+  "stage_name": "full"
+ },
+ "seed": 140023,
+ "split": "train",
+ "stage": "S3",
+ "themes": [
+  "tech",
+  "brick",
+  "wood",
+  "cement",
+  "brown",
+  "rock"
+ ],
+ "things": [
+  {
+   "class": "DoomPlayer",
+   "role": "start",
+   "room": 0,
+   "type": 1,
+   "x": 208,
+   "y": 112
+  },
+  {
+   "class": "BlueCard",
+   "role": "key",
+   "room": 3,
+   "type": 5,
+   "x": 16,
+   "y": -432
+  },
+  {
+   "class": "ShotgunGuy",
+   "role": "monster",
+   "room": 6,
+   "type": 9,
+   "x": 720,
+   "y": 912
+  },
+  {
+   "class": "Zombieman",
+   "role": "monster",
+   "room": 3,
+   "type": 3004,
+   "x": 80,
+   "y": -496
+  },
+  {
+   "class": "Zombieman",
+   "role": "monster",
+   "room": 1,
+   "type": 3004,
+   "x": -400,
+   "y": 176
+  },
+  {
+   "class": "DoomImp",
+   "role": "monster",
+   "room": 5,
+   "type": 3001,
+   "x": 496,
+   "y": 624
+  },
+  {
+   "class": "Zombieman",
+   "role": "monster",
+   "room": 6,
+   "type": 3004,
+   "x": 624,
+   "y": 880
+  },
+  {
+   "class": "Medikit",
+   "role": "pickup",
+   "room": 3,
+   "type": 2012,
+   "x": 176,
+   "y": -656
+  },
+  {
+   "class": "Stimpack",
+   "role": "pickup",
+   "room": 2,
+   "type": 2011,
+   "x": 144,
+   "y": -208
+  },
+  {
+   "class": "HealthBonus",
+   "role": "pickup",
+   "room": 3,
+   "type": 2014,
+   "x": 176,
+   "y": -368
+  }
+ ],
+ "validation": {
+  "engine": {
+   "exit_finished": true,
+   "exit_reward": 1.0,
+   "locked_with_key_ceil": 64.0,
+   "locked_without_key": {
+    "ceil_after": 16.0,
+    "ceil_before": 16.0,
+    "message": "Blue key needed for this door."
+   },
+   "objects": {
+    "BlueCard": 1,
+    "DoomImp": 1,
+    "DoomPlayer": 1,
+    "HealthBonus": 1,
+    "Medikit": 1,
+    "ShotgunGuy": 1,
+    "Stimpack": 1,
+    "Zombieman": 3
+   },
+   "ok": true,
+   "problems": [],
+   "spawn": [
+    208.0,
+    112.0
+   ]
+  },
+  "static_problems": []
+ }
+}

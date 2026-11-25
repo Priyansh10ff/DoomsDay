@@ -94,6 +94,34 @@ class SelfEncoder(nn.Module):
         return self.net(x)
 
 
+class EgoMapEncoder(nn.Module):
+    """Small 2D CNN over the ego-centric map (C, H, W) uint8 0/1 -> egomap_dim.
+    The map is agent-centred and heading-aligned (observation v3 contract), so no
+    absolute coordinate reaches the model through it."""
+
+    def __init__(self, shape: tuple[int, int, int], cfg: ModelConfig) -> None:
+        super().__init__()
+        self.shape = tuple(shape)
+        layers: list[nn.Module] = []
+        c_in = shape[0]
+        for c_out in cfg.egomap_conv_channels:
+            layers += [nn.Conv2d(c_in, c_out, cfg.egomap_conv_kernel, cfg.egomap_conv_stride,
+                                 padding=cfg.egomap_conv_padding), nn.ReLU()]
+            c_in = c_out
+        self.conv = nn.Sequential(*layers)
+        with torch.no_grad():
+            flat = self.conv(torch.zeros(1, *shape)).numel()
+        self.out = nn.Sequential(nn.Linear(flat, cfg.egomap_dim), nn.ReLU())
+        self.out_dim = cfg.egomap_dim
+
+    def forward(self, egomap: torch.Tensor) -> torch.Tensor:
+        assert egomap.dim() == 4 and tuple(egomap.shape[1:]) == self.shape, \
+            f"egomap expected (B, {', '.join(map(str, self.shape))}), got {tuple(egomap.shape)}"
+        z = self.out(self.conv(egomap.float()).flatten(1))
+        assert z.shape == (egomap.shape[0], self.out_dim), f"egomap code expected (B, {self.out_dim})"
+        return z
+
+
 class PrevActionEncoder(nn.Module):
     """One embedding table per action head, summed into one vector."""
 

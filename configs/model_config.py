@@ -27,6 +27,15 @@ class ModelConfig:
     # width prev_action_dim, summed (accepted by ADR 0007).
     prev_action_dim: int = 16
 
+    # --- egomap encoder (observation v3 only; built only when the spec has `egomap`):
+    # Conv2d stack over the (C, H, W) uint8 map cast to float -> egomap_dim. With the
+    # 32x32 map, stride 2 and padding 1 the grid goes 32 -> 16 -> 8 -> 4.
+    egomap_conv_channels: tuple[int, ...] = (16, 32, 32)
+    egomap_conv_kernel: int = 3
+    egomap_conv_stride: int = 2
+    egomap_conv_padding: int = 1
+    egomap_dim: int = 128
+
     # --- fusion and core
     fusion_dim: int = 192
     core_hidden: int = 256

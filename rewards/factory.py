@@ -17,6 +17,7 @@ import gymnasium as gym
 
 from configs.reward_config import CoverageConfig, RewardConfig
 
+from .use_doors import v2_terms_on
 from .validate import check_reward_setup
 
 
@@ -38,6 +39,8 @@ class ShapedEnvFactory:
     doors: Any = None
     # train.episode_diag.diag_table of the same bundle: adds the per-episode USE / door
     # diagnostics wrapper (logging only; reads the executed action, never changes it).
+    # Also required, and then given to the reward wrapper, when a USE / door discipline
+    # term is on (rewards/use_doors.py; preset full_level_doors_v2).
     diag: Any = None
 
     def __post_init__(self) -> None:
@@ -59,6 +62,19 @@ class ShapedEnvFactory:
             missing = sorted(set(maps or ()) - {lump for lump, _ in self.doors})
             if missing:
                 raise ValueError(f"door table has no geometry for maps {missing[:5]}")
+        if v2_terms_on(self.reward):
+            if not self.diag:
+                raise ValueError(f"{self.reward.name!r} has USE / door discipline terms: pass a diag "
+                                 f"table (train.episode_diag.diag_table of the training bundle)")
+            table = dict(self.diag)
+            missing = sorted(set(getattr(cfg, "maps", None) or ()) - set(table))
+            if missing:
+                raise ValueError(f"diag table has no record for maps {missing[:5]}")
+            if self.reward.door_on_path_only:
+                unknown = sorted(lump for lump, dm in table.items() if dm.doors and dm.on_path is None)
+                if unknown:
+                    raise ValueError(f"{self.reward.name!r} pays on-path doors only, but the route is "
+                                     f"unknown for maps {unknown[:5]}; refusing to guess")
 
     @property
     def is_engine_instance(self) -> bool:
@@ -67,7 +83,8 @@ class ShapedEnvFactory:
     def __call__(self) -> gym.Env:
         from .wrapper import ShapedRewardEnv
         env = ShapedRewardEnv(self.inner(), self.reward, self.coverage, self.start_decisions,
-                              doors=self.doors if self.reward.door != 0.0 else None)
+                              doors=self.doors if self.reward.door != 0.0 else None,
+                              diag=self.diag if v2_terms_on(self.reward) else None)
         if self.diag is not None:
             from train.episode_diag import EpisodeDiagEnv
             env = EpisodeDiagEnv(env, self.diag, self.reward.door_near_margin)

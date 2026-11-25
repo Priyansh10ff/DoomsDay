@@ -4,7 +4,12 @@ A gymnasium wrapper placed around a training env inside its worker process.
 
   * The observation is returned untouched (the same object the env returned).
     Nothing computed here is written into it.
-  * The action is passed to the env and never read by the reward code.
+  * The action is passed to the env untouched (the same object). The reward code
+    never reads it, with one exception: when a USE / door discipline term is on
+    (RewardConfig.use_miss / door_reversal / door_on_path_only; preset
+    full_level_doors_v2, rewards/use_doors.py) the USE head of the executed action is
+    READ, after the env has stepped, to count press edges. Nothing filters, delays or
+    changes a press.
   * Existing `info` keys are never removed or changed; two keys are added:
       info["shaping"]          every step: per-term raw and paid values, engine,
                                extrinsic, intrinsic (raw, coefficient, scaled), total
@@ -14,6 +19,13 @@ A gymnasium wrapper placed around a training env inside its worker process.
     `raw`/`paid` dicts also carry "door", and the episode sums `paid/door`,
     `raw/door`, `doors_passed` and `doors_in_map`. With it off nothing about doors
     is computed or logged.
+    With a USE / door discipline term on, `raw`/`paid` also carry "use_miss" and
+    "door_reversal", and the episode dict `paid/use_miss`, `raw/use_miss`,
+    `paid/door_reversal`, `raw/door_reversal`, `use_miss_count`, `door_reversal_count`
+    (None = engine door gaps unavailable, nothing was charged), `doors_passed_on_path`
+    and `doors_on_path_in_map`; "door" then counts on-path doors only when
+    door_on_path_only is set (`doors_passed` stays every door passed). The engine door
+    gaps are read from the env's diag_door_gaps() and never added to `info`.
   * The inference / evaluation path builds env.DoomEnv directly and never this
     wrapper, so no reward code runs there.
 """
@@ -22,12 +34,14 @@ from __future__ import annotations
 from typing import Any
 
 import gymnasium as gym
+import numpy as np
 
 from configs.reward_config import TERMS, CoverageConfig, RewardConfig
 from intrinsic.coverage import EpisodicCoverage
 from intrinsic.schedule import LinearAnneal
 
 from .terms import F_ENGINE_REWARD, ExtrinsicReward
+from .use_doors import DOOR_REVERSAL, USE_MISS, UseDoorTerms, v2_terms_on
 
 DOOR = "door"
 
@@ -36,8 +50,10 @@ INFO_STEP, INFO_EPISODE = "shaping", "shaping_episode"
 
 class ShapedRewardEnv(gym.Wrapper):
     def __init__(self, env: gym.Env, reward: RewardConfig, coverage: CoverageConfig,
-                 start_decisions: int = 0, doors: Any = None) -> None:
-        """`doors`: a maps.doors.DoorTable; required when `reward.door` != 0."""
+                 start_decisions: int = 0, doors: Any = None, diag: Any = None) -> None:
+        """`doors`: a maps.doors.DoorTable; required when `reward.door` != 0.
+        `diag`: a train.episode_diag.diag_table; required when a USE / door discipline
+        term is on (rewards.use_doors.v2_terms_on)."""
         super().__init__(env)
         self.reward_cfg, self.coverage_cfg = reward, coverage
         self._ext = ExtrinsicReward(reward)
@@ -48,6 +64,15 @@ class ShapedRewardEnv(gym.Wrapper):
                 raise ValueError(f"{reward.name!r} pays door progress but no door table was given")
             from .doors import DoorProgress
             self._doors = DoorProgress(doors, reward.door, reward.door_near_margin)
+        self._v2 = None
+        if v2_terms_on(reward):
+            if diag is None:
+                raise ValueError(f"{reward.name!r} has USE / door discipline terms but no diag table was given")
+            if reward.door_on_path_only and self._doors is None:
+                raise ValueError(f"{reward.name!r}: door_on_path_only needs the door term (door != 0)")
+            self._v2 = UseDoorTerms(reward, diag)
+        self._on_path: tuple[bool, ...] = ()
+        self._on_path_passed = 0
         self._anneal = LinearAnneal(coverage.coef_start, coverage.coef_end,
                                     coverage.hold_decisions, coverage.anneal_decisions)
         self.decisions = int(start_decisions)  # per-env decisions, the anneal clock
@@ -62,6 +87,13 @@ class ShapedRewardEnv(gym.Wrapper):
             "capped_away": 0.0, "exit_signal_disagreements": 0.0, "length": 0.0}
         if self._doors is not None:
             self._sums |= {f"paid/{DOOR}": 0.0, f"raw/{DOOR}": 0.0}
+        if self._v2 is not None:
+            self._sums |= {f"{a}/{t}": 0.0 for t in (USE_MISS, DOOR_REVERSAL) for a in ("paid", "raw")}
+
+    def _door_gaps(self) -> Any:
+        """PRIVILEGED engine door gaps for the reversal term; None when the env has none."""
+        get = getattr(self.env.unwrapped, "diag_door_gaps", None)
+        return get() if callable(get) else None
 
     def reset(self, **kwargs: Any):
         obs, info = self.env.reset(**kwargs)
@@ -70,6 +102,11 @@ class ShapedRewardEnv(gym.Wrapper):
             self._cov.reset(info)
         if self._doors is not None:
             self._doors.reset(info)
+        if self._v2 is not None:
+            self._v2.reset(info, self._door_gaps())
+            self._on_path, self._on_path_passed = self._v2.on_path_flags, 0
+            if self._doors is not None and self._doors.doors != self._v2.doors:
+                raise ValueError(f"map {info.get('map')!r}: the door table and the diag table disagree")
         self._zero_sums()
         return obs, info
 
@@ -84,9 +121,22 @@ class ShapedRewardEnv(gym.Wrapper):
         extrinsic = engine + sr.total
         raw, paid = dict(sr.raw), dict(sr.paid)
         if self._doors is not None:
+            was = self._doors.passed_flags
             raw[DOOR] = self._doors.step(info)
+            if self._v2 is not None:
+                new_on = sum(1 for a, b, on in zip(was, self._doors.passed_flags, self._on_path)
+                             if b and not a and on)
+                self._on_path_passed += new_on
+                if self.reward_cfg.door_on_path_only:
+                    raw[DOOR] = float(new_on)      # off-path doors pay 0
             paid[DOOR] = self.reward_cfg.door * raw[DOOR]
             extrinsic += paid[DOOR]
+        if self._v2 is not None:
+            use = int(np.asarray(action).reshape(-1)[self._v2.use_head])   # read only
+            v_raw, v_paid = self._v2.step(use, info, self._door_gaps())
+            raw.update(v_raw)
+            paid.update(v_paid)
+            extrinsic += v_paid[USE_MISS] + v_paid[DOOR_REVERSAL]
         coef = self.intrinsic_coef()
         intrinsic_raw = self._cov.step(info) if self._cov is not None else 0.0
         intrinsic = coef * intrinsic_raw
@@ -105,6 +155,10 @@ class ShapedRewardEnv(gym.Wrapper):
         if self._doors is not None:
             s[f"paid/{DOOR}"] += paid[DOOR]
             s[f"raw/{DOOR}"] += raw[DOOR]
+        if self._v2 is not None:
+            for t in (USE_MISS, DOOR_REVERSAL):
+                s[f"paid/{t}"] += paid[t]
+                s[f"raw/{t}"] += raw[t]
         for k, v in (("engine", engine), ("engine_return_unscaled", float(engine_reward)),
                      ("extrinsic", extrinsic), ("intrinsic_raw", intrinsic_raw),
                      ("intrinsic", intrinsic), ("total", total), ("capped_away", sr.capped_away),
@@ -120,5 +174,16 @@ class ShapedRewardEnv(gym.Wrapper):
                 ep["doors_passed"] = self._doors.passed
                 ep["doors_in_map"] = self._doors.n_doors
                 assert ep[f"paid/{DOOR}"] <= self._doors.episode_max + 1e-9, "door pay above its episode cap"
+            if self._v2 is not None:
+                cfg = self.reward_cfg
+                ep["use_miss_count"] = self._v2.use_miss_count
+                ep["door_reversal_count"] = self._v2.door_reversal_count
+                assert -ep[f"paid/{USE_MISS}"] <= cfg.use_miss_cap + 1e-9, "use_miss above its episode cap"
+                assert -ep[f"paid/{DOOR_REVERSAL}"] <= cfg.door_reversal_cap + 1e-9, "door_reversal above its cap"
+                if self._doors is not None:
+                    ep["doors_passed_on_path"] = self._on_path_passed
+                    ep["doors_on_path_in_map"] = sum(self._on_path)
+                    if cfg.door_on_path_only:
+                        assert ep[f"paid/{DOOR}"] <= cfg.door * sum(self._on_path) + 1e-9, "off-path door paid"
             info[INFO_EPISODE] = ep
         return obs, float(total), terminated, truncated, info

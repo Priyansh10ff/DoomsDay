@@ -19,6 +19,7 @@ import json
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from typing import Any
 
 import numpy as np
 import torch
@@ -43,6 +44,12 @@ from .vec_env import VecEnv, stack_obs
 # Parameter-name prefixes that still train during the value warm-up (agent/model.py).
 WARMUP_TRAINABLE_PREFIXES: tuple[str, ...] = ("value_ext.", "value_int.", "aux_keys.", "aux_damage.",
                                               "aux_monsters.")
+
+
+# Seed offsets from the run seed (+1 act, +2 minibatch, +3 telemetry dropout, +4 BC).
+RND_NET_SEED_OFFSET = 5
+RND_SAMPLE_SEED_OFFSET = 6
+INV_DYN_SEED_OFFSET = 7
 
 
 class RolloutAbandoned(RuntimeError):
@@ -155,6 +162,20 @@ class Trainer:
         self.log = EpisodeLog()
         # Imitation auxiliary loss (train/bc_aux.py): data attached by `attach_bc`.
         self.bc_sampler = None
+        # RND bonus and inverse-dynamics head: built only when switched on (off = nothing
+        # built, no RNG drawn, the update is bit-identical). Both live on the learn device.
+        self.rnd = None
+        if run.rnd.enabled:
+            from .rnd import RND, feature_layout
+            shapes = {k: tuple(sp.shape) for k, sp in vec_env.single_observation_space.spaces.items()}
+            self.rnd = RND(feature_layout(shapes, run.rnd), run.rnd, self.n, net_seed=run.seed + RND_NET_SEED_OFFSET,
+                           sample_seed=run.seed + RND_SAMPLE_SEED_OFFSET, device=self.learn_device)
+        self.inv_dyn = None
+        if run.inv_dyn.enabled:
+            from .inverse_dynamics import build_head, make_term
+            head = build_head(model_cfg.fusion_dim, self.spec.head_sizes, run.inv_dyn,
+                              run.seed + INV_DYN_SEED_OFFSET, self.learn_device)
+            self.inv_dyn = make_term(head, run.inv_dyn)
         self.restart_episodes(run.seed)
 
     def attach_bc(self, episodes: list) -> None:
@@ -183,12 +204,31 @@ class Trainer:
         true = to_tensors(obs_np, self.device)
         return true, mask_telemetry(true, self._t(dropped, torch.bool), self.model.cfg)
 
+    def _rnd_next_features(self, st: Any, ended: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        """RND input of each env's NEXT observation o_{t+1}: `st.obs` where the episode
+        goes on, the fresh final observation where it ended; usable flag False (reward
+        0, no statistic) where the final observation is stale (death, exit, stale
+        time-out)."""
+        assert self.rnd is not None
+        feat = self.rnd.features(st.obs)
+        ok = np.ones(self.n, bool)
+        for i in np.flatnonzero(ended):
+            fo = st.final_obs[i]
+            if st.final_obs_fresh[i] and fo is not None:
+                feat[i] = self.rnd.features({k: v[None] for k, v in fo.items()})[0]
+            else:
+                ok[i] = False
+                feat[i] = 0.0
+        return feat, ok
+
     # ------------------------------------------------------------ collection
     @torch.no_grad()
     def collect(self, should_stop: Callable[[], bool] = lambda: False) -> Rollout:
         """Raises RolloutAbandoned if `should_stop()` turns true mid-rollout (weights unchanged)."""
         t_len, aux = self.ppo.rollout_len, self.run.aux
-        ro = allocate(self.spec, t_len, self.n, self.model.cfg.core_hidden, self.model.cfg.n_key_bits, self.device)
+        rnd = self.rnd
+        ro = allocate(self.spec, t_len, self.n, self.model.cfg.core_hidden, self.model.cfg.n_key_bits, self.device,
+                      rnd_dim=rnd.layout.dim if rnd is not None else 0)
         ro.h0.copy_(self.h)
         events = np.zeros((t_len, self.n), np.float32)
         events_ok = np.zeros((t_len, self.n), bool)
@@ -213,6 +253,8 @@ class Trainer:
             ro.actions[t] = action
             ro.logp[t] = dist.log_prob(action)
             ro.values[t] = out.value_ext * scale
+            if rnd is not None:
+                ro.values_int[t] = out.value_int
             keys, keys_ok = AL.keys_from_infos(self.infos)
             ro.keys[t], ro.keys_valid[t] = self._t(keys), self._t(keys_ok, torch.bool)
             ro.monsters[t] = self._t(AL.visible_monsters(self.obs["entity_type"], self.obs["entity_mask"],
@@ -233,6 +275,9 @@ class Trainer:
                 bi = torch.as_tensor(boot, device=self.device)
                 fout, _ = self.model.step(fin, h_new.index_select(0, bi), torch.zeros(boot.size, device=self.device))
                 ro.bootstrap_value[t, bi] = fout.value_ext * scale
+            if rnd is not None:
+                feat, ok = self._rnd_next_features(st, ended)
+                ro.rnd_feat[t], ro.rnd_ok[t] = self._t(feat), self._t(ok, torch.bool)
             final_self = [None if fo is None else fo["self"] for fo in st.final_obs]
             events[t], events_ok[t] = AL.damage_events(st.obs["self"], ended, final_self, st.final_obs_fresh,
                                                       st.final_infos, aux.self_damage_index)
@@ -271,6 +316,8 @@ class Trainer:
         _, inp = self._policy_input(self.obs, self.dropped)
         last, _ = self.model.step(inp, self.h, self._t(self.episode_start))
         ro.last_value.copy_(last.value_ext * scale)
+        if rnd is not None:
+            ro.last_value_int.copy_(last.value_int)
         self.last_stale_timeouts = stale_count
         self.stale_timeouts_total += stale_count
         self.last_action_shares = action_shares(ro.actions, self.spec.head_sizes)
@@ -287,6 +334,20 @@ class Trainer:
     def advantages(self, ro: Rollout) -> tuple[torch.Tensor, torch.Tensor]:
         return compute_gae(ro.rewards, ro.values, ro.last_value, ro.terminated, ro.truncated,
                            ro.bootstrap_value, ro.valid, self.ppo.gamma, self.ppo.gae_lambda)
+
+    def _rnd_advantages(self, ro: Rollout, adv_ext: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, dict[str, float]]:
+        """Intrinsic rewards (normalised) -> NON-episodic GAE with `value_int` (no
+        termination or truncation cut; a dropped stale step still gets advantage 0) ->
+        combined advantage ext_coef x A_ext + int_coef x A_int. Returns (advantage,
+        intrinsic value targets, statistics)."""
+        assert self.rnd is not None
+        cfg = self.run.rnd
+        r_int, stats = self.rnd.intrinsic_rewards(ro.rnd_feat, ro.rnd_ok)
+        r_int = r_int.to(ro.values_int.device)
+        never = torch.zeros_like(ro.valid)
+        adv_int, ret_int = compute_gae(r_int, ro.values_int, ro.last_value_int, never, never,
+                                       torch.zeros_like(ro.values_int), ro.valid, cfg.gamma_int, cfg.gae_lambda_int)
+        return cfg.ext_coef * adv_ext + cfg.int_coef * adv_int, ret_int, stats
 
     def _set_lr(self) -> None:
         """Constant unless a final fixed-length decay is configured, defined over decisions
@@ -344,6 +405,9 @@ class Trainer:
         adv, ret = self.advantages(ro)
         self.scale.update(ret[ro.valid])
         ret_scaled = ret / self.scale.scale
+        adv_used, ret_int, rnd_stats = adv, None, {}
+        if self.rnd is not None:
+            adv_used, ret_int, rnd_stats = self._rnd_advantages(ro, adv)
         self._set_lr()
         warm = self.in_value_warmup
         bc_coef, bc_fn = 0.0, None
@@ -357,12 +421,20 @@ class Trainer:
         if warm:
             self._freeze_all_but_value_and_aux(True)
         try:
-            stats = ppo_update(self.learner, self.optimizer, ro, adv, ret_scaled, self.ppo, self.run.aux,
+            stats = ppo_update(self.learner, self.optimizer, ro, adv_used, ret_scaled, self.ppo, self.run.aux,
                                self.mb_gen, policy_loss_scale=0.0 if warm else 1.0,
-                               bc_term=bc_fn, bc_coef=bc_coef)
+                               bc_term=bc_fn, bc_coef=bc_coef, int_returns=ret_int, inv_dyn=self.inv_dyn)
         finally:
             if warm:
                 self._freeze_all_but_value_and_aux(False)
+        if self.rnd is not None:
+            stats.update(rnd_stats)
+            stats.update(self.rnd.train_predictor(ro.rnd_feat, ro.rnd_ok))
+            with torch.no_grad():
+                vi, ri = ro.values_int[ro.valid], ret_int[ro.valid]
+                var_ri = float(ri.var()) if ri.numel() > 1 else 0.0
+                stats["value_int_explained_variance"] = (1.0 - float((ri - vi).var()) / var_ri
+                                                         if var_ri > 0 else float("nan"))
         if self.run.bc_aux.enabled:
             stats["bc_coef"] = bc_coef
         stats["value_warmup_active"] = 1.0 if warm else 0.0
@@ -418,6 +490,11 @@ class Trainer:
         }
         if self.bc_sampler is not None:
             d["bc_gen"] = self.bc_sampler.gen.get_state()
+        if self.rnd is not None:
+            d["rnd"] = self.rnd.state_dict()
+        if self.inv_dyn is not None:
+            d["inv_dyn"] = {"head": {k: v.cpu() for k, v in self.inv_dyn.head.state_dict().items()},
+                            "optimizer": self.inv_dyn.optimizer.state_dict()}
         return d
 
     def load_state_dict(self, d: dict) -> None:
@@ -434,6 +511,12 @@ class Trainer:
         self.dropout.rng.bit_generator.state = json.loads(d["dropout_rng_json"])
         if self.bc_sampler is not None and "bc_gen" in d:
             self.bc_sampler.gen.set_state(d["bc_gen"])
+        # The switches are compared by train.checkpoint.resume before this is called.
+        if self.rnd is not None:
+            self.rnd.load_state_dict(d["rnd"])
+        if self.inv_dyn is not None:
+            self.inv_dyn.head.load_state_dict(d["inv_dyn"]["head"])
+            self.inv_dyn.optimizer.load_state_dict(d["inv_dyn"]["optimizer"])
 
     def resume_session(self) -> int:
         """After load_state_dict: start a new session whose env seeds are derived from
