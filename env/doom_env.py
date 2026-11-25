@@ -23,6 +23,18 @@ entity set (key rows) and the v2 keys-held bits. The pose (InfoVars)
 is consumed inside EgoMap only, as odometry relative to the episode's spawn pose; no
 coordinate leaves it (translation invariance tested).
 
+Observation v4 (cfg.obs_version == 4) = v3 with `egomap` (6, 32, 32): channel 5 "locked
+door known", marked from the v2 needs-key pulse bits (booleans only) at the door under the
+view ray, cleared when that door is seen open or passed (env/egomap.py). Every other key
+is byte-identical to v3.
+
+Per-episode skill (training configs only): reset(options={"skill": k}), else a uniform
+draw from cfg.skill_mix (env RNG, drawn after the map and episode seed), else cfg.skill.
+Switched with the console command `skill k-1` before new_episode(), and only when it
+changes: probe 2026-11-26 (docs/reference/engine-probes.md R6.1) found
+DoomGame.set_doom_skill() after init() always yields the easy spawn set in vizdoom 1.3.3.
+EVAL refuses the option (skill fixed by the harness). The skill is in info{} only.
+
 Per-step `info` keys for the trainer (privileged; never an observation):
   final_obs_fresh (bool, every step and reset): True if `obs` was built from the engine
       state after this step's action. False only when the episode ended by death,
@@ -157,12 +169,14 @@ class DoomEnv(gym.Env):
             space["screen"] = spaces.Box(0, 255, (3, 60, 80), np.uint8)
         space["modality"] = spaces.Box(0.0, 1.0, (3,), np.float32)
         if config.egomap:
-            space["egomap"] = spaces.Box(0, 1, E.EGOMAP_SHAPE, np.uint8)
+            space["egomap"] = spaces.Box(0, 1, E.egomap_shape(config.obs_version), np.uint8)
         self.observation_space = spaces.Dict(space)
         self.action_space = spaces.MultiDiscrete(head_sizes(len(config.turn_bins)))
         self._tracker = O.EntityTracker()
         self._doors = D.DoorTracker()   # v2: per-episode door memory (private, never output)
-        self._egomap = E.EgoMap() if config.egomap else None   # v3: only crop() is output
+        # v3 (v4: + locked-door channel): only crop() is output
+        self._egomap = E.EgoMap(locked_channel=config.locked_door_channel) if config.egomap else None
+        self._skill = int(config.skill)   # engine skill now in effect (set before init)
         self._keys_needed: set[str] = set()
         self._last_obs = None
         self._last_info: dict = {}
@@ -235,6 +249,7 @@ class DoomEnv(gym.Env):
         # tuple); any other name would fall through to the IWAD. EVAL: any map.
         self.cfg.check_reset_map(self._map, self._allowed_maps)
         self._episode_seed = int(self.np_random.integers(0, 2**31 - 1))
+        self._set_skill(self._episode_skill(opts))
         self.game.set_seed(self._episode_seed)
         self.game.set_doom_map(self._map)
         self.game.new_episode()
@@ -332,6 +347,25 @@ class DoomEnv(gym.Env):
             pass
 
     # ------------------------------------------------------------ internals
+    def _episode_skill(self, opts: dict) -> int:
+        """Skill for the next episode: options["skill"], else a draw from cfg.skill_mix
+        (after the map / seed draws, so those sequences do not move), else cfg.skill."""
+        if "skill" in opts and opts["skill"] is not None:
+            if self.cfg.vanilla_eval:
+                raise ValueError("reset option 'skill' refused under EVAL: skill is fixed by the config")
+            k = int(opts["skill"])
+            if not 1 <= k <= 5:
+                raise ValueError(f"reset option skill={k} outside 1-5")
+            return k
+        if self.cfg.skill_mix:
+            return int(self.cfg.skill_mix[int(self.np_random.integers(len(self.cfg.skill_mix)))])
+        return int(self.cfg.skill)
+
+    def _set_skill(self, k: int) -> None:
+        if k != self._skill:
+            self.game.send_game_command(f"skill {k - 1}")   # takes effect at new_episode()
+            self._skill = k
+
     def _update_keys(self, text: str):
         """Keys held (info{} always; also the v2 key bits) from vanilla pickup messages,
         and this decision's locked-door colours (v2 pulse). Text never leaves here."""
@@ -408,8 +442,11 @@ class DoomEnv(gym.Env):
             levels = E.world_column_levels(state.depth_buffer, state.labels_buffer,
                                            self.cfg.ray_bands[1])
             held = obs["self"][-O.N_KEY_BITS:-O.N_KEY_BITS + 3] > 0.5   # v2 keys-held bits
+            # v4: the v2 needs-key pulse bits (booleans); ignored by a v3 EgoMap
+            needs = obs["self"][-3:] > 0.5 if self.cfg.locked_door_channel else None
             self._egomap.update(v.pos_x, v.pos_y, v.angle, levels, obs["rays"][3],
-                                obs["entities"], obs["entity_type"], obs["entity_mask"], held)
+                                obs["entities"], obs["entity_type"], obs["entity_mask"], held,
+                                needs)
         obs["egomap"] = self._egomap.crop()
         return obs
 
@@ -419,6 +456,7 @@ class DoomEnv(gym.Env):
             "pos_x": v.pos_x, "pos_y": v.pos_y, "pos_z": v.pos_z, "angle": v.angle,
             "killcount": v.killcount, "itemcount": v.itemcount, "secretcount": v.secretcount,
             "map": self._map, "episode_seed": self._episode_seed, "config": self.cfg.name,
+            "skill": self._skill,
             "keys_held": dict(self._keys_held), "tic": int(state.tic),
             "episode_steps": self._episode_steps,
             # reward inputs (ADR 0010): key names and shapes as rewards/terms.py reads them

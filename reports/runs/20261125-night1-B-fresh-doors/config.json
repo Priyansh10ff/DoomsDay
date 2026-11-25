@@ -1,0 +1,27 @@
+{
+  "description": "Overnight A/B, arm B: same as arm A (full_level_doors, 4x6, 4 torch threads, flag-only monitor) but from a fresh random initialisation, to measure what the imitation start adds.",
+  "baseline": "RunConfig defaults (1x1, 2 torch threads)",
+  "argv": [
+    "--workers",
+    "4",
+    "--envs-per-worker",
+    "6",
+    "--torch-threads",
+    "4",
+    "--allow-multi-instance",
+    "24",
+    "--maps",
+    "generated",
+    "--shaping",
+    "full_level_doors",
+    "--checkpoint-interval",
+    "600",
+    "--max-seconds",
+    "36000"
+  ],
+  "env_overrides": {},
+  "safety_overrides": {},
+  "health_overrides": {
+    "stop_enabled": false
+  }
+}

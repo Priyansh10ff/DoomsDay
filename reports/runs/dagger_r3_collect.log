@@ -1,0 +1,77 @@
+[collect] 1/360 episodes, success 1/1, 102 decisions, 5s, avail 5.0 GiB
+[collect] 41/360 episodes, success 17/41, 20586 decisions, 36s, avail 5.0 GiB
+[collect] 80/360 episodes, success 30/80, 40889 decisions, 67s, avail 5.0 GiB
+[collect] 116/360 episodes, success 34/116, 64658 decisions, 98s, avail 5.0 GiB
+[collect] 158/360 episodes, success 50/158, 86565 decisions, 130s, avail 5.1 GiB
+[collect] 199/360 episodes, success 63/199, 108562 decisions, 160s, avail 5.0 GiB
+[collect] 232/360 episodes, success 68/232, 130321 decisions, 190s, avail 5.0 GiB
+[collect] 273/360 episodes, success 84/273, 151478 decisions, 220s, avail 5.0 GiB
+[collect] 314/360 episodes, success 97/314, 173759 decisions, 251s, avail 6.3 GiB
+[collect] 342/360 episodes, success 102/342, 191099 decisions, 282s, avail 6.3 GiB
+{
+ "env_config": "train_generated",
+ "bundle": "maps\\bundles\\train-all.wad",
+ "jobs": 360,
+ "episodes_finished": 360,
+ "wall_s": 307.0,
+ "errors": [],
+ "stopped_low_memory": false,
+ "worker_reductions": 0,
+ "complete": true,
+ "min_available_gib": 4.94,
+ "by_stage_noise": {
+  "S0@noise0.0": {
+   "episodes": 120,
+   "success": 81,
+   "success_rate": 0.675,
+   "decisions_all": 43769,
+   "mean_length_success": 203.3,
+   "saved": 120,
+   "decisions_saved": 43769
+  },
+  "S1@noise0.0": {
+   "episodes": 120,
+   "success": 20,
+   "success_rate": 0.1667,
+   "decisions_all": 75962,
+   "mean_length_success": 298.1,
+   "saved": 120,
+   "decisions_saved": 75962
+  },
+  "S2@noise0.0": {
+   "episodes": 120,
+   "success": 1,
+   "success_rate": 0.0083,
+   "decisions_all": 83968,
+   "mean_length_success": 668.0,
+   "saved": 120,
+   "decisions_saved": 83968
+  }
+ },
+ "decisions_saved": 203699,
+ "episodes_saved": 360,
+ "dagger": {
+  "student": "D:\\DoomsDay\\reports\\runs\\20261125-bc-dagger-r2\\bc_model.pt",
+  "beta": 0.1,
+  "max_steps": 700,
+  "student_argmax": false,
+  "success_by_stage": {
+   "S0": [
+    81,
+    120
+   ],
+   "S1": [
+    20,
+    120
+   ],
+   "S2": [
+    1,
+    120
+   ]
+  },
+  "unstick_label_share": 0.0,
+  "student_decision_share": 0.9009,
+  "agree_all": 0.3139,
+  "capped": 258
+ }
+}

@@ -73,6 +73,8 @@ NO_PREV_ACTION_VALUE = 0
 PREV_ACTION_KEY = "prev_action"
 VALUE_HEAD_NOTE = ("value head untouched by BC (no value loss); fit it with "
                    "train.run_doom --init-from <bc_model.pt> --value-warmup-updates N")
+# Key read_init_bc adds to the returned record when it grew the egomap input.
+INIT_GROWTH_KEY = "init_egomap_growth"
 
 
 def head_names(n: int) -> list[str]:
@@ -246,17 +248,37 @@ def index_sha256(data_dir: str) -> str:
 def read_init_bc(path: str, spec: ObsSpec, model_cfg: ModelConfig, signature: tuple
                  ) -> tuple[dict[str, torch.Tensor], dict[str, Any]]:
     """(model state, its BC record) of a previous BC model, for --init-from-bc (DAgger
-    rounds). Refuses a different sensor signature, model config or obs spec."""
+    rounds). Refuses a different sensor signature, model config or obs spec, except an
+    obs spec with extra egomap channels appended (and a signature differing only by a
+    higher obs_version): the state is then grown with zero input slices
+    (train/egomap_growth.py) and the returned record carries INIT_GROWTH_KEY."""
     from .checkpoint import WEIGHTS_ONLY_KEY, CheckpointMismatch, canonical_json, load_checkpoint
+    from .egomap_growth import egomap_growth, grow_state, obs_version_change, state_shapes
     blob = load_checkpoint(path)
-    if blob["sensor_signature_json"] != canonical_json(signature):
-        raise CheckpointMismatch(f"--init-from-bc {path!r}: sensor signature differs")
+    run_sig = canonical_json(signature)
+    version_change = None
+    if blob["sensor_signature_json"] != run_sig:
+        version_change = obs_version_change(blob["sensor_signature_json"], run_sig)
+        if version_change is None:
+            raise CheckpointMismatch(f"--init-from-bc {path!r}: sensor signature differs")
     if blob["model_config"] != model_cfg:
         raise CheckpointMismatch(f"--init-from-bc {path!r}: model config differs")
-    if blob["obs_spec_json"] != canonical_json(dataclasses.asdict(spec)):
-        raise CheckpointMismatch(f"--init-from-bc {path!r}: observation spec differs")
     rec = json.loads(blob[WEIGHTS_ONLY_KEY]) if WEIGHTS_ONLY_KEY in blob else {}
-    return blob["trainer"]["model"], rec
+    state = blob["trainer"]["model"]
+    if blob["obs_spec_json"] != canonical_json(dataclasses.asdict(spec)):
+        growth = egomap_growth(blob["obs_spec_json"], spec)
+        if growth is None:
+            raise CheckpointMismatch(f"--init-from-bc {path!r}: observation spec differs")
+        state = grow_state(state, growth, state_shapes(build_agent(spec, model_cfg, seed=0)))
+        grec = growth.record()
+        if version_change is not None:
+            grec["obs_version_from"], grec["obs_version_to"] = version_change
+        rec[INIT_GROWTH_KEY] = grec
+        print(f"--init-from-bc GROWTH: {growth.describe()}; obs_version {version_change or 'unchanged'}")
+    elif version_change is not None:
+        raise CheckpointMismatch(f"--init-from-bc {path!r}: obs_version differs {version_change} "
+                                 f"but the observation spec is the same; refusing")
+    return state, rec
 
 
 def train_bc(train_eps: list[Episode], val_eps: list[Episode], spec: ObsSpec, model_cfg: ModelConfig,
@@ -467,6 +489,8 @@ def main(argv: list[str] | None = None) -> int:
         from .init_from import sha256_file
         record["init_from_bc"] = os.path.abspath(ns.init_from_bc)
         record["init_from_bc_sha256"] = sha256_file(ns.init_from_bc)
+        if INIT_GROWTH_KEY in init_rec:
+            record["init_from_bc_growth"] = init_rec[INIT_GROWTH_KEY]
     summary = train_bc(train, val, spec, ModelConfig(), cfg, device, ns.out, signature, record,
                        init_state=init_state)
     print(f"wrote {summary['model']} after {summary['epochs_done']} epochs")

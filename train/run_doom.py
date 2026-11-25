@@ -323,6 +323,7 @@ def write_run_start(run_dir: str, run: RunConfig, ns: argparse.Namespace, argv: 
            "entropy_coef": run.ppo.entropy_coef, "shaping": run.shaping, "maps": run.maps, "device": run.device,
            "device_choice": ns.device, "resume": ns.resume, "seed": run.seed,
            "init_from": run.init_from, "init_from_sha256": run.init_from_sha256,
+           "init_from_growth": run.init_from_growth,
            "value_warmup_updates": run.ppo.value_warmup_updates, "start_stage": run.start_stage,
            "num_workers": run.num_workers, "envs_per_worker": run.envs_per_worker,
            "lr": run.ppo.lr, "clip": run.ppo.clip, "ppo_epochs": run.ppo.epochs,
@@ -476,10 +477,18 @@ def main(argv: list[str] | None = None) -> int:
             from .checkpoint import CheckpointMismatch
             from .init_from import apply_init
             try:
-                apply_init(trainer, init_src)
-            except (CheckpointMismatch, RuntimeError) as e:
+                growth = apply_init(trainer, init_src)
+            except (CheckpointMismatch, RuntimeError, KeyError, AssertionError) as e:
                 print(f"refusing --init-from: {e}", file=sys.stderr)
                 return EXIT_INIT_REFUSED
+            if growth is not None:
+                from .checkpoint import canonical_json
+                from .init_from import growth_record
+                grown_json = canonical_json(growth_record(init_src, growth))
+                run = dataclasses.replace(run, init_from_growth=grown_json)
+                trainer.run = dataclasses.replace(trainer.run, init_from_growth=grown_json)
+                print(f"init-from GROWTH: {growth.describe()}; obs_version "
+                      f"{init_src.obs_version_change or 'unchanged'}")
             print(f"fresh run initialised from {init_src.loaded_from}; value warm-up "
                   f"{run.ppo.value_warmup_updates} updates")
             if run.rnd.enabled or run.inv_dyn.enabled:

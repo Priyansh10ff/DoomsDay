@@ -1,0 +1,7 @@
+{
+  "description": "ADR 0008 ruling 6 hard-kill test, daemon workers. The main process is killed hard after the first update.",
+  "baseline": "RunConfig defaults (1x1, 2 torch threads)",
+  "argv": ["--max-seconds", "120"],
+  "env_overrides": {},
+  "safety_overrides": {"worker_daemon": true}
+}

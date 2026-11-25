@@ -162,7 +162,7 @@ def test_config_versions_and_signature(monkeypatch):
     cfg3.assert_vanilla()
     assert ("obs_version", 3) in cfg3.sensor_signature() and cfg3.egomap and cfg3.door_channel
     with pytest.raises(ValueError):
-        EVAL_CONFIG.replace(obs_version=4).validate()
+        EVAL_CONFIG.replace(obs_version=5).validate()   # v4 exists since 2026-11-26
     for v, ego in (("1", None), ("2", None), ("3", (5, 32, 32)), ("", (5, 32, 32))):
         monkeypatch.setenv(a0_env.OBS_VERSION_ENV_VAR, v)
         spec, sig = a0_training_spec_and_signature()

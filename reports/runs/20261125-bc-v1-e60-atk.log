@@ -1,0 +1,9 @@
+dataset ['data/teacher/bc_v1']: 3000 episodes, 443782 steps; train 2700 episodes on 54 maps, val 300 episodes on 6 held-out maps ['S1-train-101005', 'S1-train-101006', 'S1-train-101008', 'S1-train-101012', 'S2-train-102005', 'S2-train-102019']
+head attack: teacher label constant (0) in the train split (WARNING: weight > 0 will crush its entropy)
+value head untouched by BC (no value loss); fit it with train.run_doom --init-from <bc_model.pt> --value-warmup-updates N
+epoch 1: move acc 0.950/0.915 strafe acc 1.000/1.000 turn acc 0.732/0.670 attack acc 0.998/1.000 use acc 0.993/0.989 speed acc 0.961/0.951  loss 0.9456  (train/val)
+epoch 2: move acc 0.951/0.921 strafe acc 1.000/1.000 turn acc 0.735/0.680 attack acc 1.000/1.000 use acc 0.993/0.988 speed acc 0.962/0.952  loss 0.8918  (train/val)
+epoch 3: move acc 0.951/0.922 strafe acc 1.000/1.000 turn acc 0.736/0.681 attack acc 1.000/1.000 use acc 0.993/0.989 speed acc 0.962/0.950  loss 0.8845  (train/val)
+epoch 4: move acc 0.952/0.920 strafe acc 1.000/1.000 turn acc 0.738/0.680 attack acc 1.000/1.000 use acc 0.993/0.989 speed acc 0.963/0.953  loss 0.8780  (train/val)
+epoch 5: move acc 0.953/0.917 strafe acc 1.000/1.000 turn acc 0.740/0.669 attack acc 1.000/1.000 use acc 0.994/0.989 speed acc 0.963/0.948  loss 0.8727  (train/val)
+wrote reports/runs/20261125-bc-v1-e60-atk\bc_model.pt after 5 epochs

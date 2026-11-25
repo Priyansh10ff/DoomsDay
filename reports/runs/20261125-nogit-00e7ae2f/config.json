@@ -1,0 +1,20 @@
+{
+  "description": "GPU check: same as bench3_8x6_t8 but --device cuda (torch 2.9.1+cu128, RTX 5060). 90 s.",
+  "baseline": "RunConfig defaults (1x1, 2 torch threads)",
+  "argv": [
+    "--workers",
+    "8",
+    "--envs-per-worker",
+    "6",
+    "--torch-threads",
+    "8",
+    "--allow-multi-instance",
+    "48",
+    "--max-seconds",
+    "90",
+    "--device",
+    "cuda"
+  ],
+  "env_overrides": {},
+  "safety_overrides": {}
+}

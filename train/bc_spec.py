@@ -39,10 +39,14 @@ OBS_DTYPES: dict[str, np.dtype] = {
 }
 # Observation v3 `egomap` per-step shape (mirrors env.egomap.EGOMAP_SHAPE, checked by a test).
 EGOMAP_STEP_SHAPE: tuple[int, int, int] = (5, 32, 32)
+# Observation v4: + channel 5 "locked door known" (mirrors env.egomap.EGOMAP_SHAPE_V4).
+EGOMAP_STEP_SHAPE_V4: tuple[int, int, int] = (6, 32, 32)
 
 
 def egomap_step_shape(obs_version: int) -> tuple[int, int, int] | None:
     """Per-step `egomap` shape under an observation version (None before v3)."""
+    if obs_version >= 4:
+        return EGOMAP_STEP_SHAPE_V4
     return EGOMAP_STEP_SHAPE if obs_version >= 3 else None
 LABEL_KEY = "action"
 LABEL_DTYPE = np.dtype(np.int64)

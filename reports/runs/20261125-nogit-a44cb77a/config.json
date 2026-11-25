@@ -1,0 +1,7 @@
+{
+  "description": "Layout benchmark: 2 workers x 4 envs (8 engine instances), 4 torch threads, about 90 s, non-daemon workers, default 8 GiB cap, below-normal priority.",
+  "baseline": "RunConfig defaults (1x1, 2 torch threads)",
+  "argv": ["--workers", "2", "--envs-per-worker", "4", "--torch-threads", "4", "--allow-multi-instance", "8", "--max-seconds", "90"],
+  "env_overrides": {},
+  "safety_overrides": {}
+}

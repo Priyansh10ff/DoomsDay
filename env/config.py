@@ -136,6 +136,7 @@ class EnvConfig:
     # 2 = v1 + line-of-sight door channel (rays row 4) + key bits (self 34,), and the
     # engine's sector info switched on for the door channel ONLY (env/door_cue.py).
     # 3 = v2 + `egomap` (5, 32, 32) ego-centric occupancy map (env/egomap.py).
+    # 4 = v3 with egomap (6, 32, 32): channel 5 "locked door known" (env/egomap.py).
     # Default 1 here; configs/a0_env.py OBS_VERSION decides what training/eval use.
     obs_version: int = 1
     # --- vanilla rules (must stay at these values under EVAL) ---
@@ -147,6 +148,9 @@ class EnvConfig:
     # (obs_version 2 turns the engine's sector info on by itself, for the door channel
     # only; see engine_sectors_enabled. This field stays forbidden under EVAL.)
     engine_rewards: tuple[tuple[str, float], ...] = VANILLA_ENGINE_REWARDS
+    # Training only: per-episode skill drawn uniformly from this tuple at each reset
+    # (env RNG). () = always `skill`. EVAL must keep () (skill fixed by the harness).
+    skill_mix: tuple[int, ...] = ()
     extra: dict = field(default_factory=dict, compare=False, hash=False)
 
     @property
@@ -161,6 +165,11 @@ class EnvConfig:
     def egomap(self) -> bool:
         """Observation v3: the ego-centric occupancy map (env/egomap.py)."""
         return self.obs_version >= 3
+
+    @property
+    def locked_door_channel(self) -> bool:
+        """Observation v4: egomap channel 5, locked door known (env/egomap.py)."""
+        return self.obs_version >= 4
 
     @property
     def engine_sectors_enabled(self) -> bool:
@@ -218,6 +227,8 @@ class EnvConfig:
             problems.append(f"obs_version {self.obs_version!r} not in {OBS_VERSIONS}")
         if tuple(self.engine_rewards) != VANILLA_ENGINE_REWARDS:
             problems.append(f"engine_rewards altered: {self.engine_rewards!r}")
+        if tuple(self.skill_mix):
+            problems.append(f"skill_mix set ({self.skill_mix!r}); EVAL skill is fixed")
         if self.extra:
             problems.append(f"extra training knobs present: {sorted(self.extra)}")
         # harness settings: legal values only
@@ -248,6 +259,8 @@ class EnvConfig:
             raise ValueError(f"obs_version {self.obs_version!r} not in {OBS_VERSIONS}")
         if self.map_wad is not None and self.scenario_wad is not None:
             raise ValueError("map_wad and scenario_wad cannot both be set")
+        if any(not (1 <= int(k) <= 5) for k in self.skill_mix):
+            raise ValueError(f"skill_mix {self.skill_mix!r}: every skill must be in 1-5")
         if self.vanilla_eval:
             self.assert_vanilla()
         else:
@@ -336,7 +349,7 @@ def _under_repo_dirs(path: str, dirs) -> bool:
 
 
 RULE_FIELDS = ("iwad", "scenario_wad", "game_args", "objects_info", "sectors_info",
-               "engine_rewards", "extra")
+               "engine_rewards", "skill_mix", "extra")
 HARNESS_FIELDS = ("maps", "skill", "episode_timeout_tics", "map_wad", "iwad_file")
 SENSOR_FIELDS = ("frame_skip", "render_hud", "turn_bins", "max_entities", "screen_enabled",
                  "obs_version")

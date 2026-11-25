@@ -1,0 +1,80 @@
+[collect] 1/540 episodes, success 0/1, 400 decisions, 6s, avail 4.9 GiB
+[collect] 44/540 episodes, success 15/44, 13657 decisions, 37s, avail 4.9 GiB
+[collect] 85/540 episodes, success 27/85, 26780 decisions, 67s, avail 4.9 GiB
+[collect] 121/540 episodes, success 29/121, 40836 decisions, 98s, avail 5.4 GiB
+[collect] 167/540 episodes, success 45/167, 55875 decisions, 129s, avail 5.4 GiB
+[collect] 212/540 episodes, success 58/212, 71012 decisions, 159s, avail 5.8 GiB
+[collect] 257/540 episodes, success 71/257, 85762 decisions, 190s, avail 5.8 GiB
+[collect] 295/540 episodes, success 76/295, 100342 decisions, 220s, avail 4.9 GiB
+[collect] 336/540 episodes, success 86/336, 114156 decisions, 250s, avail 5.4 GiB
+[collect] 381/540 episodes, success 97/381, 129198 decisions, 282s, avail 5.3 GiB
+[collect] 421/540 episodes, success 100/421, 144659 decisions, 312s, avail 5.3 GiB
+[collect] 467/540 episodes, success 113/467, 159596 decisions, 342s, avail 5.2 GiB
+[collect] 512/540 episodes, success 127/512, 174508 decisions, 372s, avail 5.7 GiB
+{
+ "env_config": "train_generated",
+ "bundle": "maps\\bundles\\train-all.wad",
+ "jobs": 540,
+ "episodes_finished": 540,
+ "wall_s": 396.5,
+ "errors": [],
+ "stopped_low_memory": false,
+ "worker_reductions": 0,
+ "complete": true,
+ "min_available_gib": 4.89,
+ "by_stage_noise": {
+  "S0@noise0.0": {
+   "episodes": 180,
+   "success": 107,
+   "success_rate": 0.5944,
+   "decisions_all": 45260,
+   "mean_length_success": 150.1,
+   "saved": 180,
+   "decisions_saved": 45260
+  },
+  "S1@noise0.0": {
+   "episodes": 180,
+   "success": 21,
+   "success_rate": 0.1167,
+   "decisions_all": 68132,
+   "mean_length_success": 215.8,
+   "saved": 180,
+   "decisions_saved": 68132
+  },
+  "S2@noise0.0": {
+   "episodes": 180,
+   "success": 1,
+   "success_rate": 0.0056,
+   "decisions_all": 71944,
+   "mean_length_success": 344.0,
+   "saved": 180,
+   "decisions_saved": 71944
+  }
+ },
+ "decisions_saved": 185336,
+ "episodes_saved": 540,
+ "dagger": {
+  "student": "D:\\DoomsDay\\reports\\runs\\20261125-bc-dagger-r1\\bc_model.pt",
+  "beta": 0.1,
+  "max_steps": 400,
+  "student_argmax": false,
+  "success_by_stage": {
+   "S0": [
+    107,
+    180
+   ],
+   "S1": [
+    21,
+    180
+   ],
+   "S2": [
+    1,
+    180
+   ]
+  },
+  "unstick_label_share": 0.0,
+  "student_decision_share": 0.8995,
+  "agree_all": 0.26,
+  "capped": 411
+ }
+}

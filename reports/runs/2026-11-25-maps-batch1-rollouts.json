@@ -1,0 +1,371 @@
+[
+ {
+  "crash": null,
+  "steps": 200,
+  "finite": true,
+  "terminated": false,
+  "truncated": false,
+  "entity_types_seen": {
+   "decoration": 123
+  },
+  "reward": 0.0,
+  "id": "S0-train-100001",
+  "split": "train",
+  "stage": "S0",
+  "placed": {
+   "rooms": 6,
+   "corridors": 5,
+   "loops": 0,
+   "doors": 0,
+   "locked_doors": 0,
+   "sectors": 11,
+   "linedefs": 56,
+   "things": 1,
+   "monsters": 0,
+   "pickups": 0
+  }
+ },
+ {
+  "crash": null,
+  "steps": 200,
+  "finite": true,
+  "terminated": false,
+  "truncated": false,
+  "entity_types_seen": {
+   "decoration": 123
+  },
+  "reward": 0.0,
+  "id": "S0-train-100002",
+  "split": "train",
+  "stage": "S0",
+  "placed": {
+   "rooms": 3,
+   "corridors": 2,
+   "loops": 0,
+   "doors": 0,
+   "locked_doors": 0,
+   "sectors": 5,
+   "linedefs": 26,
+   "things": 1,
+   "monsters": 0,
+   "pickups": 0
+  }
+ },
+ {
+  "crash": null,
+  "steps": 200,
+  "finite": true,
+  "terminated": false,
+  "truncated": false,
+  "entity_types_seen": {
+   "decoration": 112
+  },
+  "reward": 0.0,
+  "id": "S0-train-100003",
+  "split": "train",
+  "stage": "S0",
+  "placed": {
+   "rooms": 6,
+   "corridors": 5,
+   "loops": 0,
+   "doors": 0,
+   "locked_doors": 0,
+   "sectors": 11,
+   "linedefs": 56,
+   "things": 1,
+   "monsters": 0,
+   "pickups": 0
+  }
+ },
+ {
+  "crash": null,
+  "steps": 200,
+  "finite": true,
+  "terminated": false,
+  "truncated": false,
+  "entity_types_seen": {
+   "decoration": 118
+  },
+  "reward": 0.0,
+  "id": "S1-train-101001",
+  "split": "train",
+  "stage": "S1",
+  "placed": {
+   "rooms": 4,
+   "corridors": 3,
+   "loops": 0,
+   "doors": 1,
+   "locked_doors": 0,
+   "sectors": 8,
+   "linedefs": 39,
+   "things": 1,
+   "monsters": 0,
+   "pickups": 0
+  }
+ },
+ {
+  "crash": null,
+  "steps": 200,
+  "finite": true,
+  "terminated": false,
+  "truncated": false,
+  "entity_types_seen": {
+   "decoration": 125
+  },
+  "reward": 0.0,
+  "id": "S1-train-101002",
+  "split": "train",
+  "stage": "S1",
+  "placed": {
+   "rooms": 6,
+   "corridors": 5,
+   "loops": 0,
+   "doors": 5,
+   "locked_doors": 0,
+   "sectors": 17,
+   "linedefs": 74,
+   "things": 1,
+   "monsters": 0,
+   "pickups": 0
+  }
+ },
+ {
+  "crash": null,
+  "steps": 200,
+  "finite": true,
+  "terminated": false,
+  "truncated": false,
+  "entity_types_seen": {
+   "decoration": 123
+  },
+  "reward": 0.0,
+  "id": "S1-train-101003",
+  "split": "train",
+  "stage": "S1",
+  "placed": {
+   "rooms": 6,
+   "corridors": 6,
+   "loops": 1,
+   "doors": 4,
+   "locked_doors": 0,
+   "sectors": 18,
+   "linedefs": 79,
+   "things": 1,
+   "monsters": 0,
+   "pickups": 0
+  }
+ },
+ {
+  "crash": null,
+  "steps": 200,
+  "finite": true,
+  "terminated": false,
+  "truncated": false,
+  "entity_types_seen": {
+   "decoration": 120
+  },
+  "reward": 0.0,
+  "id": "S2-train-102001",
+  "split": "train",
+  "stage": "S2",
+  "placed": {
+   "rooms": 5,
+   "corridors": 4,
+   "loops": 0,
+   "doors": 2,
+   "locked_doors": 1,
+   "sectors": 13,
+   "linedefs": 57,
+   "things": 2,
+   "monsters": 0,
+   "pickups": 0
+  }
+ },
+ {
+  "crash": null,
+  "steps": 200,
+  "finite": true,
+  "terminated": false,
+  "truncated": false,
+  "entity_types_seen": {
+   "decoration": 123,
+   "key-blue": 3
+  },
+  "reward": 0.0,
+  "id": "S2-train-102002",
+  "split": "train",
+  "stage": "S2",
+  "placed": {
+   "rooms": 5,
+   "corridors": 4,
+   "loops": 0,
+   "doors": 2,
+   "locked_doors": 1,
+   "sectors": 14,
+   "linedefs": 60,
+   "things": 2,
+   "monsters": 0,
+   "pickups": 0
+  }
+ },
+ {
+  "crash": null,
+  "steps": 200,
+  "finite": true,
+  "terminated": false,
+  "truncated": false,
+  "entity_types_seen": {
+   "decoration": 124
+  },
+  "reward": 0.0,
+  "id": "S2-train-102003",
+  "split": "train",
+  "stage": "S2",
+  "placed": {
+   "rooms": 6,
+   "corridors": 5,
+   "loops": 0,
+   "doors": 2,
+   "locked_doors": 1,
+   "sectors": 15,
+   "linedefs": 67,
+   "things": 2,
+   "monsters": 0,
+   "pickups": 0
+  }
+ },
+ {
+  "crash": null,
+  "steps": 200,
+  "finite": true,
+  "terminated": false,
+  "truncated": false,
+  "entity_types_seen": {
+   "ammo": 5,
+   "key-yellow": 1,
+   "decoration": 122,
+   "monster": 39
+  },
+  "reward": 0.0,
+  "id": "S3-train-103001",
+  "split": "train",
+  "stage": "S3",
+  "placed": {
+   "rooms": 6,
+   "corridors": 5,
+   "loops": 0,
+   "doors": 1,
+   "locked_doors": 1,
+   "sectors": 13,
+   "linedefs": 62,
+   "things": 6,
+   "monsters": 2,
+   "pickups": 2
+  }
+ },
+ {
+  "crash": null,
+  "steps": 200,
+  "finite": true,
+  "terminated": false,
+  "truncated": false,
+  "entity_types_seen": {
+   "decoration": 126
+  },
+  "reward": 0.0,
+  "id": "S3-train-103002",
+  "split": "train",
+  "stage": "S3",
+  "placed": {
+   "rooms": 7,
+   "corridors": 6,
+   "loops": 0,
+   "doors": 3,
+   "locked_doors": 1,
+   "sectors": 19,
+   "linedefs": 84,
+   "things": 12,
+   "monsters": 5,
+   "pickups": 5
+  }
+ },
+ {
+  "crash": null,
+  "steps": 200,
+  "finite": true,
+  "terminated": false,
+  "truncated": false,
+  "entity_types_seen": {
+   "health": 4,
+   "decoration": 120
+  },
+  "reward": 0.0,
+  "id": "S3-train-103003",
+  "split": "train",
+  "stage": "S3",
+  "placed": {
+   "rooms": 5,
+   "corridors": 4,
+   "loops": 0,
+   "doors": 1,
+   "locked_doors": 1,
+   "sectors": 12,
+   "linedefs": 54,
+   "things": 12,
+   "monsters": 5,
+   "pickups": 5
+  }
+ },
+ {
+  "crash": null,
+  "steps": 200,
+  "finite": true,
+  "terminated": false,
+  "truncated": false,
+  "entity_types_seen": {
+   "decoration": 117
+  },
+  "reward": 0.0,
+  "id": "S3-heldout-903001",
+  "split": "heldout",
+  "stage": "S3",
+  "placed": {
+   "rooms": 7,
+   "corridors": 6,
+   "loops": 0,
+   "doors": 3,
+   "locked_doors": 1,
+   "sectors": 19,
+   "linedefs": 84,
+   "things": 7,
+   "monsters": 3,
+   "pickups": 2
+  }
+ },
+ {
+  "crash": null,
+  "steps": 200,
+  "finite": true,
+  "terminated": false,
+  "truncated": false,
+  "entity_types_seen": {
+   "decoration": 117
+  },
+  "reward": 0.0,
+  "id": "S2-val-502001",
+  "split": "val",
+  "stage": "S2",
+  "placed": {
+   "rooms": 7,
+   "corridors": 6,
+   "loops": 0,
+   "doors": 2,
+   "locked_doors": 1,
+   "sectors": 19,
+   "linedefs": 83,
+   "things": 2,
+   "monsters": 0,
+   "pickups": 0
+  }
+ }
+]

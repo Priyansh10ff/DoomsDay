@@ -1,0 +1,1 @@
+{"time": "2026-11-25T12:05:52", "argv": ["--workers", "12", "--envs-per-worker", "4", "--torch-threads", "4", "--allow-multi-instance", "48", "--max-seconds", "90", "--run-dir", "reports/runs/20261125-nogit-9506be71"], "entropy_coef": 0.01, "shaping": null, "device": "cpu", "device_choice": "cpu", "resume": null, "seed": 0, "num_workers": 12, "envs_per_worker": 4}

@@ -1,0 +1,76 @@
+ops_launch: config configs/ops/interrupt_resume.json -> reports/runs/20261125-nogit-8653f5c1
+ops_launch: effective episode_timeout_tics=2100 frame_skip=4 worker_daemon=False memory_cap_gib=8.0 below_normal=True
+ops_launch: run_doom argv ['--max-seconds', '30', '--run-dir', 'reports/runs/20261125-nogit-8653f5c1', '--resume', 'reports/runs/20261125-nogit-8653f5c1/checkpoint.pt']
+planned layout: 1 engine instance(s) in 1 worker process(es), 2 torch thread(s), estimated memory 467 MiB
+resumed from reports/runs/20261125-nogit-8653f5c1/checkpoint.pt at update 41, session 1, env seed 3964924996
+priority check: {'enabled': True, 'all_below_normal': True, 'set_directly': [], 'processes': {'3028': 'python.exe below_normal=True', '17788': 'python.exe below_normal=True', '30328': 'vizdoom.exe below_normal=True'}}
+update 42: kl 0.0010 ev -0.498 scale 0.112 stale 0 rss 400 MiB sample 214/s update 471/s
+update 43: kl 0.0023 ev -0.653 scale 0.112 stale 0 rss 402 MiB sample 178/s update 614/s
+update 44: kl 0.0031 ev -0.413 scale 0.111 stale 0 rss 402 MiB sample 194/s update 860/s
+update 45: kl 0.0033 ev 0.020 scale 0.121 stale 0 rss 406 MiB sample 151/s update 861/s
+update 46: kl 0.0017 ev -0.346 scale 0.120 stale 0 rss 402 MiB sample 204/s update 623/s
+update 47: kl 0.0020 ev -0.499 scale 0.119 stale 0 rss 408 MiB sample 203/s update 856/s
+update 48: kl 0.0023 ev -0.143 scale 0.118 stale 0 rss 408 MiB sample 179/s update 839/s
+update 49: kl 0.0023 ev -0.574 scale 0.117 stale 0 rss 408 MiB sample 178/s update 676/s
+update 50: kl 0.0020 ev -0.349 scale 0.116 stale 0 rss 407 MiB sample 210/s update 634/s
+update 51: kl 0.0024 ev -0.760 scale 0.116 stale 0 rss 407 MiB sample 193/s update 408/s
+update 52: kl 0.0015 ev -5.123 scale 0.115 stale 0 rss 408 MiB sample 175/s update 575/s
+update 53: kl 0.0010 ev -0.172 scale 0.114 stale 0 rss 408 MiB sample 140/s update 820/s
+update 54: kl 0.0013 ev 0.719 scale 0.114 stale 0 rss 408 MiB sample 172/s update 512/s
+update 55: kl 0.0016 ev -0.256 scale 0.113 stale 0 rss 408 MiB sample 168/s update 483/s
+update 56: kl 0.0019 ev 0.023 scale 0.113 stale 0 rss 404 MiB sample 169/s update 591/s
+update 57: kl 0.0025 ev -1.121 scale 0.113 stale 0 rss 407 MiB sample 195/s update 829/s
+update 58: kl 0.0037 ev -0.488 scale 0.113 stale 0 rss 408 MiB sample 222/s update 620/s
+update 59: kl 0.0035 ev -0.694 scale 0.113 stale 0 rss 404 MiB sample 209/s update 650/s
+update 60: kl 0.0033 ev -1.239 scale 0.113 stale 0 rss 407 MiB sample 198/s update 742/s
+update 61: kl 0.0025 ev -3.117 scale 0.113 stale 0 rss 407 MiB sample 157/s update 819/s
+update 62: kl 0.0033 ev 0.303 scale 0.113 stale 0 rss 403 MiB sample 213/s update 768/s
+update 63: kl 0.0036 ev -0.147 scale 0.113 stale 0 rss 401 MiB sample 169/s update 661/s
+update 64: kl 0.0020 ev -0.423 scale 0.113 stale 0 rss 404 MiB sample 189/s update 722/s
+update 65: kl 0.0010 ev -4.015 scale 0.113 stale 0 rss 404 MiB sample 177/s update 629/s
+update 66: kl 0.0020 ev -0.713 scale 0.113 stale 0 rss 408 MiB sample 196/s update 746/s
+update 67: kl 0.0024 ev -3.247 scale 0.113 stale 0 rss 404 MiB sample 182/s update 808/s
+update 68: kl 0.0014 ev -12.931 scale 0.113 stale 0 rss 406 MiB sample 185/s update 644/s
+update 69: kl 0.0012 ev -57.708 scale 0.113 stale 0 rss 407 MiB sample 179/s update 462/s
+update 70: kl 0.0011 ev -30.892 scale 0.113 stale 0 rss 402 MiB sample 183/s update 629/s
+update 71: kl 0.0011 ev -0.826 scale 0.114 stale 0 rss 403 MiB sample 179/s update 503/s
+update 72: kl 0.0020 ev -0.248 scale 0.114 stale 0 rss 403 MiB sample 142/s update 594/s
+update 73: kl 0.0010 ev -4.890 scale 0.114 stale 0 rss 404 MiB sample 212/s update 907/s
+update 74: kl 0.0010 ev -0.228 scale 0.114 stale 0 rss 403 MiB sample 185/s update 698/s
+update 75: kl 0.0026 ev -12.234 scale 0.114 stale 0 rss 404 MiB sample 171/s update 813/s
+update 76: kl 0.0039 ev -1.516 scale 0.114 stale 0 rss 404 MiB sample 165/s update 639/s
+update 77: kl 0.0030 ev -1.469 scale 0.114 stale 0 rss 408 MiB sample 199/s update 453/s
+update 78: kl 0.0025 ev -7.986 scale 0.114 stale 0 rss 407 MiB sample 202/s update 774/s
+update 79: kl 0.0009 ev -1.996 scale 0.114 stale 0 rss 408 MiB sample 182/s update 502/s
+update 80: kl 0.0009 ev -1.109 scale 0.114 stale 0 rss 403 MiB sample 192/s update 431/s
+update 81: kl 0.0018 ev -4.128 scale 0.114 stale 0 rss 403 MiB sample 205/s update 650/s
+update 82: kl 0.0035 ev -6.822 scale 0.114 stale 0 rss 403 MiB sample 201/s update 583/s
+update 83: kl 0.0032 ev -9.075 scale 0.114 stale 0 rss 403 MiB sample 195/s update 673/s
+update 84: kl 0.0020 ev -3.136 scale 0.114 stale 0 rss 404 MiB sample 207/s update 620/s
+update 85: kl 0.0008 ev -30.557 scale 0.114 stale 0 rss 404 MiB sample 197/s update 925/s
+update 86: kl 0.0003 ev -13.451 scale 0.114 stale 0 rss 407 MiB sample 195/s update 763/s
+update 87: kl 0.0005 ev -3.667 scale 0.114 stale 0 rss 408 MiB sample 188/s update 555/s
+update 88: kl 0.0012 ev -10.251 scale 0.114 stale 0 rss 408 MiB sample 181/s update 656/s
+update 89: kl 0.0030 ev -2.205 scale 0.114 stale 0 rss 408 MiB sample 176/s update 459/s
+update 90: kl 0.0033 ev -65.365 scale 0.114 stale 0 rss 409 MiB sample 224/s update 599/s
+update 91: kl 0.0037 ev -33.467 scale 0.114 stale 0 rss 409 MiB sample 198/s update 619/s
+update 92: kl 0.0054 ev -0.695 scale 0.114 stale 0 rss 409 MiB sample 208/s update 739/s
+update 93: kl 0.0042 ev -33.624 scale 0.114 stale 0 rss 409 MiB sample 225/s update 887/s
+update 94: kl 0.0019 ev -258.087 scale 0.114 stale 0 rss 402 MiB sample 148/s update 845/s
+update 95: kl 0.0017 ev -17.969 scale 0.115 stale 0 rss 408 MiB sample 202/s update 634/s
+update 96: kl 0.0023 ev -3.885 scale 0.115 stale 0 rss 408 MiB sample 201/s update 843/s
+update 97: kl 0.0050 ev -3.870 scale 0.115 stale 0 rss 409 MiB sample 165/s update 469/s
+update 98: kl 0.0007 ev -11.331 scale 0.115 stale 0 rss 403 MiB sample 162/s update 577/s
+update 99: kl 0.0004 ev -19.227 scale 0.115 stale 0 rss 404 MiB sample 195/s update 768/s
+update 100: kl 0.0021 ev -13.141 scale 0.114 stale 0 rss 404 MiB sample 185/s update 568/s
+update 101: kl 0.0036 ev -1.407 scale 0.114 stale 0 rss 404 MiB sample 213/s update 919/s
+update 102: kl 0.0016 ev -53.425 scale 0.114 stale 0 rss 403 MiB sample 156/s update 645/s
+update 103: kl 0.0019 ev -6.696 scale 0.114 stale 0 rss 404 MiB sample 194/s update 865/s
+update 104: kl 0.0021 ev -3.538 scale 0.114 stale 0 rss 404 MiB sample 173/s update 860/s
+update 105: kl 0.0024 ev -20.727 scale 0.114 stale 0 rss 405 MiB sample 149/s update 578/s
+update 106: kl 0.0036 ev -15.571 scale 0.114 stale 0 rss 405 MiB sample 178/s update 739/s
+update 107: kl 0.0011 ev -36.116 scale 0.114 stale 0 rss 403 MiB sample 171/s update 480/s
+checkpoint written (max_seconds) at update 107: reports/runs/20261125-nogit-8653f5c1\checkpoint.pt
+stopped (max_seconds) 0.03s after the request
+summary: {"stop_reason": "max_seconds", "updates_this_session": 66, "update_idx": 107, "checkpoints_written": 1, "max_tree_rss_bytes": 428830720, "min_available_bytes": 5890105344, "stale_timeouts_total": 0, "stop_latency_s": 0.031000000002677552, "priority": {"enabled": true, "all_below_normal": true, "set_directly": [], "processes": {"3028": "python.exe below_normal=True", "17788": "python.exe below_normal=True", "30328": "vizdoom.exe below_normal=True"}}}
+engine processes alive after shutdown: 0

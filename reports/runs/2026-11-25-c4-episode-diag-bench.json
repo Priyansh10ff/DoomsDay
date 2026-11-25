@@ -1,0 +1,5 @@
+{"change": "C4 per-episode USE/door diagnostics (train/episode_diag.py, env DoorTracker gaps)",
+ "layout": "single env, 1 process, in-process (no vec env)", "map": "DD0030 (generated TRAIN)", "frame_skip": 4,
+ "obs_version": 2, "pixels": false, "decisions": 3000, "actions": "uniform random",
+ "decisions_per_s": {"shaped_only": 505.5, "shaped_plus_diag": 642.1},
+ "note": "Order effect / laptop load dominate (diag ran second and was faster); diag overhead is below run-to-run noise. Vectorized not re-measured. Smoke 1x1 run_doom: sample ~130-190 decisions/s incl. model, same as before."}

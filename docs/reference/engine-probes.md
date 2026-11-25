@@ -388,3 +388,21 @@ Probe script: `maps/probes/probe_doors.py` (one engine, TRAIN config with sector
 - On MAP01, enabling sector info adds about 2.4 ms to `advance_action` and 1.0 ms to `get_state` (raw engine timing, no Python observation code). It scales with the size of the map. The Python door code costs about 0.5-0.8 ms there (sector loop about 0.2 ms, cast about 0.3 ms with many doors) and about 0.08 ms on the generated maps.
 - `set_sectors_info_enabled(False)` after `init()` had no effect (sectors still returned), so the cost cannot be paid only every N decisions.
 - Measured while a 32-engine training run was live, so absolute numbers are noisy; p50 and interleaving reduce that.
+
+## Round 6 (per-episode skill, observation v4 locked-door channel), 2026-11-26
+
+### R6.1 Changing the skill between episodes (vizdoom 1.3.3)
+
+- Map: synthetic corridor (`tests/egomap_maps.py`, `extra_things`) with zombiemen flagged easy-only (flag 1) x1, medium-only (2) x2, hard-only (4) x3, all with the ambush bit. Counted from `state.objects` (probe only).
+- `set_doom_skill(k)` before `init()`: correct (skill 3 -> 2, skill 4 -> 3, skill 1 -> 1).
+- `new_episode()` with no skill call after `init()`: keeps the configured skill (the live training path).
+- **`set_doom_skill(k)` after `init()` is broken**: for every k in 1..5 (even k equal to the current skill) the next `new_episode()` spawns the easy set (1 zombie), and it stays so.
+- **`send_game_command("skill <k-1>")` then `new_episode()` works**: counts 1 / 2 / 3 for skills 1 / 3 / 4, and the skill persists over further `new_episode()` calls. Cost: reset p50 about 10-15 ms with or without a switch (no measurable extra); a full re-init costs about 0.9-1.2 s.
+- `env.DoomEnv` therefore switches skill with the console command, only when it changes, before `new_episode()`; `reset(options={"skill": k})` and `EnvConfig.skill_mix` (training only). Tested in `tests/test_env_obs_v4.py::test_engine_skill_option_and_mix_change_the_engine_skill`.
+- **Generated maps**: `maps/generator.py` writes every thing with flags 7 (all skills), so monster and item counts do not depend on skill there. By the engine's standard skill rules (not measured here), skill 1 halves damage taken and doubles ammo pickups, skill 5 doubles ammo and makes monsters fast and respawning, and skills 2, 3 and 4 then play identically on these maps. A skill mix such as `1,2,3,3,4` is effectively "skill 1 or not" until map-forge writes skill-specific thing flags.
+
+### R6.2 Observation v4 locked-door channel on the engine
+
+- Corridor with a blue-locked DR door (special 26): USE at the door without the key gives the needs-key pulse on the decision whose USE acted; the centre columns hit the door face at about 40-60 units with the v2 door channel lit, so channel 5 is marked; it survives fetching the key behind the player and is cleared once the door opens and the player walks through.
+- Generated S2-train-102001 (teacher sent to the door without the key): the mark appears on the first pulse and stays for the 100+ following decisions. Repeated presses at the same door merge into one mark.
+- A single 24-unit internal cell can fall between the crop's sample points after rotation (seen on S2: the bit set, the crop cell 0 for some headings), so a mark covers the 2x2 internal block around each hit point.

@@ -1,0 +1,71 @@
+[collect] 1/240 episodes, success 0/1, 400 decisions, 6s, avail 4.9 GiB
+[collect] 67/240 episodes, success 2/67, 26041 decisions, 36s, avail 4.9 GiB
+[collect] 140/240 episodes, success 8/140, 53375 decisions, 66s, avail 4.9 GiB
+[collect] 215/240 episodes, success 12/215, 81903 decisions, 97s, avail 4.9 GiB
+{
+ "env_config": "train_generated",
+ "bundle": "maps\\bundles\\train-all.wad",
+ "jobs": 240,
+ "episodes_finished": 240,
+ "wall_s": 109.9,
+ "errors": [],
+ "stopped_low_memory": false,
+ "worker_reductions": 0,
+ "complete": true,
+ "min_available_gib": 4.86,
+ "by_stage_noise": {
+  "S0@noise0.0": {
+   "episodes": 80,
+   "success": 10,
+   "success_rate": 0.125,
+   "decisions_all": 28471,
+   "mean_length_success": 47.1,
+   "saved": 80,
+   "decisions_saved": 28471
+  },
+  "S1@noise0.0": {
+   "episodes": 80,
+   "success": 2,
+   "success_rate": 0.025,
+   "decisions_all": 31432,
+   "mean_length_success": 116.0,
+   "saved": 80,
+   "decisions_saved": 31432
+  },
+  "S2@noise0.0": {
+   "episodes": 80,
+   "success": 0,
+   "success_rate": 0.0,
+   "decisions_all": 32000,
+   "mean_length_success": null,
+   "saved": 80,
+   "decisions_saved": 32000
+  }
+ },
+ "decisions_saved": 91903,
+ "episodes_saved": 240,
+ "dagger": {
+  "student": "D:\\DoomsDay\\reports\\runs\\20261125-bc-v1-e60-atk\\bc_model.pt",
+  "beta": 0.0,
+  "max_steps": 400,
+  "student_argmax": false,
+  "success_by_stage": {
+   "S0": [
+    10,
+    80
+   ],
+   "S1": [
+    2,
+    80
+   ],
+   "S2": [
+    0,
+    80
+   ]
+  },
+  "unstick_label_share": 0.0002,
+  "student_decision_share": 1.0,
+  "agree_all": 0.0624,
+  "capped": 228
+ }
+}

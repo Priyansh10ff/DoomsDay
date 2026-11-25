@@ -1,0 +1,52 @@
+{
+ "timer_ms": 1,
+ "screen_enabled": false,
+ "config": "train_generated",
+ "obs_version": 3,
+ "iwad": "freedoom2",
+ "map": "DD0040",
+ "frame_skip": 4,
+ "resolution": "160x120",
+ "n_envs": 1,
+ "processes": 1,
+ "cpu": "Intel64 Family 6 Model 198 Stepping 2, GenuineIntel",
+ "logical_cpus": 24,
+ "on_ac_power": true,
+ "battery_percent": 100,
+ "power_scheme": "Turbo",
+ "timer_active": true,
+ "child_processes": [
+  "vizdoom.exe"
+ ],
+ "full_env": {
+  "decisions": 5000,
+  "seconds": 7.07,
+  "decisions_per_s": 707.2,
+  "tics_per_s": 2828.8,
+  "episodes_ended": 4,
+  "step_ms_p50_p90_p99": [
+   1.07,
+   1.97,
+   6.7
+  ],
+  "share_steps_ge_14ms": 0.0002,
+  "python_cpu_s": 5.94
+ },
+ "n_sectors": 13,
+ "per_key_us": {
+  "rays": 41.7,
+  "entities(+type,mask)": 2.0,
+  "self(+ego,split_vars)": 7.8,
+  "screen": 260.5,
+  "door:read_sectors": 8.4,
+  "door:faces_now": 13.1,
+  "door:cast": 51.6,
+  "egomap:levels": 13.9,
+  "egomap:update": 69.8,
+  "egomap:crop": 42.3
+ },
+ "peak_ram_mb": {
+  "python": 73.4,
+  "vizdoom.exe": 66.9
+ }
+}

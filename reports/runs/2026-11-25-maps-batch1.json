@@ -1,0 +1,94 @@
+{
+ "date": "2026-11-25",
+ "seconds": 101.0,
+ "engine_checked": true,
+ "summary": {
+  "train/S0": {
+   "target": 20,
+   "passed": 20,
+   "seeds_tried": 20
+  },
+  "train/S1": {
+   "target": 20,
+   "passed": 20,
+   "seeds_tried": 20
+  },
+  "train/S2": {
+   "target": 20,
+   "passed": 20,
+   "seeds_tried": 20
+  },
+  "train/S3": {
+   "target": 20,
+   "passed": 20,
+   "seeds_tried": 20
+  },
+  "val/S0": {
+   "target": 5,
+   "passed": 5,
+   "seeds_tried": 5
+  },
+  "val/S1": {
+   "target": 5,
+   "passed": 5,
+   "seeds_tried": 5
+  },
+  "val/S2": {
+   "target": 5,
+   "passed": 5,
+   "seeds_tried": 5
+  },
+  "val/S3": {
+   "target": 5,
+   "passed": 5,
+   "seeds_tried": 5
+  },
+  "heldout/S0": {
+   "target": 5,
+   "passed": 5,
+   "seeds_tried": 5
+  },
+  "heldout/S1": {
+   "target": 5,
+   "passed": 5,
+   "seeds_tried": 5
+  },
+  "heldout/S2": {
+   "target": 5,
+   "passed": 5,
+   "seeds_tried": 5
+  },
+  "heldout/S3": {
+   "target": 5,
+   "passed": 5,
+   "seeds_tried": 5
+  }
+ },
+ "generation_failures": [],
+ "rejected": [],
+ "counts": {
+  "train": 80,
+  "val": 20,
+  "heldout": 20
+ },
+ "stage_distribution": {
+  "train": {
+   "S0": 20,
+   "S1": 20,
+   "S2": 20,
+   "S3": 20
+  },
+  "val": {
+   "S0": 5,
+   "S1": 5,
+   "S2": 5,
+   "S3": 5
+  },
+  "heldout": {
+   "S0": 5,
+   "S1": 5,
+   "S2": 5,
+   "S3": 5
+  }
+ }
+}

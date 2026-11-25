@@ -1,0 +1,48 @@
+priority check: {'enabled': True, 'all_below_normal': True, 'set_directly': [], 'processes': {'18360': 'python.exe below_normal=True', '18444': 'python.exe below_normal=True', '9320': 'vizdoom.exe below_normal=True'}}
+update 1: kl 0.0003 ev -39.769 scale 0.100 stale 0 rss 400 MiB sample 198/s update 676/s
+update 2: kl 0.0001 ev -0.685 scale 0.100 stale 0 rss 402 MiB sample 198/s update 885/s
+update 3: kl 0.0002 ev 0.010 scale 0.197 stale 0 rss 402 MiB sample 213/s update 549/s
+update 4: kl 0.0003 ev -11.803 scale 0.171 stale 0 rss 402 MiB sample 155/s update 552/s
+update 5: kl 0.0006 ev -24.981 scale 0.155 stale 0 rss 402 MiB sample 177/s update 627/s
+update 6: kl 0.0013 ev -6.147 scale 0.143 stale 0 rss 402 MiB sample 161/s update 499/s
+update 7: kl 0.0025 ev -1.533 scale 0.133 stale 0 rss 402 MiB sample 195/s update 762/s
+update 8: kl 0.0039 ev -1.814 scale 0.125 stale 0 rss 403 MiB sample 195/s update 901/s
+update 9: kl 0.0018 ev -0.741 scale 0.119 stale 0 rss 402 MiB sample 176/s update 508/s
+update 10: kl 0.0005 ev -4.925 scale 0.113 stale 0 rss 402 MiB sample 200/s update 644/s
+update 11: kl 0.0007 ev -4.407 scale 0.108 stale 0 rss 403 MiB sample 197/s update 575/s
+update 12: kl 0.0011 ev -8.521 scale 0.103 stale 0 rss 402 MiB sample 158/s update 534/s
+update 13: kl 0.0013 ev -1.518 scale 0.100 stale 0 rss 403 MiB sample 186/s update 564/s
+update 14: kl 0.0014 ev -2.989 scale 0.100 stale 0 rss 403 MiB sample 203/s update 761/s
+update 15: kl 0.0017 ev -5.028 scale 0.100 stale 0 rss 403 MiB sample 191/s update 812/s
+update 16: kl 0.0017 ev -2.252 scale 0.100 stale 0 rss 401 MiB sample 195/s update 427/s
+update 17: kl 0.0019 ev -0.794 scale 0.100 stale 0 rss 401 MiB sample 188/s update 525/s
+update 18: kl 0.0016 ev -3.181 scale 0.100 stale 0 rss 402 MiB sample 173/s update 477/s
+update 19: kl 0.0010 ev -6.887 scale 0.100 stale 0 rss 402 MiB sample 173/s update 493/s
+update 20: kl 0.0007 ev -13.956 scale 0.100 stale 0 rss 401 MiB sample 204/s update 511/s
+update 21: kl 0.0007 ev -4.078 scale 0.102 stale 0 rss 402 MiB sample 198/s update 624/s
+update 22: kl 0.0008 ev -1.119 scale 0.103 stale 0 rss 403 MiB sample 192/s update 561/s
+update 23: kl 0.0021 ev -4.757 scale 0.105 stale 0 rss 403 MiB sample 191/s update 766/s
+update 24: kl 0.0039 ev -0.961 scale 0.106 stale 0 rss 403 MiB sample 210/s update 741/s
+update 25: kl 0.0046 ev -1.994 scale 0.107 stale 0 rss 402 MiB sample 197/s update 610/s
+update 26: kl 0.0021 ev -3.308 scale 0.108 stale 0 rss 403 MiB sample 172/s update 660/s
+update 27: kl 0.0021 ev -3.015 scale 0.109 stale 0 rss 403 MiB sample 160/s update 433/s
+update 28: kl 0.0017 ev -23.128 scale 0.110 stale 0 rss 402 MiB sample 203/s update 601/s
+update 29: kl 0.0015 ev -0.032 scale 0.124 stale 0 rss 402 MiB sample 149/s update 554/s
+update 30: kl 0.0022 ev -1.168 scale 0.123 stale 0 rss 403 MiB sample 184/s update 559/s
+update 31: kl 0.0025 ev -0.723 scale 0.121 stale 0 rss 403 MiB sample 198/s update 583/s
+update 32: kl 0.0021 ev -0.034 scale 0.119 stale 0 rss 403 MiB sample 172/s update 724/s
+update 33: kl 0.0058 ev -0.333 scale 0.118 stale 0 rss 404 MiB sample 177/s update 564/s
+update 34: kl 0.0017 ev -0.847 scale 0.117 stale 0 rss 404 MiB sample 207/s update 535/s
+update 35: kl 0.0017 ev -2.269 scale 0.116 stale 0 rss 404 MiB sample 131/s update 549/s
+update 36: kl 0.0014 ev 0.043 scale 0.115 stale 0 rss 403 MiB sample 174/s update 510/s
+update 37: kl 0.0020 ev -0.701 scale 0.114 stale 0 rss 404 MiB sample 177/s update 377/s
+update 38: kl 0.0011 ev -0.003 scale 0.113 stale 0 rss 403 MiB sample 184/s update 893/s
+update 39: kl 0.0015 ev -0.262 scale 0.113 stale 0 rss 403 MiB sample 193/s update 681/s
+update 40: kl 0.0031 ev 0.132 scale 0.112 stale 0 rss 404 MiB sample 187/s update 594/s
+interrupt fired at 19.20s, trainer.update_idx at that moment 40
+update 41: kl 0.0031 ev -0.689 scale 0.112 stale 0 rss 404 MiB sample 173/s update 535/s
+checkpoint written (interrupt) at update 41: reports/runs/20261125-nogit-8653f5c1\checkpoint.pt
+stopped (interrupt) 0.11s after the request
+summary {"stop_reason": "interrupt", "updates_this_session": 41, "update_idx": 41, "checkpoints_written": 1, "max_tree_rss_bytes": 423915520, "min_available_bytes": 5796294656, "stale_timeouts_total": 0, "stop_latency_s": 0.10900000000401633, "priority": {"enabled": true, "all_below_normal": true, "set_directly": [], "processes": {"18360": "python.exe below_normal=True", "18444": "python.exe below_normal=True", "9320": "vizdoom.exe below_normal=True"}}}
+checkpoint loads with weights_only=True; update_idx 41 session 0 | last metrics update_idx 41
+engines alive after close: 0

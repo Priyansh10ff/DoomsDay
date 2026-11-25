@@ -1,0 +1,10 @@
+recorded [(32512, 'python.exe'), (32692, 'python.exe'), (22168, 'vizdoom.exe')]
+metrics lines before kill 110
+killed main 32512
+t+1s survivors []
+t+3s survivors []
+t+5s survivors []
+t+10s survivors []
+t+15s survivors []
+t+20s survivors []
+vizdoom.exe system-wide []

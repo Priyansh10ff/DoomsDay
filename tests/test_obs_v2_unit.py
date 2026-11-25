@@ -298,7 +298,7 @@ def test_versions_have_different_signatures_and_do_not_mix():
 def test_obs_version_switch_applies_to_every_builder(monkeypatch, tmp_path):
     from configs import a0_env as A
     assert A.OBS_VERSION == 3            # v3 (egomap) is the default since 2026-11-26
-    for raw, want in (("", 3), ("1", 1), ("2", 2), ("3", 3)):
+    for raw, want in (("", 3), ("1", 1), ("2", 2), ("3", 3), ("4", 4)):
         monkeypatch.setenv(A.OBS_VERSION_ENV_VAR, raw)
         tr, ev = A.a0_train_env_config(), A.a0_eval_env_config()
         assert tr.obs_version == ev.obs_version == want
@@ -309,7 +309,7 @@ def test_obs_version_switch_applies_to_every_builder(monkeypatch, tmp_path):
                         + b"\0" * 8 + b"DD0001\0\0" + b"\0" * 8 + b"THINGS\0\0")
         gen = A.generated_maps_env_config(tr, str(wad), ("DD0001",))
         assert gen.obs_version == want and gen.sensor_signature() == tr.sensor_signature()
-    monkeypatch.setenv(A.OBS_VERSION_ENV_VAR, "4")
+    monkeypatch.setenv(A.OBS_VERSION_ENV_VAR, "5")   # v4 (locked-door egomap) exists since 2026-11-26
     with pytest.raises(ValueError):
         A.a0_train_env_config()
 
@@ -321,8 +321,9 @@ def test_eval_v2_is_vanilla_but_raw_sector_field_is_not():
     with pytest.raises(AssertionError):
         ev2.replace(sectors_info=True).assert_vanilla()
     EVAL_CONFIG.replace(obs_version=3).assert_vanilla()   # v3 egomap: same engine inputs as v2
+    EVAL_CONFIG.replace(obs_version=4).assert_vanilla()   # v4: same engine inputs as v3
     with pytest.raises(AssertionError):
-        EVAL_CONFIG.replace(obs_version=4).assert_vanilla()
+        EVAL_CONFIG.replace(obs_version=5).assert_vanilla()
 
 
 def test_evaluate_reads_v1_and_v2_checkpoint_signatures():

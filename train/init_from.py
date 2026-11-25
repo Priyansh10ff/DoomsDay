@@ -3,9 +3,14 @@
 
 Fresh means: new optimizer, new return scale, update 0, fresh curriculum, new run
 dir. Only the model parameters are copied, with a strict load. Refused when the
-file's sensor signature, model config or observation spec differs from the run's.
-The source path and its sha256 are recorded in the run config (RunConfig.init_from,
-RunConfig.init_from_sha256), hence in every checkpoint the run writes.
+file's sensor signature, model config or observation spec differs from the run's,
+with ONE exception (train/egomap_growth.py): an observation spec that differs only by
+extra egomap channels appended at the end (and a sensor signature that differs only
+by a higher obs_version) is accepted; the first egomap conv weight then gets zero
+input slices for the new channels, so the run starts computing exactly what the file
+computed. The source path and its sha256 are recorded in the run config
+(RunConfig.init_from, RunConfig.init_from_sha256), and any growth in
+RunConfig.init_from_growth, hence in every checkpoint the run writes.
 """
 from __future__ import annotations
 
@@ -14,6 +19,7 @@ import hashlib
 from dataclasses import dataclass
 from typing import Any
 
+from .egomap_growth import EgomapGrowth, egomap_growth, grow_state, obs_version_change, state_shapes
 from .checkpoint import (LOADED_FROM_KEY, WEIGHTS_ONLY_KEY, CheckpointMismatch, canonical_json,
                          load_checkpoint)
 from .trainer import Trainer
@@ -36,6 +42,9 @@ class InitSource:
     sha256: str          # of `loaded_from`
     kind: str            # "weights_only" (behaviour cloning) or "trainer_checkpoint"
     blob: dict[str, Any]
+    # (file, run) obs_version when the sensor signatures differ only there (upward);
+    # accepted only if apply_init then finds an egomap channel growth.
+    obs_version_change: tuple[int, int] | None = None
 
 
 def read_init_source(path: str, sensor_signature: tuple) -> InitSource:
@@ -44,21 +53,44 @@ def read_init_source(path: str, sensor_signature: tuple) -> InitSource:
     exists."""
     blob = load_checkpoint(path)
     src = blob[LOADED_FROM_KEY]
-    if blob["sensor_signature_json"] != canonical_json(sensor_signature):
-        raise CheckpointMismatch(f"--init-from {src!r}: sensor settings differ: file "
-                                 f"{blob['sensor_signature_json']} vs run {canonical_json(sensor_signature)}")
+    run_sig = canonical_json(sensor_signature)
+    version_change = None
+    if blob["sensor_signature_json"] != run_sig:
+        version_change = obs_version_change(blob["sensor_signature_json"], run_sig)
+        if version_change is None:
+            raise CheckpointMismatch(f"--init-from {src!r}: sensor settings differ: file "
+                                     f"{blob['sensor_signature_json']} vs run {run_sig}")
     kind = "weights_only" if WEIGHTS_ONLY_KEY in blob else "trainer_checkpoint"
-    return InitSource(path, src, sha256_file(src), kind, blob)
+    return InitSource(path, src, sha256_file(src), kind, blob, version_change)
 
 
-def apply_init(trainer: Trainer, src: InitSource) -> None:
+def growth_record(src: InitSource, growth: EgomapGrowth) -> dict[str, Any]:
+    """What was grown, for RunConfig.init_from_growth (JSON-able)."""
+    rec = growth.record()
+    if src.obs_version_change is not None:
+        rec["obs_version_from"], rec["obs_version_to"] = src.obs_version_change
+    return rec
+
+
+def apply_init(trainer: Trainer, src: InitSource) -> EgomapGrowth | None:
     """Copy the model weights into a freshly built trainer (strict), then refresh the
-    hybrid actor copy. Nothing else of the file's trainer state is used."""
+    hybrid actor copy. Nothing else of the file's trainer state is used. Returns the
+    egomap growth applied (None when the specs were equal)."""
     blob = src.blob
     if blob["model_config"] != trainer.model.cfg:
         raise CheckpointMismatch(f"--init-from {src.loaded_from!r}: model config differs from this run's")
-    if blob["obs_spec_json"] != canonical_json(dataclasses.asdict(trainer.spec)):
-        raise CheckpointMismatch(f"--init-from {src.loaded_from!r}: observation spec differs: "
-                                 f"{blob['obs_spec_json']} vs {canonical_json(dataclasses.asdict(trainer.spec))}")
-    trainer.learner.load_state_dict(blob["trainer"]["model"], strict=True)
+    run_spec = canonical_json(dataclasses.asdict(trainer.spec))
+    state = blob["trainer"]["model"]
+    growth = None
+    if blob["obs_spec_json"] != run_spec:
+        growth = egomap_growth(blob["obs_spec_json"], trainer.spec)
+        if growth is None:
+            raise CheckpointMismatch(f"--init-from {src.loaded_from!r}: observation spec differs: "
+                                     f"{blob['obs_spec_json']} vs {run_spec}")
+        state = grow_state(state, growth, state_shapes(trainer.learner))
+    elif src.obs_version_change is not None:
+        raise CheckpointMismatch(f"--init-from {src.loaded_from!r}: obs_version differs "
+                                 f"{src.obs_version_change} but the observation spec is the same; refusing")
+    trainer.learner.load_state_dict(state, strict=True)
     trainer.sync_actor()
+    return growth

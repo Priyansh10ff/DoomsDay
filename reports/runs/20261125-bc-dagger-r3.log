@@ -1,0 +1,12 @@
+dataset ['data/teacher/bc_v1', 'data/teacher/dagger_r1', 'data/teacher/dagger_r1b', 'data/teacher/dagger_r2', 'data/teacher/dagger_r3']: 4560 episodes, 991583 steps; train 4104 episodes on 54 maps, val 456 episodes on 6 held-out maps ['S1-train-101005', 'S1-train-101006', 'S1-train-101008', 'S1-train-101012', 'S2-train-102005', 'S2-train-102019']
+head attack: teacher label constant (0) in the train split (WARNING: weight > 0 will crush its entropy)
+value head untouched by BC (no value loss); fit it with train.run_doom --init-from <bc_model.pt> --value-warmup-updates N
+epoch 1: move acc 0.870/0.825 strafe acc 0.995/0.986 turn acc 0.625/0.547 attack acc 1.000/1.000 use acc 0.992/0.990 speed acc 0.952/0.943  loss 1.4033  (train/val)
+epoch 2: move acc 0.874/0.826 strafe acc 0.996/0.989 turn acc 0.634/0.550 attack acc 1.000/1.000 use acc 0.992/0.990 speed acc 0.953/0.944  loss 1.3837  (train/val)
+epoch 3: move acc 0.877/0.821 strafe acc 0.996/0.987 turn acc 0.641/0.547 attack acc 1.000/1.000 use acc 0.992/0.990 speed acc 0.953/0.942  loss 1.3567  (train/val)
+epoch 4: move acc 0.880/0.838 strafe acc 0.996/0.990 turn acc 0.648/0.569 attack acc 1.000/1.000 use acc 0.992/0.990 speed acc 0.954/0.944  loss 1.3356  (train/val)
+epoch 5: move acc 0.883/0.838 strafe acc 0.996/0.990 turn acc 0.655/0.574 attack acc 1.000/1.000 use acc 0.992/0.991 speed acc 0.954/0.945  loss 1.3132  (train/val)
+epoch 6: move acc 0.886/0.833 strafe acc 0.996/0.990 turn acc 0.660/0.555 attack acc 1.000/1.000 use acc 0.992/0.990 speed acc 0.955/0.943  loss 1.2984  (train/val)
+epoch 7: move acc 0.888/0.837 strafe acc 0.996/0.987 turn acc 0.666/0.577 attack acc 1.000/1.000 use acc 0.992/0.991 speed acc 0.955/0.945  loss 1.2711  (train/val)
+epoch 8: move acc 0.891/0.815 strafe acc 0.996/0.988 turn acc 0.670/0.535 attack acc 1.000/1.000 use acc 0.993/0.989 speed acc 0.955/0.941  loss 1.2586  (train/val)
+wrote reports/runs/20261125-bc-dagger-r3\bc_model.pt after 8 epochs

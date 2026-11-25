@@ -64,6 +64,27 @@ HOW THE MAP IS FILLED (every decision, numpy-vectorised)
     grid of sample points (the centres of the four 24-unit internal cells it covers when
     axis-aligned; nearest internal cell per point after rotation).
   * Without depth/labels (e.g. `+viz_nocheat 1`) nothing is written: the map stays zeros.
+
+OBSERVATION v4 (EgoMap(locked_channel=True)): one more output channel, (6, 32, 32).
+    channel 5  locked door known  (the agent pressed USE on a closed door and the engine
+               answered "needs <colour> key")
+  * Input: the v2 "needs key" pulse bits only (3 booleans for this decision; derived in
+    the env from the vanilla locked-door message, the text never reaches this module). The
+    engine prints that message only when the key of that colour is NOT held, so colour
+    attribution is implicit; the channel itself is colour-blind (one bit for any colour).
+  * Mark: on a pulse, the door cells that channel 3 marks for the centre screen columns
+    (COL_CENTRE: the view ray, where vanilla USE acts), if those columns hit a door face
+    lit by the v2 door channel within LOCK_USE_RANGE_UNITS. Nothing else is marked (no
+    door lit at the centre -> nothing).
+  * Persist: for the episode, in the spawn-frame grid like every other channel.
+  * Clear ("seen open / passed"): each mark remembers its hit point p and the view
+    direction n at marking time (spawn frame, private). A mark is cleared when a ray of a
+    later decision that did NOT stop on a door face crosses the plane through p (normal n)
+    within LOCK_LATERAL_UNITS of p and runs on at least LOCK_BEYOND_UNITS past it (a
+    closed door stops every ray at its face, so only an open door lets one through,
+    whatever the viewing angle), or when the agent's own trail gets LOCK_BEYOND_UNITS / 2
+    past the plane within the same lateral window. The v3 free-space pass does NOT clear
+    it (grazing rays in front of a closed face would).
 """
 from __future__ import annotations
 
@@ -73,9 +94,19 @@ from .door_cue import DEPTH_OFFSET, DEPTH_PER_UNIT
 from .observation import ENTITY_TYPES, N_RAY_COLS, SCREEN_W
 
 # ---------------------------------------------------------------- contract (fixed)
-EGOMAP_CHANNELS = 5
+EGOMAP_CHANNELS = 5                   # observation v3
 EGOMAP_SIZE = 32
 EGOMAP_SHAPE = (EGOMAP_CHANNELS, EGOMAP_SIZE, EGOMAP_SIZE)
+EGOMAP_CHANNELS_V4 = 6                # observation v4: + locked door known
+EGOMAP_SHAPE_V4 = (EGOMAP_CHANNELS_V4, EGOMAP_SIZE, EGOMAP_SIZE)
+CH_LOCKED = 5
+
+
+def egomap_shape(obs_version: int) -> tuple[int, int, int] | None:
+    """(C, H, W) of `egomap` under an observation version; None before v3."""
+    if obs_version >= 4:
+        return EGOMAP_SHAPE_V4
+    return EGOMAP_SHAPE if obs_version >= 3 else None
 EGOMAP_CELL_UNITS = 48.0
 EGOMAP_AGENT_CELL = (16, 16)          # (row, col); facing up (row decreasing)
 CH_FREE, CH_WALL, CH_VISITED, CH_DOOR, CH_KEY = 0, 1, 2, 3, 4
@@ -128,6 +159,13 @@ _N_SUB = 4
 _FWD_C, _LEFT_C = _FWD / INT_CELL, _LEFT / INT_CELL     # in internal-cell units
 _SHIFTS = np.arange(4, dtype=np.uint8)[:, None, None]
 
+# v4 locked-door channel (internal bit 128, unused by the v3 packing)
+_LOCKED_BIT = 128
+COL_CENTRE = (N_RAY_COLS // 2 - 1, N_RAY_COLS // 2)     # the two columns either side of the view axis
+LOCK_USE_RANGE_UNITS = 100.0    # vanilla USERANGE 64 + depth quantisation (~7 units/level) margin
+LOCK_LATERAL_UNITS = 40.0       # a crossing ray / the trail must pass this close to the mark
+LOCK_BEYOND_UNITS = 32.0        # ... and get this far past the door plane
+
 
 def world_column_levels(depth: np.ndarray, labels_buf: np.ndarray, band: tuple[int, int]) -> np.ndarray:
     """(80,) float64 raw depth levels per column, nearest WORLD pixel of the middle ray
@@ -144,8 +182,10 @@ class EgoMap:
     """Per-episode occupancy memory. Private state: the packed spawn-frame grid and the
     agent's spawn-relative pose. Only `crop()` output reaches the observation."""
 
-    def __init__(self):
+    def __init__(self, locked_channel: bool = False):
         self.grid = np.zeros((INT_GRID, INT_GRID), dtype=np.uint8)   # bit-packed channels
+        self.locked_channel = bool(locked_channel)                    # observation v4
+        self.shape = EGOMAP_SHAPE_V4 if self.locked_channel else EGOMAP_SHAPE
         self.reset()
 
     def reset(self):
@@ -154,6 +194,7 @@ class EgoMap:
         self._pose = None         # (x, y, heading_rad) in the spawn frame
         self._prev_xy = None
         self._held = [False, False, False]   # keys held at the last update (b, y, r)
+        self._locks: list = []    # v4, private: (cells, px, py, nx, ny) in the spawn frame
 
     # ------------------------------------------------------------ pose
     def _set_pose(self, px: float, py: float, heading_deg: float):
@@ -176,11 +217,12 @@ class EgoMap:
     def update(self, px: float, py: float, heading_deg: float, levels: np.ndarray,
                door_cols: np.ndarray | None, entities: np.ndarray | None = None,
                entity_type: np.ndarray | None = None, entity_mask: np.ndarray | None = None,
-               keys_held=None) -> None:
+               keys_held=None, needs_key=None) -> None:
         """One decision. levels: (80,) raw depth levels (0 = no reading); door_cols: (80,)
         v2 door channel (1 = door face) or None. entities / entity_type / entity_mask: the
         observation's entity set (only key rows are used); keys_held: 3 booleans (b, y, r),
-        the v2 keys-held bits."""
+        the v2 keys-held bits; needs_key: 3 booleans, the v2 "needs key" pulse (used only
+        with locked_channel, observation v4)."""
         self._set_pose(px, py, heading_deg)
         x, y, h = self._pose
         flat = self.grid.reshape(-1)
@@ -198,6 +240,7 @@ class EgoMap:
 
         lv = np.asarray(levels, dtype=np.float64)
         has = lv > 0
+        lock_rays = None
         if has.any():
             sat = lv[has] >= SATURATED_LEVEL
             perp = np.where(sat, SATURATED_PERP_UNITS, (lv[has] - DEPTH_OFFSET) / DEPTH_PER_UNIT)
@@ -225,9 +268,114 @@ class EgoMap:
                 flat[w_idx] |= _BIT[CH_WALL]
                 d_idx = self._cells(hx[is_door], hy[is_door])
                 flat[d_idx] = (flat[d_idx] & np.uint8(~_BIT[CH_WALL] & 0xFF)) | _BIT[CH_DOOR]
+            if self.locked_channel:
+                lock_rays = (has, sat, rng, ca, sa, door_cols)
         v_idx = self._cells(vx, vy)
         flat[v_idx] |= _BIT[CH_VISITED]
         self._update_keys(flat, x, y, h, entities, entity_type, entity_mask, keys_held)
+        if self.locked_channel:
+            self._update_locks(flat, x, y, h, vx, vy, lock_rays, needs_key)
+
+    # ------------------------------------------------------------ v4: locked doors
+    def _update_locks(self, flat, x, y, h, vx, vy, rays, needs_key):
+        pulse = needs_key is not None and bool(np.any(needs_key))
+        if not self._locks and not pulse:
+            return
+        # 1) clear marks whose door was seen open (a ray that did not stop on a door face
+        #    ran through the mark's plane) or passed (the trail got beyond the plane)
+        if self._locks:
+            rr = None
+            if rays is not None:
+                has, sat, rng, ca, sa, door_cols = rays
+                door = ((np.asarray(door_cols)[has] > 0.5) if door_cols is not None
+                        else np.zeros(rng.shape, dtype=bool))
+                through = sat | ~door
+                rx, ry, rr = ca[through], sa[through], rng[through]
+            keep = []
+            for mark in self._locks:
+                cells, px, py, nx, ny = mark
+                f = (vx - px) * nx + (vy - py) * ny
+                lat = np.abs(-(vx - px) * ny + (vy - py) * nx)
+                gone = bool(np.any((f > LOCK_BEYOND_UNITS / 2) & (lat <= LOCK_LATERAL_UNITS)))
+                if not gone and rr is not None and rr.size:
+                    dn = rx * nx + ry * ny                       # ray direction . plane normal
+                    ok = dn > 0.1
+                    s_cross = np.where(ok, ((px - x) * nx + (py - y) * ny) / np.where(ok, dn, 1.0), -1.0)
+                    clat = np.abs(-(x + rx * s_cross - px) * ny + (y + ry * s_cross - py) * nx)
+                    beyond = (rr - s_cross) * dn                 # how far past the plane the ray ends
+                    gone = bool(np.any(ok & (s_cross > 0) & (clat <= LOCK_LATERAL_UNITS)
+                                       & (beyond >= LOCK_BEYOND_UNITS)))
+                if gone:
+                    flat[cells] &= np.uint8(~_LOCKED_BIT & 0xFF)
+                else:
+                    keep.append(mark)
+            if len(keep) != len(self._locks):
+                self._locks = keep
+                for mark in keep:                                # overlapping marks stay set
+                    flat[mark[0]] |= np.uint8(_LOCKED_BIT)
+        # 2) mark: a needs-key pulse this decision, centre columns on a lit door face in USE range
+        if not pulse or rays is None:
+            return
+        has, sat, rng, ca, sa, door_cols = rays
+        if door_cols is None:
+            return
+        cols = np.flatnonzero(has)
+        sel = np.isin(cols, COL_CENTRE) & (np.asarray(door_cols)[cols] > 0.5) & ~sat
+        sel &= rng <= LOCK_USE_RANGE_UNITS
+        if not sel.any():
+            return
+        hr = rng[sel] + WALL_NUDGE_UNITS
+        hx, hy = x + ca[sel] * hr, y + sa[sel] * hr
+        # the 2x2 block of internal cells whose centres surround each hit point: a 48-unit
+        # square always holds one of the crop's 24-unit sample points at any rotation, so
+        # the mark never drops out of the crop (a single 24-unit cell can).
+        bx = np.concatenate([hx - INT_CELL / 2, hx + INT_CELL / 2, hx - INT_CELL / 2, hx + INT_CELL / 2])
+        by = np.concatenate([hy - INT_CELL / 2, hy - INT_CELL / 2, hy + INT_CELL / 2, hy + INT_CELL / 2])
+        cells = np.unique(self._cells(bx, by))
+        if cells.size == 0:
+            return
+        flat[cells] |= np.uint8(_LOCKED_BIT)
+        px = float(np.mean(x + ca[sel] * rng[sel]))
+        py = float(np.mean(y + sa[sel] * rng[sel]))
+        nx, ny = self._door_normal(cols, np.asarray(door_cols), sat, rng, ca, sa, x, y, h)
+        for i, mark in enumerate(self._locks):   # the same door pressed again: one mark
+            if np.hypot(mark[1] - px, mark[2] - py) <= INT_CELL:
+                self._locks[i] = (np.union1d(mark[0], cells),) + tuple(mark[1:])
+                return
+        self._locks.append((cells, px, py, nx, ny))
+
+    @staticmethod
+    def _door_normal(cols, door_cols, sat, rng, ca, sa, x, y, h):
+        """Unit normal of the door face under the view ray (spawn frame, pointing away from
+        the agent): a line fit through the hit points of the lit door columns contiguous
+        with the centre; the view heading when fewer than 4 columns / under 16 units span."""
+        fallback = (float(np.cos(h)), float(np.sin(h)))
+        lit = np.zeros(N_RAY_COLS, dtype=bool)
+        pos = np.full(N_RAY_COLS, -1)
+        ok = (door_cols[cols] > 0.5) & ~sat
+        lit[cols[ok]] = True
+        pos[cols] = np.arange(cols.size)
+        lo, hi = COL_CENTRE
+        if not (lit[lo] or lit[hi]):
+            return fallback
+        lo, hi = (lo, hi) if lit[lo] else (hi, hi)
+        hi = hi if lit[hi] else lo
+        while lo > 0 and lit[lo - 1]:
+            lo -= 1
+        while hi < N_RAY_COLS - 1 and lit[hi + 1]:
+            hi += 1
+        idx = pos[lo:hi + 1]
+        if idx.size < 4:
+            return fallback
+        pts = np.stack([x + ca[idx] * rng[idx], y + sa[idx] * rng[idx]], axis=1)
+        d = pts - pts.mean(axis=0)
+        if np.hypot(*(pts[-1] - pts[0])) < 16.0:
+            return fallback
+        tx, ty = np.linalg.svd(d, full_matrices=False)[2][0]     # face direction
+        nx, ny = -ty, tx
+        if nx * fallback[0] + ny * fallback[1] < 0:
+            nx, ny = -nx, -ny
+        return float(nx), float(ny)
 
     def _update_keys(self, flat, x, y, h, ents, types, mask, keys_held):
         if keys_held is not None:
@@ -260,9 +408,10 @@ class EgoMap:
 
     # ------------------------------------------------------------ read
     def crop(self) -> np.ndarray:
-        """(5, 32, 32) uint8 ego-centric crop; zeros before the first update."""
+        """(5, 32, 32) uint8 ego-centric crop ((6, 32, 32) with locked_channel, v4);
+        zeros before the first update."""
         if self._pose is None:
-            return np.zeros(EGOMAP_SHAPE, dtype=np.uint8)
+            return np.zeros(self.shape, dtype=np.uint8)
         x, y, h = self._pose
         c, s = np.cos(h), np.sin(h)
         sx = (x / INT_CELL + _HALF) + (_FWD_C * c - _LEFT_C * s)
@@ -271,7 +420,9 @@ class EgoMap:
         iy = np.clip(np.floor(sy), 0, INT_GRID - 1).astype(np.intp)
         vals = self.grid[iy, ix]
         packed = np.bitwise_or.reduce(vals.reshape(EGOMAP_SIZE, EGOMAP_SIZE, _N_SUB), axis=2)
-        out = np.empty(EGOMAP_SHAPE, dtype=np.uint8)
+        out = np.empty(self.shape, dtype=np.uint8)
         out[:4] = (packed[None] >> _SHIFTS) & 1
         out[CH_KEY] = (packed & _KEY_ANY) != 0
+        if self.locked_channel:
+            out[CH_LOCKED] = (packed & _LOCKED_BIT) != 0
         return out

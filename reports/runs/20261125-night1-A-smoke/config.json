@@ -1,0 +1,31 @@
+{
+  "description": "Overnight A/B, arm A: PPO on generated maps with the training-only door-passed reward (full_level_doors), started from the DAgger round-1 imitation model with a 20-update value warm-up. 4x6, 4 torch threads, health monitor flag-only. Chosen by the coordinator 2026-11-25; two arms run side by side, so each is smaller than 4x8. SMOKE 150 s.",
+  "baseline": "RunConfig defaults (1x1, 2 torch threads)",
+  "argv": [
+    "--workers",
+    "4",
+    "--envs-per-worker",
+    "6",
+    "--torch-threads",
+    "4",
+    "--allow-multi-instance",
+    "24",
+    "--maps",
+    "generated",
+    "--shaping",
+    "full_level_doors",
+    "--checkpoint-interval",
+    "600",
+    "--init-from",
+    "reports/runs/20261125-bc-dagger-r1/bc_model.pt",
+    "--value-warmup-updates",
+    "20",
+    "--max-seconds",
+    "150"
+  ],
+  "env_overrides": {},
+  "safety_overrides": {},
+  "health_overrides": {
+    "stop_enabled": false
+  }
+}

@@ -27,8 +27,11 @@ BLUE_KEYCARD = 5
 
 
 def corridor_wad(path: str, shift: tuple[int, int] = (0, 0), with_door: bool = True,
-                 player_x: int = PLAYER_X, key_x: int | None = None) -> str:
-    """key_x: put a blue keycard on the corridor axis at that x (None = no key)."""
+                 player_x: int = PLAYER_X, key_x: int | None = None,
+                 door_special: int = 1, extra_things: tuple = ()) -> str:
+    """key_x: put a blue keycard on the corridor axis at that x (None = no key).
+    door_special: line special of both door faces (1 = DR open; 26 = DR blue-key door).
+    extra_things: (x, y, type, flags) tuples added after the player (skill probes)."""
     sx, sy = shift
     x1, x2 = DOOR_X0, DOOR_X0 + DOOR_T   # with_door=False: same lines, sector fully open
     verts = [(0, -HALF_W), (0, HALF_W), (x1, HALF_W), (x1, -HALF_W),
@@ -53,15 +56,17 @@ def corridor_wad(path: str, shift: tuple[int, int] = (0, 0), with_door: bool = T
 
     # sector A (clockwise: interior on the right)
     one(1, 2, 0); one(3, 0, 0); one(0, 1, 0)
-    two(2, 3, 0, 1, 1)                     # A | door face, front = A
+    two(2, 3, 0, 1, door_special)          # A | door face, front = A
     # door sector jambs
     one(2, 4, 1, TRACK); one(5, 3, 1, TRACK)
-    two(5, 4, 2, 1, 1)                     # B | door face, front = B
+    two(5, 4, 2, 1, door_special)          # B | door face, front = B
     # sector B
     one(4, 6, 2); one(6, 7, 2); one(7, 5, 2)
     things = [Thing(player_x + sx, 0 + sy, 0, 1, 7)]
     if key_x is not None:
         things.append(Thing(key_x + sx, 0 + sy, 0, BLUE_KEYCARD, 7))
+    for tx, ty, ttype, flags in extra_things:
+        things.append(Thing(tx + sx, ty + sy, 0, ttype, flags))
     lumps = pack_map("MAP01", verts, lines, sides, sectors, things)
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
     write_wad(path, lumps)

@@ -1,0 +1,2824 @@
+{
+ "config": {
+  "stages": [
+   "S3"
+  ],
+  "episodes_per_map": 50,
+  "out": "data/teacher/bc_v4map_s3",
+  "noise": 0.2,
+  "clean_every": 0,
+  "burst_max": 3,
+  "workers": 2,
+  "seed": 2029,
+  "keep_failures": false,
+  "save": true,
+  "map_ids": [],
+  "trace": false,
+  "resume": false,
+  "student": null,
+  "beta": 0.0,
+  "max_steps": 0,
+  "student_argmax": false
+ },
+ "env_config": "train_generated",
+ "bundle": "maps\\bundles\\train-all.wad",
+ "jobs": 1000,
+ "episodes_finished": 1000,
+ "wall_s": 764.3,
+ "errors": [],
+ "stopped_low_memory": false,
+ "worker_reductions": 0,
+ "complete": true,
+ "min_available_gib": 3.25,
+ "by_stage_noise": {
+  "S3@noise0.2": {
+   "episodes": 1000,
+   "success": 984,
+   "success_rate": 0.984,
+   "decisions_all": 307547,
+   "mean_length_success": 308.3,
+   "saved": 984,
+   "decisions_saved": 303332,
+   "use_label_share": 0.0288,
+   "attack_label_share": 0.1132,
+   "attack_labels": 34814,
+   "combat_decisions": 60459,
+   "kills": 3240,
+   "deaths": 16,
+   "timeouts": 0,
+   "damage_taken": 18740.0,
+   "monsters_seen": 3338,
+   "use_edges_exec": 41512,
+   "press_open_target": 11,
+   "press_into_moving": 0,
+   "door_presses": 7079,
+   "switch_presses": 476,
+   "ineffective_presses": 28,
+   "repress_after_close": 4075,
+   "reversals_label": 0,
+   "reversals_other": 7964,
+   "max_presses_per_closed_spell": 2,
+   "pressable_now": 9620,
+   "pressable_but_use_held": 778,
+   "closed_door_ahead_far": 16816,
+   "open_door_ahead": 76803,
+   "near_closed_target_door": 31333
+  }
+ },
+ "decisions_saved": 303332,
+ "episodes_saved": 984,
+ "failures": [
+  {
+   "episode": 13,
+   "map_id": "S3-train-103014",
+   "stage": "S3",
+   "seed": 2029006100,
+   "noise": 0.2,
+   "length": 184,
+   "success": false,
+   "noisy_decisions": 58,
+   "student_decisions": 0,
+   "unstick_labels": 6,
+   "capped": false,
+   "agree_all": 0.6848,
+   "agree_head": [
+    0.788,
+    0.7989,
+    0.712,
+    0.9511,
+    0.8478,
+    0.8533
+   ],
+   "dead": true,
+   "timeout": false,
+   "anchor_reached": 0,
+   "anchors": 6,
+   "anchor_kind": "door",
+   "phase": "approach",
+   "unsticks": 1,
+   "final_pos": [
+    30,
+    24
+   ],
+   "attack_labels": 45,
+   "attack_exec": 36,
+   "combat_decisions": 80,
+   "monsters_seen": 1,
+   "kills": 0,
+   "damage_taken": 114.0,
+   "combat_give_ups": 1,
+   "use_labels": 5,
+   "use_edges_exec": 24,
+   "press_open_target": 0,
+   "press_into_moving": 0,
+   "door_presses": 3,
+   "switch_presses": 0,
+   "ineffective_presses": 0,
+   "repress_after_close": 2,
+   "reversals_label": 0,
+   "reversals_other": 4,
+   "max_presses_per_closed_spell": 1,
+   "pressable_now": 6,
+   "pressable_but_use_held": 1,
+   "closed_door_ahead_far": 5,
+   "open_door_ahead": 25,
+   "near_closed_target_door": 7,
+   "events": [
+    [
+     10,
+     "a0:align"
+    ],
+    [
+     11,
+     "a0:press:door5"
+    ],
+    [
+     12,
+     "a0:press:door5"
+    ],
+    [
+     13,
+     "a0:push"
+    ],
+    [
+     16,
+     "a0:approach"
+    ],
+    [
+     16,
+     "a0:press:door5"
+    ],
+    [
+     17,
+     "a0:press:door5"
+    ],
+    [
+     20,
+     "a0:push"
+    ],
+    [
+     23,
+     "combat:target:DoomImp1"
+    ],
+    [
+     38,
+     "combat:target:DoomImp1"
+    ],
+    [
+     47,
+     "combat:target:DoomImp1"
+    ],
+    [
+     52,
+     "combat:target:DoomImp1"
+    ],
+    [
+     60,
+     "combat:target:DoomImp1"
+    ],
+    [
+     67,
+     "a0:approach"
+    ],
+    [
+     68,
+     "a0:press:door5"
+    ],
+    [
+     74,
+     "a0:push"
+    ],
+    [
+     76,
+     "combat:target:DoomImp1"
+    ],
+    [
+     106,
+     "combat:target:DoomImp1"
+    ],
+    [
+     126,
+     "combat:target:DoomImp1"
+    ],
+    [
+     134,
+     "combat:give_up:1"
+    ],
+    [
+     145,
+     "a0:approach"
+    ],
+    [
+     169,
+     "a0:unstick"
+    ]
+   ],
+   "saved": false
+  },
+  {
+   "episode": 132,
+   "map_id": "S3-train-103013",
+   "stage": "S3",
+   "seed": 2029006219,
+   "noise": 0.2,
+   "length": 423,
+   "success": false,
+   "noisy_decisions": 140,
+   "student_decisions": 0,
+   "unstick_labels": 0,
+   "capped": false,
+   "agree_all": 0.669,
+   "agree_head": [
+    0.7683,
+    0.7943,
+    0.7139,
+    0.9409,
+    0.87,
+    0.8392
+   ],
+   "dead": true,
+   "timeout": false,
+   "anchor_reached": 6,
+   "anchors": 8,
+   "anchor_kind": "door",
+   "phase": "push",
+   "unsticks": 0,
+   "final_pos": [
+    -255,
+    -240
+   ],
+   "attack_labels": 65,
+   "attack_exec": 40,
+   "combat_decisions": 113,
+   "monsters_seen": 5,
+   "kills": 4,
+   "damage_taken": 102.0,
+   "combat_give_ups": 0,
+   "use_labels": 14,
+   "use_edges_exec": 52,
+   "press_open_target": 0,
+   "press_into_moving": 0,
+   "door_presses": 12,
+   "switch_presses": 0,
+   "ineffective_presses": 0,
+   "repress_after_close": 8,
+   "reversals_label": 0,
+   "reversals_other": 17,
+   "max_presses_per_closed_spell": 1,
+   "pressable_now": 14,
+   "pressable_but_use_held": 0,
+   "closed_door_ahead_far": 29,
+   "open_door_ahead": 166,
+   "near_closed_target_door": 57,
+   "events": [
+    [
+     180,
+     "a4:approach"
+    ],
+    [
+     187,
+     "a4:align"
+    ],
+    [
+     187,
+     "a4:press:door13"
+    ],
+    [
+     188,
+     "a4:push"
+    ],
+    [
+     201,
+     "a4:approach"
+    ],
+    [
+     219,
+     "a4:align"
+    ],
+    [
+     219,
+     "a4:press:door13"
+    ],
+    [
+     220,
+     "a4:push"
+    ],
+    [
+     234,
+     "a4:done"
+    ],
+    [
+     247,
+     "a5:align"
+    ],
+    [
+     247,
+     "a5:press:door8"
+    ],
+    [
+     248,
+     "a5:push"
+    ],
+    [
+     252,
+     "combat:target:DoomImp25"
+    ],
+    [
+     262,
+     "combat:target:DoomImp25"
+    ],
+    [
+     275,
+     "a5:approach"
+    ],
+    [
+     276,
+     "a5:align"
+    ],
+    [
+     278,
+     "a5:press:door8"
+    ],
+    [
+     279,
+     "a5:push"
+    ],
+    [
+     283,
+     "combat:target:DoomImp25"
+    ],
+    [
+     286,
+     "combat:target:DoomImp25"
+    ],
+    [
+     296,
+     "a5:approach"
+    ],
+    [
+     296,
+     "a5:press:door8"
+    ],
+    [
+     297,
+     "a5:push"
+    ],
+    [
+     301,
+     "combat:target:DoomImp25"
+    ],
+    [
+     308,
+     "a5:approach"
+    ],
+    [
+     308,
+     "a5:align"
+    ],
+    [
+     308,
+     "a5:press:door8"
+    ],
+    [
+     309,
+     "a5:push"
+    ],
+    [
+     313,
+     "combat:target:DoomImp25"
+    ],
+    [
+     334,
+     "a5:done"
+    ],
+    [
+     392,
+     "a6:align"
+    ],
+    [
+     392,
+     "a6:press:door16"
+    ],
+    [
+     393,
+     "a6:press:door16"
+    ],
+    [
+     397,
+     "a6:press:door16"
+    ],
+    [
+     398,
+     "a6:push"
+    ],
+    [
+     407,
+     "a6:approach"
+    ],
+    [
+     407,
+     "a6:align"
+    ],
+    [
+     407,
+     "a6:press:door16"
+    ],
+    [
+     408,
+     "a6:push"
+    ],
+    [
+     419,
+     "combat:target:Zombieman37"
+    ]
+   ],
+   "saved": false
+  },
+  {
+   "episode": 152,
+   "map_id": "S3-train-103013",
+   "stage": "S3",
+   "seed": 2029006239,
+   "noise": 0.2,
+   "length": 418,
+   "success": false,
+   "noisy_decisions": 156,
+   "student_decisions": 0,
+   "unstick_labels": 0,
+   "capped": false,
+   "agree_all": 0.6316,
+   "agree_head": [
+    0.7536,
+    0.744,
+    0.6818,
+    0.9665,
+    0.7847,
+    0.8206
+   ],
+   "dead": true,
+   "timeout": false,
+   "anchor_reached": 6,
+   "anchors": 8,
+   "anchor_kind": "door",
+   "phase": "push",
+   "unsticks": 0,
+   "final_pos": [
+    -151,
+    -208
+   ],
+   "attack_labels": 48,
+   "attack_exec": 34,
+   "combat_decisions": 100,
+   "monsters_seen": 4,
+   "kills": 3,
+   "damage_taken": 108.0,
+   "combat_give_ups": 0,
+   "use_labels": 12,
+   "use_edges_exec": 72,
+   "press_open_target": 0,
+   "press_into_moving": 0,
+   "door_presses": 12,
+   "switch_presses": 0,
+   "ineffective_presses": 0,
+   "repress_after_close": 8,
+   "reversals_label": 0,
+   "reversals_other": 14,
+   "max_presses_per_closed_spell": 1,
+   "pressable_now": 15,
+   "pressable_but_use_held": 3,
+   "closed_door_ahead_far": 41,
+   "open_door_ahead": 116,
+   "near_closed_target_door": 61,
+   "events": [
+    [
+     123,
+     "a1:approach"
+    ],
+    [
+     139,
+     "a1:align"
+    ],
+    [
+     139,
+     "a1:press:door19"
+    ],
+    [
+     140,
+     "a1:push"
+    ],
+    [
+     150,
+     "a1:done"
+    ],
+    [
+     166,
+     "a2:done"
+    ],
+    [
+     183,
+     "a3:push"
+    ],
+    [
+     187,
+     "a3:done"
+    ],
+    [
+     194,
+     "a4:align"
+    ],
+    [
+     198,
+     "a4:press:door13"
+    ],
+    [
+     199,
+     "a4:push"
+    ],
+    [
+     216,
+     "a4:approach"
+    ],
+    [
+     224,
+     "a4:align"
+    ],
+    [
+     224,
+     "a4:press:door13"
+    ],
+    [
+     225,
+     "a4:push"
+    ],
+    [
+     242,
+     "a4:approach"
+    ],
+    [
+     242,
+     "a4:press:door13"
+    ],
+    [
+     244,
+     "a4:push"
+    ],
+    [
+     258,
+     "a4:approach"
+    ],
+    [
+     263,
+     "a4:align"
+    ],
+    [
+     265,
+     "a4:press:door13"
+    ],
+    [
+     266,
+     "a4:push"
+    ],
+    [
+     271,
+     "a4:approach"
+    ],
+    [
+     271,
+     "a4:align"
+    ],
+    [
+     271,
+     "a4:press:door13"
+    ],
+    [
+     272,
+     "a4:push"
+    ],
+    [
+     283,
+     "a4:done"
+    ],
+    [
+     319,
+     "a5:align"
+    ],
+    [
+     319,
+     "a5:press:door8"
+    ],
+    [
+     320,
+     "a5:push"
+    ],
+    [
+     324,
+     "combat:target:DoomImp20"
+    ],
+    [
+     354,
+     "a5:done"
+    ],
+    [
+     355,
+     "combat:target:DoomImp20"
+    ],
+    [
+     390,
+     "a6:align"
+    ],
+    [
+     391,
+     "a6:press:door16"
+    ],
+    [
+     392,
+     "a6:push"
+    ],
+    [
+     395,
+     "a6:approach"
+    ],
+    [
+     407,
+     "a6:align"
+    ],
+    [
+     407,
+     "a6:press:door16"
+    ],
+    [
+     408,
+     "a6:push"
+    ]
+   ],
+   "saved": false
+  },
+  {
+   "episode": 222,
+   "map_id": "S3-train-103003",
+   "stage": "S3",
+   "seed": 2029006309,
+   "noise": 0.2,
+   "length": 445,
+   "success": false,
+   "noisy_decisions": 184,
+   "student_decisions": 0,
+   "unstick_labels": 0,
+   "capped": false,
+   "agree_all": 0.5888,
+   "agree_head": [
+    0.7169,
+    0.7236,
+    0.636,
+    0.9506,
+    0.791,
+    0.7933
+   ],
+   "dead": true,
+   "timeout": false,
+   "anchor_reached": 2,
+   "anchors": 4,
+   "anchor_kind": "door",
+   "phase": "push",
+   "unsticks": 0,
+   "final_pos": [
+    144,
+    -92
+   ],
+   "attack_labels": 51,
+   "attack_exec": 29,
+   "combat_decisions": 152,
+   "monsters_seen": 5,
+   "kills": 4,
+   "damage_taken": 108.0,
+   "combat_give_ups": 0,
+   "use_labels": 17,
+   "use_edges_exec": 71,
+   "press_open_target": 0,
+   "press_into_moving": 0,
+   "door_presses": 12,
+   "switch_presses": 0,
+   "ineffective_presses": 0,
+   "repress_after_close": 10,
+   "reversals_label": 0,
+   "reversals_other": 21,
+   "max_presses_per_closed_spell": 1,
+   "pressable_now": 17,
+   "pressable_but_use_held": 0,
+   "closed_door_ahead_far": 25,
+   "open_door_ahead": 149,
+   "near_closed_target_door": 48,
+   "events": [
+    [
+     203,
+     "a2:press:door7"
+    ],
+    [
+     204,
+     "a2:push"
+    ],
+    [
+     208,
+     "combat:target:ShotgunGuy8"
+    ],
+    [
+     213,
+     "a2:approach"
+    ],
+    [
+     213,
+     "a2:press:door7"
+    ],
+    [
+     214,
+     "a2:align"
+    ],
+    [
+     214,
+     "a2:press:door7"
+    ],
+    [
+     215,
+     "a2:approach"
+    ],
+    [
+     217,
+     "combat:target:ShotgunGuy8"
+    ],
+    [
+     221,
+     "combat:target:ShotgunGuy13"
+    ],
+    [
+     230,
+     "combat:target:ShotgunGuy13"
+    ],
+    [
+     236,
+     "combat:target:Zombieman14"
+    ],
+    [
+     239,
+     "combat:target:ShotgunGuy13"
+    ],
+    [
+     257,
+     "a2:push"
+    ],
+    [
+     259,
+     "combat:target:Zombieman14"
+    ],
+    [
+     260,
+     "combat:target:ShotgunGuy13"
+    ],
+    [
+     277,
+     "a2:approach"
+    ],
+    [
+     277,
+     "a2:press:door7"
+    ],
+    [
+     282,
+     "a2:push"
+    ],
+    [
+     284,
+     "combat:target:ShotgunGuy13"
+    ],
+    [
+     287,
+     "combat:target:Zombieman4"
+    ],
+    [
+     291,
+     "combat:target:ShotgunGuy13"
+    ],
+    [
+     296,
+     "combat:target:Zombieman4"
+    ],
+    [
+     323,
+     "combat:target:Zombieman4"
+    ],
+    [
+     344,
+     "a2:approach"
+    ],
+    [
+     348,
+     "a2:align"
+    ],
+    [
+     349,
+     "a2:press:door7"
+    ],
+    [
+     350,
+     "a2:push"
+    ],
+    [
+     354,
+     "combat:target:Zombieman14"
+    ],
+    [
+     356,
+     "combat:target:Zombieman14"
+    ],
+    [
+     365,
+     "a2:approach"
+    ],
+    [
+     365,
+     "a2:press:door7"
+    ],
+    [
+     366,
+     "a2:push"
+    ],
+    [
+     370,
+     "combat:target:Zombieman14"
+    ],
+    [
+     376,
+     "combat:target:Zombieman14"
+    ],
+    [
+     378,
+     "combat:target:ShotgunGuy5"
+    ],
+    [
+     404,
+     "combat:target:ShotgunGuy5"
+    ],
+    [
+     420,
+     "a2:approach"
+    ],
+    [
+     423,
+     "a2:push"
+    ],
+    [
+     427,
+     "combat:target:ShotgunGuy5"
+    ]
+   ],
+   "saved": false
+  },
+  {
+   "episode": 264,
+   "map_id": "S3-train-103005",
+   "stage": "S3",
+   "seed": 2029006351,
+   "noise": 0.2,
+   "length": 106,
+   "success": false,
+   "noisy_decisions": 40,
+   "student_decisions": 0,
+   "unstick_labels": 0,
+   "capped": false,
+   "agree_all": 0.6226,
+   "agree_head": [
+    0.7358,
+    0.7642,
+    0.6792,
+    0.9906,
+    0.8208,
+    0.8208
+   ],
+   "dead": true,
+   "timeout": false,
+   "anchor_reached": 0,
+   "anchors": 6,
+   "anchor_kind": "door",
+   "phase": "push",
+   "unsticks": 0,
+   "final_pos": [
+    -48,
+    -194
+   ],
+   "attack_labels": 6,
+   "attack_exec": 5,
+   "combat_decisions": 21,
+   "monsters_seen": 2,
+   "kills": 0,
+   "damage_taken": 117.0,
+   "combat_give_ups": 0,
+   "use_labels": 6,
+   "use_edges_exec": 19,
+   "press_open_target": 0,
+   "press_into_moving": 0,
+   "door_presses": 6,
+   "switch_presses": 0,
+   "ineffective_presses": 0,
+   "repress_after_close": 5,
+   "reversals_label": 0,
+   "reversals_other": 7,
+   "max_presses_per_closed_spell": 1,
+   "pressable_now": 6,
+   "pressable_but_use_held": 0,
+   "closed_door_ahead_far": 3,
+   "open_door_ahead": 36,
+   "near_closed_target_door": 8,
+   "events": [
+    [
+     7,
+     "combat:target:DoomImp1"
+    ],
+    [
+     14,
+     "combat:target:DoomImp1"
+    ],
+    [
+     23,
+     "combat:target:Zombieman3"
+    ],
+    [
+     28,
+     "combat:target:Zombieman3"
+    ],
+    [
+     57,
+     "combat:target:DoomImp1"
+    ],
+    [
+     65,
+     "a0:press:door11"
+    ],
+    [
+     66,
+     "a0:push"
+    ],
+    [
+     71,
+     "a0:approach"
+    ],
+    [
+     71,
+     "a0:align"
+    ],
+    [
+     71,
+     "a0:press:door11"
+    ],
+    [
+     72,
+     "a0:push"
+    ],
+    [
+     75,
+     "a0:approach"
+    ],
+    [
+     75,
+     "a0:press:door11"
+    ],
+    [
+     76,
+     "a0:push"
+    ],
+    [
+     81,
+     "a0:approach"
+    ],
+    [
+     81,
+     "a0:align"
+    ],
+    [
+     81,
+     "a0:press:door11"
+    ],
+    [
+     82,
+     "a0:push"
+    ],
+    [
+     91,
+     "a0:approach"
+    ],
+    [
+     91,
+     "a0:press:door11"
+    ],
+    [
+     92,
+     "a0:push"
+    ],
+    [
+     105,
+     "a0:approach"
+    ],
+    [
+     105,
+     "a0:press:door11"
+    ],
+    [
+     106,
+     "a0:push"
+    ]
+   ],
+   "saved": false
+  },
+  {
+   "episode": 452,
+   "map_id": "S3-train-103013",
+   "stage": "S3",
+   "seed": 2029006539,
+   "noise": 0.2,
+   "length": 122,
+   "success": false,
+   "noisy_decisions": 42,
+   "student_decisions": 0,
+   "unstick_labels": 0,
+   "capped": false,
+   "agree_all": 0.6557,
+   "agree_head": [
+    0.7623,
+    0.7705,
+    0.6967,
+    0.9262,
+    0.8033,
+    0.8361
+   ],
+   "dead": true,
+   "timeout": false,
+   "anchor_reached": 1,
+   "anchors": 8,
+   "anchor_kind": "door",
+   "phase": "approach",
+   "unsticks": 0,
+   "final_pos": [
+    -139,
+    235
+   ],
+   "attack_labels": 31,
+   "attack_exec": 22,
+   "combat_decisions": 52,
+   "monsters_seen": 3,
+   "kills": 2,
+   "damage_taken": 114.0,
+   "combat_give_ups": 0,
+   "use_labels": 3,
+   "use_edges_exec": 17,
+   "press_open_target": 0,
+   "press_into_moving": 0,
+   "door_presses": 3,
+   "switch_presses": 0,
+   "ineffective_presses": 0,
+   "repress_after_close": 2,
+   "reversals_label": 0,
+   "reversals_other": 4,
+   "max_presses_per_closed_spell": 1,
+   "pressable_now": 4,
+   "pressable_but_use_held": 1,
+   "closed_door_ahead_far": 3,
+   "open_door_ahead": 51,
+   "near_closed_target_door": 10,
+   "events": [
+    [
+     7,
+     "a0:push"
+    ],
+    [
+     11,
+     "combat:target:Zombieman2"
+    ],
+    [
+     14,
+     "combat:target:DoomImp1"
+    ],
+    [
+     24,
+     "a0:approach"
+    ],
+    [
+     24,
+     "a0:align"
+    ],
+    [
+     24,
+     "a0:press:door13"
+    ],
+    [
+     25,
+     "a0:push"
+    ],
+    [
+     29,
+     "combat:target:DoomImp1"
+    ],
+    [
+     40,
+     "combat:target:DoomImp1"
+    ],
+    [
+     47,
+     "combat:target:DoomImp1"
+    ],
+    [
+     51,
+     "combat:target:DoomImp1"
+    ],
+    [
+     52,
+     "combat:target:Zombieman2"
+    ],
+    [
+     58,
+     "combat:target:DoomImp1"
+    ],
+    [
+     71,
+     "combat:target:Zombieman14"
+    ],
+    [
+     98,
+     "a0:approach"
+    ],
+    [
+     98,
+     "a0:align"
+    ],
+    [
+     98,
+     "a0:press:door13"
+    ],
+    [
+     99,
+     "a0:push"
+    ],
+    [
+     102,
+     "a0:approach"
+    ],
+    [
+     102,
+     "a0:align"
+    ],
+    [
+     103,
+     "a0:press:door13"
+    ],
+    [
+     104,
+     "a0:push"
+    ],
+    [
+     108,
+     "combat:target:DoomImp1"
+    ],
+    [
+     116,
+     "combat:target:DoomImp1"
+    ],
+    [
+     120,
+     "a0:done"
+    ],
+    [
+     121,
+     "combat:target:DoomImp1"
+    ]
+   ],
+   "saved": false
+  },
+  {
+   "episode": 483,
+   "map_id": "S3-train-103004",
+   "stage": "S3",
+   "seed": 2029006570,
+   "noise": 0.2,
+   "length": 205,
+   "success": false,
+   "noisy_decisions": 81,
+   "student_decisions": 0,
+   "unstick_labels": 0,
+   "capped": false,
+   "agree_all": 0.6049,
+   "agree_head": [
+    0.7073,
+    0.722,
+    0.6439,
+    0.9415,
+    0.8,
+    0.8049
+   ],
+   "dead": true,
+   "timeout": false,
+   "anchor_reached": 1,
+   "anchors": 4,
+   "anchor_kind": "door",
+   "phase": "push",
+   "unsticks": 0,
+   "final_pos": [
+    80,
+    274
+   ],
+   "attack_labels": 38,
+   "attack_exec": 26,
+   "combat_decisions": 68,
+   "monsters_seen": 3,
+   "kills": 1,
+   "damage_taken": 111.0,
+   "combat_give_ups": 0,
+   "use_labels": 3,
+   "use_edges_exec": 31,
+   "press_open_target": 0,
+   "press_into_moving": 0,
+   "door_presses": 3,
+   "switch_presses": 0,
+   "ineffective_presses": 0,
+   "repress_after_close": 2,
+   "reversals_label": 0,
+   "reversals_other": 2,
+   "max_presses_per_closed_spell": 1,
+   "pressable_now": 3,
+   "pressable_but_use_held": 0,
+   "closed_door_ahead_far": 13,
+   "open_door_ahead": 26,
+   "near_closed_target_door": 24,
+   "events": [
+    [
+     8,
+     "combat:target:ShotgunGuy3"
+    ],
+    [
+     22,
+     "combat:target:DoomImp10"
+    ],
+    [
+     31,
+     "combat:target:ShotgunGuy3"
+    ],
+    [
+     60,
+     "a0:done"
+    ],
+    [
+     103,
+     "a1:align"
+    ],
+    [
+     105,
+     "a1:press:door6"
+    ],
+    [
+     106,
+     "a1:push"
+    ],
+    [
+     110,
+     "combat:target:DoomImp15"
+    ],
+    [
+     119,
+     "a1:approach"
+    ],
+    [
+     119,
+     "a1:press:door6"
+    ],
+    [
+     120,
+     "a1:push"
+    ],
+    [
+     123,
+     "a1:approach"
+    ],
+    [
+     149,
+     "a1:align"
+    ],
+    [
+     150,
+     "a1:press:door6"
+    ],
+    [
+     151,
+     "a1:push"
+    ],
+    [
+     154,
+     "combat:target:DoomImp15"
+    ],
+    [
+     168,
+     "combat:target:DoomImp10"
+    ],
+    [
+     174,
+     "combat:target:DoomImp10"
+    ],
+    [
+     178,
+     "combat:target:DoomImp15"
+    ],
+    [
+     179,
+     "combat:target:DoomImp10"
+    ],
+    [
+     192,
+     "combat:target:DoomImp15"
+    ],
+    [
+     193,
+     "combat:target:DoomImp10"
+    ],
+    [
+     199,
+     "combat:target:DoomImp15"
+    ]
+   ],
+   "saved": false
+  },
+  {
+   "episode": 507,
+   "map_id": "S3-train-103008",
+   "stage": "S3",
+   "seed": 2029006594,
+   "noise": 0.2,
+   "length": 233,
+   "success": false,
+   "noisy_decisions": 90,
+   "student_decisions": 0,
+   "unstick_labels": 0,
+   "capped": false,
+   "agree_all": 0.6137,
+   "agree_head": [
+    0.7554,
+    0.7425,
+    0.6781,
+    0.927,
+    0.7854,
+    0.7811
+   ],
+   "dead": true,
+   "timeout": false,
+   "anchor_reached": 0,
+   "anchors": 6,
+   "anchor_kind": "door",
+   "phase": "push",
+   "unsticks": 0,
+   "final_pos": [
+    -464,
+    -498
+   ],
+   "attack_labels": 53,
+   "attack_exec": 36,
+   "combat_decisions": 96,
+   "monsters_seen": 2,
+   "kills": 1,
+   "damage_taken": 108.0,
+   "combat_give_ups": 0,
+   "use_labels": 2,
+   "use_edges_exec": 36,
+   "press_open_target": 0,
+   "press_into_moving": 0,
+   "door_presses": 2,
+   "switch_presses": 0,
+   "ineffective_presses": 0,
+   "repress_after_close": 1,
+   "reversals_label": 0,
+   "reversals_other": 3,
+   "max_presses_per_closed_spell": 1,
+   "pressable_now": 2,
+   "pressable_but_use_held": 0,
+   "closed_door_ahead_far": 6,
+   "open_door_ahead": 18,
+   "near_closed_target_door": 7,
+   "events": [
+    [
+     97,
+     "a0:align"
+    ],
+    [
+     98,
+     "a0:press:door9"
+    ],
+    [
+     99,
+     "a0:push"
+    ],
+    [
+     106,
+     "a0:approach"
+    ],
+    [
+     106,
+     "a0:align"
+    ],
+    [
+     106,
+     "a0:press:door9"
+    ],
+    [
+     107,
+     "a0:push"
+    ],
+    [
+     110,
+     "combat:target:DoomImp6"
+    ],
+    [
+     119,
+     "combat:target:DoomImp7"
+    ],
+    [
+     121,
+     "combat:target:DoomImp6"
+    ],
+    [
+     122,
+     "a0:done"
+    ],
+    [
+     123,
+     "combat:target:DoomImp6"
+    ],
+    [
+     127,
+     "combat:target:DoomImp7"
+    ],
+    [
+     138,
+     "combat:target:DoomImp7"
+    ],
+    [
+     153,
+     "combat:target:DoomImp6"
+    ],
+    [
+     158,
+     "combat:target:DoomImp7"
+    ],
+    [
+     162,
+     "a0:push"
+    ],
+    [
+     164,
+     "combat:target:DoomImp7"
+    ],
+    [
+     183,
+     "combat:target:DoomImp6"
+    ],
+    [
+     206,
+     "combat:target:DoomImp6"
+    ],
+    [
+     209,
+     "combat:target:DoomImp6"
+    ],
+    [
+     218,
+     "combat:target:DoomImp6"
+    ]
+   ],
+   "saved": false
+  },
+  {
+   "episode": 531,
+   "map_id": "S3-train-103012",
+   "stage": "S3",
+   "seed": 2029006618,
+   "noise": 0.2,
+   "length": 441,
+   "success": false,
+   "noisy_decisions": 161,
+   "student_decisions": 0,
+   "unstick_labels": 0,
+   "capped": false,
+   "agree_all": 0.644,
+   "agree_head": [
+    0.7506,
+    0.7574,
+    0.6848,
+    0.9478,
+    0.8345,
+    0.8186
+   ],
+   "dead": true,
+   "timeout": false,
+   "anchor_reached": 6,
+   "anchors": 7,
+   "anchor_kind": "exit_pad",
+   "phase": "approach",
+   "unsticks": 0,
+   "final_pos": [
+    358,
+    984
+   ],
+   "attack_labels": 76,
+   "attack_exec": 53,
+   "combat_decisions": 127,
+   "monsters_seen": 4,
+   "kills": 3,
+   "damage_taken": 105.0,
+   "combat_give_ups": 0,
+   "use_labels": 10,
+   "use_edges_exec": 64,
+   "press_open_target": 0,
+   "press_into_moving": 0,
+   "door_presses": 7,
+   "switch_presses": 0,
+   "ineffective_presses": 0,
+   "repress_after_close": 3,
+   "reversals_label": 0,
+   "reversals_other": 6,
+   "max_presses_per_closed_spell": 1,
+   "pressable_now": 11,
+   "pressable_but_use_held": 1,
+   "closed_door_ahead_far": 23,
+   "open_door_ahead": 91,
+   "near_closed_target_door": 51,
+   "events": [
+    [
+     87,
+     "a0:push"
+    ],
+    [
+     89,
+     "a0:approach"
+    ],
+    [
+     89,
+     "a0:align"
+    ],
+    [
+     89,
+     "a0:press:door7"
+    ],
+    [
+     90,
+     "a0:push"
+    ],
+    [
+     97,
+     "a0:approach"
+    ],
+    [
+     115,
+     "a0:align"
+    ],
+    [
+     116,
+     "a0:press:door7"
+    ],
+    [
+     117,
+     "a0:approach"
+    ],
+    [
+     121,
+     "a0:push"
+    ],
+    [
+     143,
+     "a0:done"
+    ],
+    [
+     156,
+     "a1:done"
+    ],
+    [
+     176,
+     "a2:push"
+    ],
+    [
+     179,
+     "a2:done"
+    ],
+    [
+     197,
+     "a3:press:door9"
+    ],
+    [
+     202,
+     "a3:push"
+    ],
+    [
+     217,
+     "a3:done"
+    ],
+    [
+     244,
+     "a4:press:door11"
+    ],
+    [
+     245,
+     "a4:press:door11"
+    ],
+    [
+     249,
+     "combat:target:Zombieman13"
+    ],
+    [
+     250,
+     "combat:target:DoomImp14"
+    ],
+    [
+     286,
+     "combat:target:Zombieman13"
+    ],
+    [
+     289,
+     "a4:done"
+    ],
+    [
+     290,
+     "combat:target:Zombieman13"
+    ],
+    [
+     297,
+     "combat:target:Zombieman13"
+    ],
+    [
+     352,
+     "a5:align"
+    ],
+    [
+     353,
+     "a5:press:door14"
+    ],
+    [
+     354,
+     "a5:press:door14"
+    ],
+    [
+     355,
+     "a5:press:door14"
+    ],
+    [
+     356,
+     "a5:push"
+    ],
+    [
+     369,
+     "a5:approach"
+    ],
+    [
+     372,
+     "a5:align"
+    ],
+    [
+     372,
+     "a5:press:door14"
+    ],
+    [
+     373,
+     "a5:push"
+    ],
+    [
+     389,
+     "combat:target:DoomImp26"
+    ],
+    [
+     398,
+     "a5:done"
+    ],
+    [
+     401,
+     "combat:target:DoomImp26"
+    ],
+    [
+     403,
+     "combat:target:DoomImp26"
+    ],
+    [
+     417,
+     "combat:target:DoomImp26"
+    ],
+    [
+     423,
+     "combat:target:DoomImp26"
+    ]
+   ],
+   "saved": false
+  },
+  {
+   "episode": 604,
+   "map_id": "S3-train-103005",
+   "stage": "S3",
+   "seed": 2029006691,
+   "noise": 0.2,
+   "length": 246,
+   "success": false,
+   "noisy_decisions": 97,
+   "student_decisions": 0,
+   "unstick_labels": 0,
+   "capped": false,
+   "agree_all": 0.6057,
+   "agree_head": [
+    0.7195,
+    0.7195,
+    0.6585,
+    0.9309,
+    0.8171,
+    0.8211
+   ],
+   "dead": true,
+   "timeout": false,
+   "anchor_reached": 2,
+   "anchors": 6,
+   "anchor_kind": "door",
+   "phase": "push",
+   "unsticks": 0,
+   "final_pos": [
+    -94,
+    -240
+   ],
+   "attack_labels": 49,
+   "attack_exec": 32,
+   "combat_decisions": 96,
+   "monsters_seen": 2,
+   "kills": 1,
+   "damage_taken": 102.0,
+   "combat_give_ups": 1,
+   "use_labels": 1,
+   "use_edges_exec": 31,
+   "press_open_target": 0,
+   "press_into_moving": 0,
+   "door_presses": 1,
+   "switch_presses": 0,
+   "ineffective_presses": 0,
+   "repress_after_close": 0,
+   "reversals_label": 0,
+   "reversals_other": 4,
+   "max_presses_per_closed_spell": 1,
+   "pressable_now": 1,
+   "pressable_but_use_held": 0,
+   "closed_door_ahead_far": 8,
+   "open_door_ahead": 22,
+   "near_closed_target_door": 4,
+   "events": [
+    [
+     5,
+     "combat:target:DoomImp1"
+    ],
+    [
+     17,
+     "combat:target:Zombieman5"
+    ],
+    [
+     24,
+     "combat:target:Zombieman5"
+    ],
+    [
+     29,
+     "combat:target:DoomImp1"
+    ],
+    [
+     30,
+     "combat:target:Zombieman5"
+    ],
+    [
+     35,
+     "combat:target:DoomImp1"
+    ],
+    [
+     78,
+     "combat:target:DoomImp1"
+    ],
+    [
+     80,
+     "combat:target:DoomImp1"
+    ],
+    [
+     85,
+     "combat:target:DoomImp1"
+    ],
+    [
+     93,
+     "combat:target:DoomImp1"
+    ],
+    [
+     101,
+     "combat:target:DoomImp1"
+    ],
+    [
+     125,
+     "combat:give_up:1"
+    ],
+    [
+     185,
+     "a0:press:door11"
+    ],
+    [
+     186,
+     "a0:push"
+    ],
+    [
+     202,
+     "a0:done"
+    ],
+    [
+     209,
+     "a1:done"
+    ],
+    [
+     233,
+     "a2:push"
+    ]
+   ],
+   "saved": false
+  },
+  {
+   "episode": 607,
+   "map_id": "S3-train-103008",
+   "stage": "S3",
+   "seed": 2029006694,
+   "noise": 0.2,
+   "length": 114,
+   "success": false,
+   "noisy_decisions": 41,
+   "student_decisions": 0,
+   "unstick_labels": 0,
+   "capped": false,
+   "agree_all": 0.6404,
+   "agree_head": [
+    0.7982,
+    0.7807,
+    0.6754,
+    0.9123,
+    0.8421,
+    0.8246
+   ],
+   "dead": true,
+   "timeout": false,
+   "anchor_reached": 1,
+   "anchors": 6,
+   "anchor_kind": "key",
+   "phase": "approach",
+   "unsticks": 0,
+   "final_pos": [
+    -858,
+    -380
+   ],
+   "attack_labels": 23,
+   "attack_exec": 13,
+   "combat_decisions": 41,
+   "monsters_seen": 2,
+   "kills": 0,
+   "damage_taken": 102.0,
+   "combat_give_ups": 0,
+   "use_labels": 1,
+   "use_edges_exec": 14,
+   "press_open_target": 0,
+   "press_into_moving": 0,
+   "door_presses": 1,
+   "switch_presses": 0,
+   "ineffective_presses": 0,
+   "repress_after_close": 0,
+   "reversals_label": 0,
+   "reversals_other": 2,
+   "max_presses_per_closed_spell": 1,
+   "pressable_now": 1,
+   "pressable_but_use_held": 0,
+   "closed_door_ahead_far": 2,
+   "open_door_ahead": 14,
+   "near_closed_target_door": 3,
+   "events": [
+    [
+     66,
+     "a0:align"
+    ],
+    [
+     66,
+     "a0:press:door9"
+    ],
+    [
+     67,
+     "a0:push"
+    ],
+    [
+     71,
+     "combat:target:DoomImp5"
+    ],
+    [
+     83,
+     "a0:done"
+    ],
+    [
+     84,
+     "combat:target:DoomImp6"
+    ],
+    [
+     85,
+     "combat:target:DoomImp5"
+    ],
+    [
+     92,
+     "combat:target:DoomImp6"
+    ],
+    [
+     103,
+     "combat:target:DoomImp5"
+    ],
+    [
+     112,
+     "combat:target:DoomImp6"
+    ]
+   ],
+   "saved": false
+  },
+  {
+   "episode": 747,
+   "map_id": "S3-train-103008",
+   "stage": "S3",
+   "seed": 2029006834,
+   "noise": 0.2,
+   "length": 336,
+   "success": false,
+   "noisy_decisions": 122,
+   "student_decisions": 0,
+   "unstick_labels": 0,
+   "capped": false,
+   "agree_all": 0.6399,
+   "agree_head": [
+    0.7589,
+    0.7649,
+    0.6875,
+    0.9643,
+    0.8423,
+    0.7857
+   ],
+   "dead": true,
+   "timeout": false,
+   "anchor_reached": 4,
+   "anchors": 6,
+   "anchor_kind": "door",
+   "phase": "push",
+   "unsticks": 0,
+   "final_pos": [
+    -366,
+    -924
+   ],
+   "attack_labels": 32,
+   "attack_exec": 20,
+   "combat_decisions": 51,
+   "monsters_seen": 3,
+   "kills": 2,
+   "damage_taken": 117.0,
+   "combat_give_ups": 0,
+   "use_labels": 11,
+   "use_edges_exec": 50,
+   "press_open_target": 0,
+   "press_into_moving": 0,
+   "door_presses": 11,
+   "switch_presses": 0,
+   "ineffective_presses": 0,
+   "repress_after_close": 8,
+   "reversals_label": 0,
+   "reversals_other": 13,
+   "max_presses_per_closed_spell": 1,
+   "pressable_now": 12,
+   "pressable_but_use_held": 1,
+   "closed_door_ahead_far": 17,
+   "open_door_ahead": 119,
+   "near_closed_target_door": 24,
+   "events": [
+    [
+     89,
+     "combat:target:DoomImp5"
+    ],
+    [
+     96,
+     "combat:target:DoomImp5"
+    ],
+    [
+     115,
+     "combat:target:DoomImp5"
+    ],
+    [
+     121,
+     "combat:target:DoomImp7"
+    ],
+    [
+     126,
+     "a0:approach"
+    ],
+    [
+     126,
+     "a0:align"
+    ],
+    [
+     126,
+     "a0:press:door9"
+    ],
+    [
+     127,
+     "a0:push"
+    ],
+    [
+     132,
+     "a0:approach"
+    ],
+    [
+     137,
+     "a0:align"
+    ],
+    [
+     140,
+     "a0:press:door9"
+    ],
+    [
+     141,
+     "a0:push"
+    ],
+    [
+     154,
+     "a0:approach"
+    ],
+    [
+     154,
+     "a0:align"
+    ],
+    [
+     154,
+     "a0:press:door9"
+    ],
+    [
+     155,
+     "a0:push"
+    ],
+    [
+     166,
+     "a0:approach"
+    ],
+    [
+     166,
+     "a0:align"
+    ],
+    [
+     166,
+     "a0:press:door9"
+    ],
+    [
+     167,
+     "a0:push"
+    ],
+    [
+     177,
+     "a0:done"
+    ],
+    [
+     179,
+     "a1:done"
+    ],
+    [
+     193,
+     "a2:push"
+    ],
+    [
+     202,
+     "a2:done"
+    ],
+    [
+     249,
+     "a3:align"
+    ],
+    [
+     249,
+     "a3:press:door12"
+    ],
+    [
+     250,
+     "a3:push"
+    ],
+    [
+     253,
+     "a3:approach"
+    ],
+    [
+     253,
+     "a3:press:door12"
+    ],
+    [
+     254,
+     "a3:push"
+    ],
+    [
+     264,
+     "a3:done"
+    ],
+    [
+     286,
+     "a4:align"
+    ],
+    [
+     286,
+     "a4:press:door13"
+    ],
+    [
+     287,
+     "a4:push"
+    ],
+    [
+     294,
+     "a4:approach"
+    ],
+    [
+     295,
+     "a4:press:door13"
+    ],
+    [
+     296,
+     "a4:push"
+    ],
+    [
+     300,
+     "combat:target:Zombieman19"
+    ],
+    [
+     304,
+     "combat:target:Zombieman19"
+    ],
+    [
+     315,
+     "combat:target:Zombieman19"
+    ]
+   ],
+   "saved": false
+  },
+  {
+   "episode": 772,
+   "map_id": "S3-train-103013",
+   "stage": "S3",
+   "seed": 2029006859,
+   "noise": 0.2,
+   "length": 272,
+   "success": false,
+   "noisy_decisions": 75,
+   "student_decisions": 0,
+   "unstick_labels": 0,
+   "capped": false,
+   "agree_all": 0.7243,
+   "agree_head": [
+    0.8162,
+    0.8015,
+    0.7537,
+    0.9449,
+    0.8382,
+    0.8419
+   ],
+   "dead": true,
+   "timeout": false,
+   "anchor_reached": 5,
+   "anchors": 8,
+   "anchor_kind": "door",
+   "phase": "push",
+   "unsticks": 0,
+   "final_pos": [
+    80,
+    -134
+   ],
+   "attack_labels": 61,
+   "attack_exec": 46,
+   "combat_decisions": 100,
+   "monsters_seen": 4,
+   "kills": 3,
+   "damage_taken": 123.0,
+   "combat_give_ups": 0,
+   "use_labels": 10,
+   "use_edges_exec": 40,
+   "press_open_target": 0,
+   "press_into_moving": 0,
+   "door_presses": 10,
+   "switch_presses": 0,
+   "ineffective_presses": 0,
+   "repress_after_close": 7,
+   "reversals_label": 0,
+   "reversals_other": 14,
+   "max_presses_per_closed_spell": 1,
+   "pressable_now": 11,
+   "pressable_but_use_held": 1,
+   "closed_door_ahead_far": 24,
+   "open_door_ahead": 95,
+   "near_closed_target_door": 54,
+   "events": [
+    [
+     78,
+     "a1:approach"
+    ],
+    [
+     78,
+     "a1:press:door19"
+    ],
+    [
+     79,
+     "a1:push"
+    ],
+    [
+     82,
+     "a1:approach"
+    ],
+    [
+     85,
+     "a1:align"
+    ],
+    [
+     86,
+     "a1:press:door19"
+    ],
+    [
+     87,
+     "a1:push"
+    ],
+    [
+     90,
+     "a1:approach"
+    ],
+    [
+     90,
+     "a1:align"
+    ],
+    [
+     90,
+     "a1:press:door19"
+    ],
+    [
+     91,
+     "a1:push"
+    ],
+    [
+     102,
+     "a1:approach"
+    ],
+    [
+     106,
+     "combat:target:Zombieman16"
+    ],
+    [
+     123,
+     "a1:align"
+    ],
+    [
+     123,
+     "a1:press:door19"
+    ],
+    [
+     124,
+     "a1:push"
+    ],
+    [
+     127,
+     "a1:approach"
+    ],
+    [
+     127,
+     "a1:align"
+    ],
+    [
+     130,
+     "a1:approach"
+    ],
+    [
+     134,
+     "a1:align"
+    ],
+    [
+     135,
+     "a1:press:door19"
+    ],
+    [
+     136,
+     "a1:push"
+    ],
+    [
+     146,
+     "a1:done"
+    ],
+    [
+     153,
+     "a2:done"
+    ],
+    [
+     162,
+     "a3:push"
+    ],
+    [
+     169,
+     "a3:done"
+    ],
+    [
+     175,
+     "a4:align"
+    ],
+    [
+     176,
+     "a4:press:door13"
+    ],
+    [
+     177,
+     "a4:push"
+    ],
+    [
+     188,
+     "a4:done"
+    ],
+    [
+     202,
+     "a5:align"
+    ],
+    [
+     202,
+     "a5:press:door8"
+    ],
+    [
+     203,
+     "a5:push"
+    ],
+    [
+     207,
+     "combat:target:DoomImp22"
+    ],
+    [
+     224,
+     "combat:target:DoomImp22"
+    ],
+    [
+     232,
+     "combat:target:DoomImp22"
+    ],
+    [
+     245,
+     "combat:target:DoomImp22"
+    ],
+    [
+     254,
+     "combat:target:DoomImp22"
+    ],
+    [
+     261,
+     "combat:target:DoomImp22"
+    ],
+    [
+     268,
+     "combat:target:DoomImp22"
+    ]
+   ],
+   "saved": false
+  },
+  {
+   "episode": 807,
+   "map_id": "S3-train-103008",
+   "stage": "S3",
+   "seed": 2029006894,
+   "noise": 0.2,
+   "length": 119,
+   "success": false,
+   "noisy_decisions": 38,
+   "student_decisions": 0,
+   "unstick_labels": 0,
+   "capped": false,
+   "agree_all": 0.6807,
+   "agree_head": [
+    0.7983,
+    0.7647,
+    0.7479,
+    0.8739,
+    0.8739,
+    0.8151
+   ],
+   "dead": true,
+   "timeout": false,
+   "anchor_reached": 2,
+   "anchors": 6,
+   "anchor_kind": "door",
+   "phase": "approach",
+   "unsticks": 0,
+   "final_pos": [
+    -848,
+    -536
+   ],
+   "attack_labels": 38,
+   "attack_exec": 23,
+   "combat_decisions": 60,
+   "monsters_seen": 2,
+   "kills": 1,
+   "damage_taken": 102.0,
+   "combat_give_ups": 0,
+   "use_labels": 1,
+   "use_edges_exec": 13,
+   "press_open_target": 0,
+   "press_into_moving": 0,
+   "door_presses": 1,
+   "switch_presses": 0,
+   "ineffective_presses": 0,
+   "repress_after_close": 0,
+   "reversals_label": 0,
+   "reversals_other": 2,
+   "max_presses_per_closed_spell": 1,
+   "pressable_now": 1,
+   "pressable_but_use_held": 0,
+   "closed_door_ahead_far": 4,
+   "open_door_ahead": 17,
+   "near_closed_target_door": 3,
+   "events": [
+    [
+     45,
+     "a0:align"
+    ],
+    [
+     45,
+     "a0:press:door9"
+    ],
+    [
+     46,
+     "a0:push"
+    ],
+    [
+     50,
+     "combat:target:DoomImp5"
+    ],
+    [
+     69,
+     "combat:target:DoomImp8"
+    ],
+    [
+     83,
+     "combat:target:DoomImp8"
+    ],
+    [
+     84,
+     "a0:done"
+    ],
+    [
+     85,
+     "a1:done"
+    ],
+    [
+     88,
+     "combat:target:DoomImp8"
+    ],
+    [
+     107,
+     "combat:target:DoomImp5"
+    ],
+    [
+     108,
+     "combat:target:DoomImp8"
+    ],
+    [
+     114,
+     "combat:target:DoomImp8"
+    ]
+   ],
+   "saved": false
+  },
+  {
+   "episode": 911,
+   "map_id": "S3-train-103012",
+   "stage": "S3",
+   "seed": 2029006998,
+   "noise": 0.2,
+   "length": 380,
+   "success": false,
+   "noisy_decisions": 139,
+   "student_decisions": 0,
+   "unstick_labels": 0,
+   "capped": false,
+   "agree_all": 0.6368,
+   "agree_head": [
+    0.75,
+    0.7632,
+    0.7,
+    0.9316,
+    0.7947,
+    0.8368
+   ],
+   "dead": true,
+   "timeout": false,
+   "anchor_reached": 5,
+   "anchors": 7,
+   "anchor_kind": "door",
+   "phase": "push",
+   "unsticks": 0,
+   "final_pos": [
+    560,
+    874
+   ],
+   "attack_labels": 73,
+   "attack_exec": 47,
+   "combat_decisions": 130,
+   "monsters_seen": 4,
+   "kills": 3,
+   "damage_taken": 104.0,
+   "combat_give_ups": 0,
+   "use_labels": 11,
+   "use_edges_exec": 49,
+   "press_open_target": 0,
+   "press_into_moving": 0,
+   "door_presses": 9,
+   "switch_presses": 0,
+   "ineffective_presses": 0,
+   "repress_after_close": 5,
+   "reversals_label": 0,
+   "reversals_other": 5,
+   "max_presses_per_closed_spell": 1,
+   "pressable_now": 14,
+   "pressable_but_use_held": 3,
+   "closed_door_ahead_far": 25,
+   "open_door_ahead": 82,
+   "near_closed_target_door": 53,
+   "events": [
+    [
+     135,
+     "a2:approach"
+    ],
+    [
+     135,
+     "a2:align"
+    ],
+    [
+     135,
+     "a2:press:door7"
+    ],
+    [
+     136,
+     "a2:push"
+    ],
+    [
+     146,
+     "a2:done"
+    ],
+    [
+     156,
+     "a3:align"
+    ],
+    [
+     157,
+     "a3:press:door9"
+    ],
+    [
+     158,
+     "a3:push"
+    ],
+    [
+     187,
+     "a3:approach"
+    ],
+    [
+     187,
+     "a3:press:door9"
+    ],
+    [
+     188,
+     "a3:push"
+    ],
+    [
+     191,
+     "a3:approach"
+    ],
+    [
+     198,
+     "a3:align"
+    ],
+    [
+     198,
+     "a3:press:door9"
+    ],
+    [
+     199,
+     "a3:push"
+    ],
+    [
+     209,
+     "a3:done"
+    ],
+    [
+     217,
+     "a4:align"
+    ],
+    [
+     217,
+     "a4:press:door11"
+    ],
+    [
+     218,
+     "a4:push"
+    ],
+    [
+     222,
+     "combat:target:DoomImp15"
+    ],
+    [
+     226,
+     "combat:target:DoomImp15"
+    ],
+    [
+     235,
+     "combat:target:Zombieman16"
+    ],
+    [
+     239,
+     "combat:target:DoomImp15"
+    ],
+    [
+     242,
+     "combat:target:Zombieman16"
+    ],
+    [
+     250,
+     "combat:target:DoomImp15"
+    ],
+    [
+     253,
+     "a4:done"
+    ],
+    [
+     282,
+     "a5:align"
+    ],
+    [
+     282,
+     "a5:press:door14"
+    ],
+    [
+     285,
+     "a5:approach"
+    ],
+    [
+     294,
+     "a5:align"
+    ],
+    [
+     294,
+     "a5:press:door14"
+    ],
+    [
+     295,
+     "a5:push"
+    ],
+    [
+     300,
+     "a5:approach"
+    ],
+    [
+     306,
+     "a5:align"
+    ],
+    [
+     306,
+     "a5:press:door14"
+    ],
+    [
+     307,
+     "a5:push"
+    ],
+    [
+     315,
+     "combat:target:DoomImp24"
+    ],
+    [
+     336,
+     "combat:target:DoomImp15"
+    ],
+    [
+     368,
+     "combat:target:DoomImp24"
+    ],
+    [
+     379,
+     "combat:target:DoomImp24"
+    ]
+   ],
+   "saved": false
+  },
+  {
+   "episode": 952,
+   "map_id": "S3-train-103013",
+   "stage": "S3",
+   "seed": 2029007039,
+   "noise": 0.2,
+   "length": 171,
+   "success": false,
+   "noisy_decisions": 57,
+   "student_decisions": 0,
+   "unstick_labels": 0,
+   "capped": false,
+   "agree_all": 0.6667,
+   "agree_head": [
+    0.8012,
+    0.7544,
+    0.7076,
+    0.883,
+    0.8246,
+    0.8655
+   ],
+   "dead": true,
+   "timeout": false,
+   "anchor_reached": 0,
+   "anchors": 8,
+   "anchor_kind": "door",
+   "phase": "push",
+   "unsticks": 0,
+   "final_pos": [
+    155,
+    198
+   ],
+   "attack_labels": 54,
+   "attack_exec": 34,
+   "combat_decisions": 99,
+   "monsters_seen": 3,
+   "kills": 3,
+   "damage_taken": 120.0,
+   "combat_give_ups": 0,
+   "use_labels": 1,
+   "use_edges_exec": 20,
+   "press_open_target": 0,
+   "press_into_moving": 0,
+   "door_presses": 1,
+   "switch_presses": 0,
+   "ineffective_presses": 0,
+   "repress_after_close": 0,
+   "reversals_label": 0,
+   "reversals_other": 2,
+   "max_presses_per_closed_spell": 1,
+   "pressable_now": 1,
+   "pressable_but_use_held": 0,
+   "closed_door_ahead_far": 11,
+   "open_door_ahead": 43,
+   "near_closed_target_door": 22,
+   "events": [
+    [
+     7,
+     "a0:push"
+    ],
+    [
+     11,
+     "combat:target:Zombieman2"
+    ],
+    [
+     31,
+     "combat:target:Zombieman2"
+    ],
+    [
+     34,
+     "combat:target:DoomImp1"
+    ],
+    [
+     36,
+     "combat:target:Zombieman2"
+    ],
+    [
+     39,
+     "combat:target:Zombieman2"
+    ],
+    [
+     41,
+     "combat:target:Zombieman7"
+    ],
+    [
+     58,
+     "combat:target:Zombieman2"
+    ],
+    [
+     68,
+     "combat:target:Zombieman2"
+    ],
+    [
+     76,
+     "combat:target:DoomImp1"
+    ],
+    [
+     86,
+     "a0:approach"
+    ],
+    [
+     110,
+     "a0:align"
+    ],
+    [
+     110,
+     "a0:press:door13"
+    ],
+    [
+     111,
+     "a0:push"
+    ],
+    [
+     118,
+     "combat:target:DoomImp1"
+    ],
+    [
+     146,
+     "combat:target:DoomImp1"
+    ]
+   ],
+   "saved": false
+  }
+ ]
+}

@@ -1,0 +1,64 @@
+ops_launch: config configs/ops/night1_A_smoke.json -> reports/runs/20261125-night1-A-smoke
+ops_launch: effective episode_timeout_tics=2100 (my_way_home base; --maps generated uses configs.a0_env.GENERATED_MAPS unless overridden here) frame_skip=4 worker_daemon=False memory_cap_gib=8.0 below_normal=True health_enabled=True health_stop_enabled=False
+ops_launch: run_doom argv ['--workers', '4', '--envs-per-worker', '6', '--torch-threads', '4', '--allow-multi-instance', '24', '--maps', 'generated', '--shaping', 'full_level_doors', '--checkpoint-interval', '600', '--init-from', 'reports/runs/20261125-bc-dagger-r1/bc_model.pt', '--value-warmup-updates', '20', '--max-seconds', '150', '--run-dir', 'reports/runs/20261125-night1-A-smoke']
+planned layout: 24 engine instance(s) in 4 worker process(es), 4 torch thread(s), estimated memory 2318 MiB
+run settings: entropy_coef=0.01 shaping=full_level_doors maps=generated value_warmup_updates=20 start_stage=None device=cpu (--device cpu) seed=0 layout=4x6
+maps: generated bundle D:\DoomsDay\maps/bundles/train-all.wad (80 train maps), stages ['S0', 'S1', 'S2', 'S3'], skill 3, episode limit 4200 tics
+init-from: reports/runs/20261125-bc-dagger-r1/bc_model.pt (weights_only, sha256 82995bb3c406ebf03eec09b35566557033983699381c4daf743d2b400d927e45)
+reward shaping: full_level_doors, anneal start at 0 per-env decisions (trainer decisions 0 / 24 envs)
+fresh run initialised from reports/runs/20261125-bc-dagger-r1/bc_model.pt; value warm-up 20 updates
+priority check: {'enabled': True, 'all_below_normal': True, 'set_directly': [], 'processes': {'22876': 'python.exe below_normal=True', '14440': 'python.exe below_normal=True', '8180': 'vizdoom.exe below_normal=True', '8156': 'vizdoom.exe below_normal=True', '15728': 'vizdoom.exe below_normal=True', '5876': 'vizdoom.exe below_normal=True', '22116': 'vizdoom.exe below_normal=True', '28316': 'vizdoom.exe below_normal=True', '812': 'python.exe below_normal=True', '19044': 'vizdoom.exe below_normal=True', '29408': 'vizdoom.exe below_normal=True', '29464': 'vizdoom.exe below_normal=True', '2660': 'vizdoom.exe below_normal=True', '19284': 'vizdoom.exe below_normal=True', '9908': 'vizdoom.exe below_normal=True', '18192': 'python.exe below_normal=True', '23616': 'vizdoom.exe below_normal=True', '13248': 'vizdoom.exe below_normal=True', '16652': 'vizdoom.exe below_normal=True', '9820': 'vizdoom.exe below_normal=True', '8624': 'vizdoom.exe below_normal=True', '5244': 'vizdoom.exe below_normal=True', '15468': 'python.exe below_normal=True', '7380': 'vizdoom.exe below_normal=True', '22600': 'vizdoom.exe below_normal=True', '23384': 'vizdoom.exe below_normal=True', '13836': 'vizdoom.exe below_normal=True', '6324': 'vizdoom.exe below_normal=True', '13644': 'vizdoom.exe below_normal=True'}}
+update 1: kl 0.0000 ev -1.103 scale 0.190 stale 0 rss 2362 MiB sample 659/s update 507/s
+update 2: kl 0.0000 ev -0.053 scale 0.166 stale 0 rss 2375 MiB sample 703/s update 4537/s
+update 3: kl 0.0000 ev -0.248 scale 0.140 stale 0 rss 2378 MiB sample 679/s update 4430/s
+update 4: kl 0.0000 ev -1.514 scale 0.122 stale 0 rss 2381 MiB sample 651/s update 4023/s
+update 5: kl 0.0000 ev -0.109 scale 0.113 stale 0 rss 2386 MiB sample 671/s update 4258/s
+update 6: kl 0.0000 ev -0.252 scale 0.105 stale 0 rss 2374 MiB sample 666/s update 4089/s
+update 7: kl 0.0000 ev -1.056 scale 0.100 stale 0 rss 2380 MiB sample 707/s update 4199/s
+update 8: kl 0.0000 ev -0.021 scale 0.100 stale 0 rss 2386 MiB sample 684/s update 4234/s
+update 9: kl 0.0000 ev 0.010 scale 0.100 stale 0 rss 2370 MiB sample 676/s update 4348/s
+update 10: kl 0.0000 ev -0.021 scale 0.100 stale 0 rss 2378 MiB sample 726/s update 4538/s
+update 11: kl 0.0000 ev -2.036 scale 0.100 stale 0 rss 2386 MiB sample 714/s update 4577/s
+update 12: kl 0.0000 ev -0.603 scale 0.100 stale 0 rss 2371 MiB sample 686/s update 4373/s
+update 13: kl 0.0000 ev -0.719 scale 0.100 stale 0 rss 2379 MiB sample 676/s update 4745/s
+update 14: kl 0.0000 ev -0.328 scale 0.100 stale 0 rss 2386 MiB sample 649/s update 4239/s
+update 15: kl 0.0000 ev -0.386 scale 0.100 stale 0 rss 2374 MiB sample 640/s update 4123/s
+update 16: kl 0.0000 ev -2.875 scale 0.100 stale 0 rss 2380 MiB sample 679/s update 4318/s
+update 17: kl 0.0000 ev -0.024 scale 0.100 stale 0 rss 2372 MiB sample 632/s update 4367/s
+update 18: kl 0.0000 ev -0.039 scale 0.100 stale 0 rss 2377 MiB sample 671/s update 4065/s
+update 19: kl 0.0000 ev -0.044 scale 0.100 stale 0 rss 2383 MiB sample 629/s update 4408/s
+update 20: kl 0.0000 ev -1.823 scale 0.100 stale 0 rss 2382 MiB sample 635/s update 4387/s
+value warm-up ended after update 20: policy and trunk unfrozen, policy-gradient and entropy terms back on
+update 21: kl 0.1277 ev -2.089 scale 0.100 stale 0 rss 2425 MiB sample 675/s update 1374/s
+update 22: kl 0.0380 ev -0.039 scale 0.100 stale 0 rss 2426 MiB sample 633/s update 1287/s
+update 23: kl 0.0232 ev 0.008 scale 0.100 stale 0 rss 2417 MiB sample 663/s update 1275/s
+update 24: kl 0.0202 ev 0.028 scale 0.100 stale 0 rss 2426 MiB sample 683/s update 1359/s
+update 25: kl 0.0262 ev 0.062 scale 0.100 stale 0 rss 2421 MiB sample 681/s update 1306/s
+update 26: kl 0.0263 ev 0.045 scale 0.100 stale 0 rss 2417 MiB sample 655/s update 1323/s
+update 27: kl 0.0294 ev -0.294 scale 0.100 stale 0 rss 2424 MiB sample 686/s update 1346/s
+update 28: kl 0.0224 ev -0.823 scale 0.100 stale 0 rss 2423 MiB sample 661/s update 1310/s
+update 29: kl 0.0218 ev -0.668 scale 0.100 stale 0 rss 2416 MiB sample 693/s update 1314/s
+update 30: kl 0.0246 ev 0.074 scale 0.100 stale 0 rss 2423 MiB sample 734/s update 1492/s
+update 31: kl 0.0263 ev 0.003 scale 0.100 stale 0 rss 2427 MiB sample 662/s update 1376/s
+update 32: kl 0.0188 ev -0.953 scale 0.100 stale 0 rss 2433 MiB sample 642/s update 1424/s
+update 33: kl 0.0205 ev 0.008 scale 0.100 stale 0 rss 2425 MiB sample 643/s update 1360/s
+update 34: kl 0.0418 ev -0.013 scale 0.100 stale 0 rss 2424 MiB sample 661/s update 1358/s
+update 35: kl 0.0228 ev -1.173 scale 0.100 stale 0 rss 2430 MiB sample 647/s update 1418/s
+update 36: kl 0.0192 ev 0.021 scale 0.100 stale 0 rss 2431 MiB sample 665/s update 1368/s
+update 37: kl 0.0184 ev 0.014 scale 0.100 stale 0 rss 2435 MiB sample 678/s update 1399/s
+update 38: kl 0.0209 ev 0.017 scale 0.100 stale 0 rss 2437 MiB sample 617/s update 1465/s
+update 39: kl 0.0206 ev 0.053 scale 0.100 stale 0 rss 2437 MiB sample 647/s update 1420/s
+update 40: kl 0.0239 ev 0.022 scale 0.100 stale 0 rss 2435 MiB sample 612/s update 1387/s
+update 41: kl 0.0242 ev -1.177 scale 0.100 stale 0 rss 2438 MiB sample 658/s update 1416/s
+update 42: kl 0.0233 ev -1.065 scale 0.100 stale 0 rss 2436 MiB sample 641/s update 1432/s
+update 43: kl 0.0254 ev -0.800 scale 0.100 stale 0 rss 2436 MiB sample 610/s update 1402/s
+update 44: kl 0.0241 ev -1.166 scale 0.100 stale 0 rss 2439 MiB sample 628/s update 1415/s
+update 45: kl 0.0172 ev -0.634 scale 0.100 stale 0 rss 2440 MiB sample 595/s update 1383/s
+update 46: kl 0.0292 ev -0.033 scale 0.100 stale 0 rss 2439 MiB sample 592/s update 1552/s
+update 47: kl 0.0191 ev -0.820 scale 0.100 stale 0 rss 2442 MiB sample 609/s update 1677/s
+update 48: kl 0.0207 ev -0.748 scale 0.100 stale 0 rss 2440 MiB sample 612/s update 1376/s
+checkpoint written (max_seconds) at update 48: reports/runs/20261125-night1-A-smoke\checkpoint.pt
+numbered checkpoint reports/runs/20261125-night1-A-smoke\checkpoints\checkpoint-u0000048.pt (5801955 bytes); thinned 0
+stopped (max_seconds) 0.02s after the request
+summary: {"stop_reason": "max_seconds", "updates_this_session": 48, "update_idx": 48, "checkpoints_written": 1, "max_tree_rss_bytes": 2560311296, "min_available_bytes": 6388568064, "stale_timeouts_total": 0, "stop_latency_s": 0.016000000000531145, "priority": {"enabled": true, "all_below_normal": true, "set_directly": [], "processes": {"22876": "python.exe below_normal=True", "14440": "python.exe below_normal=True", "8180": "vizdoom.exe below_normal=True", "8156": "vizdoom.exe below_normal=True", "15728": "vizdoom.exe below_normal=True", "5876": "vizdoom.exe below_normal=True", "22116": "vizdoom.exe below_normal=True", "28316": "vizdoom.exe below_normal=True", "812": "python.exe below_normal=True", "19044": "vizdoom.exe below_normal=True", "29408": "vizdoom.exe below_normal=True", "29464": "vizdoom.exe below_normal=True", "2660": "vizdoom.exe below_normal=True", "19284": "vizdoom.exe below_normal=True", "9908": "vizdoom.exe below_normal=True", "18192": "python.exe below_normal=True", "23616": "vizdoom.exe below_normal=True", "13248": "vizdoom.exe below_normal=True", "16652": "vizdoom.exe below_normal=True", "9820": "vizdoom.exe below_normal=True", "8624": "vizdoom.exe below_normal=True", "5244": "vizdoom.exe below_normal=True", "15468": "python.exe below_normal=True", "7380": "vizdoom.exe below_normal=True", "22600": "vizdoom.exe below_normal=True", "23384": "vizdoom.exe below_normal=True", "13836": "vizdoom.exe below_normal=True", "6324": "vizdoom.exe below_normal=True", "13644": "vizdoom.exe below_normal=True"}}, "numbered_checkpoints_written": 1, "numbered_checkpoint_bytes": 5801955, "numbered_checkpoints_removed": 0, "health_levels_reached": ["none"], "health_event_active_at_end": false, "health_stop_update": null}
+engine processes alive after shutdown: 0

@@ -1,0 +1,7 @@
+{
+  "description": "ADR 0008 Decision 4 time-out smoke: 1x1, 2 torch threads, episode limit 200 tics (50 decisions at frame skip 4) so the wrapper's own time limit fires many times.",
+  "baseline": "RunConfig defaults (1 worker x 1 env, 2 torch threads), TRAIN my_way_home (episode_timeout_tics 2100)",
+  "argv": ["--max-seconds", "120"],
+  "env_overrides": {"episode_timeout_tics": 200},
+  "safety_overrides": {}
+}

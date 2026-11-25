@@ -307,6 +307,9 @@ class RunConfig:
     # the run started from random weights). Recorded only; never read to act.
     init_from: str | None = None
     init_from_sha256: str | None = None
+    # --init-from growth (train/egomap_growth.py): canonical JSON of what was grown when
+    # the file's obs spec had fewer egomap channels (None = strict copy). Recorded only.
+    init_from_growth: str | None = None
     # --start-stage: the curriculum stage a fresh generated-maps run starts in (None =
     # the first stage).
     start_stage: str | None = None

@@ -23,7 +23,7 @@ reports/runs/**/stdout*.log
 reports/runs/**/stderr*.log
 reports/runs/**/system.csv
 reports/runs/**/*.pid
-runs/
+/runs/
 
 # Evaluation recordings (videos) and per-episode result dumps
 *.mp4
