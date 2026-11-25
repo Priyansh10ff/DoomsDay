@@ -1,0 +1,7 @@
+{
+  "description": "ADR 0008 validation 5: Ctrl-C mid-training on 1x1, then --resume from the checkpoint for 30 s (same config, same run dir).",
+  "baseline": "RunConfig defaults (1x1, 2 torch threads)",
+  "argv": ["--max-seconds", "30"],
+  "env_overrides": {},
+  "safety_overrides": {}
+}

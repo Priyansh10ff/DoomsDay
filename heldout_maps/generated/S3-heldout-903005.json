@@ -1,0 +1,353 @@
+{
+ "attempt": 0,
+ "counts": {
+  "corridors": 9,
+  "doors": 4,
+  "linedefs": 115,
+  "locked_doors": 1,
+  "loops": 1,
+  "monsters": 5,
+  "pickups": 3,
+  "rooms": 9,
+  "sectors": 26,
+  "things": 10
+ },
+ "failed_attempts": [],
+ "generator": "doomsday-mapgen",
+ "generator_version": "0.1.1",
+ "graph": {
+  "corridors": [
+   {
+    "a": 0,
+    "b": 1,
+    "door": "normal",
+    "loop": false
+   },
+   {
+    "a": 1,
+    "b": 2,
+    "door": null,
+    "loop": false
+   },
+   {
+    "a": 2,
+    "b": 3,
+    "door": null,
+    "loop": false
+   },
+   {
+    "a": 1,
+    "b": 4,
+    "door": "normal",
+    "loop": false
+   },
+   {
+    "a": 0,
+    "b": 5,
+    "door": "normal",
+    "loop": false
+   },
+   {
+    "a": 5,
+    "b": 6,
+    "door": null,
+    "loop": false
+   },
+   {
+    "a": 4,
+    "b": 7,
+    "door": "normal",
+    "loop": false
+   },
+   {
+    "a": 7,
+    "b": 8,
+    "door": "red",
+    "loop": false
+   },
+   {
+    "a": 3,
+    "b": 1,
+    "door": null,
+    "loop": true
+   }
+  ],
+  "exit_kind": "pad",
+  "exit_room": 8,
+  "key_room": 6,
+  "lock": 7,
+  "lock_color": "red",
+  "lock_door_sector": 22,
+  "room_sector": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8
+  ],
+  "rooms": [
+   {
+    "h": 14,
+    "w": 12,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "h": 6,
+    "w": 15,
+    "x": 19,
+    "y": 4
+   },
+   {
+    "h": 14,
+    "w": 6,
+    "x": 21,
+    "y": -12
+   },
+   {
+    "h": 11,
+    "w": 7,
+    "x": 29,
+    "y": -9
+   },
+   {
+    "h": 14,
+    "w": 9,
+    "x": 19,
+    "y": 16
+   },
+   {
+    "h": 12,
+    "w": 9,
+    "x": -2,
+    "y": -18
+   },
+   {
+    "h": 6,
+    "w": 13,
+    "x": -23,
+    "y": -19
+   },
+   {
+    "h": 7,
+    "w": 15,
+    "x": 36,
+    "y": 23
+   },
+   {
+    "h": 7,
+    "w": 16,
+    "x": 56,
+    "y": 21
+   }
+  ],
+  "start_room": 0
+ },
+ "mods": [],
+ "params": {
+  "alt_theme_prob": 0.2,
+  "chain_bias": 0.5,
+  "corr_heights": [
+   72,
+   96,
+   128
+  ],
+  "corr_len": [
+   1,
+   8
+  ],
+  "corr_width": [
+   2,
+   4
+  ],
+  "door_prob": 0.5,
+  "exit_kinds": [
+   "pad",
+   "switch"
+  ],
+  "floor_steps": [
+   -24,
+   -16,
+   -8,
+   0,
+   0,
+   0,
+   8,
+   16,
+   24
+  ],
+  "key_colors": [
+   "blue",
+   "yellow",
+   "red"
+  ],
+  "keys": true,
+  "layout_tries": 300,
+  "light": [
+   96,
+   255
+  ],
+  "loop_prob": 0.35,
+  "max_attempts": 12,
+  "max_loops": 1,
+  "monster_weights": {
+   "imp": 0.25,
+   "shotgunguy": 0.25,
+   "zombieman": 0.5
+  },
+  "monsters": [
+   3,
+   6
+  ],
+  "pickup_weights": {
+   "clip": 0.3,
+   "greenarmor": 0.05,
+   "healthbonus": 0.1,
+   "medikit": 0.1,
+   "shells": 0.1,
+   "shotgun": 0.1,
+   "stimpack": 0.25
+  },
+  "pickups": [
+   2,
+   5
+  ],
+  "room_heights": [
+   96,
+   128,
+   160,
+   192,
+   256
+  ],
+  "room_size": [
+   5,
+   17
+  ],
+  "rooms": [
+   5,
+   9
+  ],
+  "skull_key_prob": 0.3,
+  "stage_name": "full"
+ },
+ "seed": 903005,
+ "split": "heldout",
+ "stage": "S3",
+ "themes": [
+  "marble",
+  "flesh",
+  "ashwall"
+ ],
+ "things": [
+  {
+   "class": "DoomPlayer",
+   "role": "start",
+   "room": 0,
+   "type": 1,
+   "x": 176,
+   "y": 80
+  },
+  {
+   "class": "RedCard",
+   "role": "key",
+   "room": 6,
+   "type": 13,
+   "x": -432,
+   "y": -560
+  },
+  {
+   "class": "Zombieman",
+   "role": "monster",
+   "room": 2,
+   "type": 3004,
+   "x": 784,
+   "y": -176
+  },
+  {
+   "class": "Zombieman",
+   "role": "monster",
+   "room": 8,
+   "type": 3004,
+   "x": 1968,
+   "y": 784
+  },
+  {
+   "class": "Zombieman",
+   "role": "monster",
+   "room": 7,
+   "type": 3004,
+   "x": 1264,
+   "y": 848
+  },
+  {
+   "class": "DoomImp",
+   "role": "monster",
+   "room": 4,
+   "type": 3001,
+   "x": 720,
+   "y": 656
+  },
+  {
+   "class": "Zombieman",
+   "role": "monster",
+   "room": 3,
+   "type": 3004,
+   "x": 1040,
+   "y": -240
+  },
+  {
+   "class": "Clip",
+   "role": "pickup",
+   "room": 6,
+   "type": 2007,
+   "x": -688,
+   "y": -528
+  },
+  {
+   "class": "Clip",
+   "role": "pickup",
+   "room": 3,
+   "type": 2007,
+   "x": 1008,
+   "y": -80
+  },
+  {
+   "class": "Clip",
+   "role": "pickup",
+   "room": 3,
+   "type": 2007,
+   "x": 976,
+   "y": -240
+  }
+ ],
+ "validation": {
+  "engine": {
+   "exit_finished": true,
+   "exit_reward": 1.0,
+   "locked_with_key_ceil": 24.0,
+   "locked_without_key": {
+    "ceil_after": -24.0,
+    "ceil_before": -24.0,
+    "message": "Red key needed for this door."
+   },
+   "objects": {
+    "Clip": 3,
+    "DoomImp": 1,
+    "DoomPlayer": 1,
+    "RedCard": 1,
+    "Zombieman": 4
+   },
+   "ok": true,
+   "problems": [],
+   "spawn": [
+    176.0,
+    80.0
+   ]
+  },
+  "static_problems": []
+ }
+}

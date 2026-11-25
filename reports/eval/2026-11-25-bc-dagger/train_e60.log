@@ -1,0 +1,86 @@
+[collect] 1/120 episodes, success 0/1, 1050 decisions, 9s, avail 4.8 GiB
+[collect] 7/120 episodes, success 0/7, 7350 decisions, 41s, avail 4.9 GiB
+[collect] 14/120 episodes, success 2/14, 13097 decisions, 72s, avail 4.9 GiB
+[collect] 21/120 episodes, success 2/21, 20447 decisions, 103s, avail 4.9 GiB
+[collect] 27/120 episodes, success 2/27, 26747 decisions, 134s, avail 4.9 GiB
+[collect] 34/120 episodes, success 2/34, 34097 decisions, 164s, avail 4.9 GiB
+[collect] 41/120 episodes, success 2/41, 41447 decisions, 196s, avail 4.9 GiB
+[collect] 47/120 episodes, success 2/47, 47747 decisions, 228s, avail 3.1 GiB
+[collect] 53/120 episodes, success 2/53, 54047 decisions, 258s, avail 3.6 GiB
+[collect] 59/120 episodes, success 2/59, 60347 decisions, 290s, avail 3.6 GiB
+[collect] 65/120 episodes, success 2/65, 66647 decisions, 321s, avail 3.6 GiB
+[collect] 71/120 episodes, success 2/71, 72947 decisions, 353s, avail 3.6 GiB
+[collect] 77/120 episodes, success 2/77, 79247 decisions, 385s, avail 3.6 GiB
+[collect] 83/120 episodes, success 2/83, 85547 decisions, 415s, avail 6.2 GiB
+[collect] 90/120 episodes, success 2/90, 92897 decisions, 445s, avail 4.9 GiB
+[collect] 97/120 episodes, success 3/97, 99223 decisions, 476s, avail 4.9 GiB
+[collect] 102/120 episodes, success 3/102, 104473 decisions, 506s, avail 4.9 GiB
+[collect] 109/120 episodes, success 3/109, 111823 decisions, 538s, avail 5.4 GiB
+[collect] 116/120 episodes, success 3/116, 119173 decisions, 568s, avail 5.4 GiB
+{
+ "env_config": "train_generated",
+ "bundle": "maps\\bundles\\train-all.wad",
+ "jobs": 120,
+ "episodes_finished": 120,
+ "wall_s": 583.8,
+ "errors": [],
+ "stopped_low_memory": false,
+ "worker_reductions": 0,
+ "complete": true,
+ "min_available_gib": 3.14,
+ "by_stage_noise": {
+  "S0@noise0.0": {
+   "episodes": 40,
+   "success": 2,
+   "success_rate": 0.05,
+   "decisions_all": 40397,
+   "mean_length_success": 248.5,
+   "saved": 0,
+   "decisions_saved": 0
+  },
+  "S1@noise0.0": {
+   "episodes": 40,
+   "success": 1,
+   "success_rate": 0.025,
+   "decisions_all": 40976,
+   "mean_length_success": 26.0,
+   "saved": 0,
+   "decisions_saved": 0
+  },
+  "S2@noise0.0": {
+   "episodes": 40,
+   "success": 0,
+   "success_rate": 0.0,
+   "decisions_all": 42000,
+   "mean_length_success": null,
+   "saved": 0,
+   "decisions_saved": 0
+  }
+ },
+ "decisions_saved": 0,
+ "episodes_saved": 0,
+ "dagger": {
+  "student": "D:\\DoomsDay\\reports\\runs\\20261125-bc-v1-e60\\bc_model.pt",
+  "beta": 0.0,
+  "max_steps": 0,
+  "student_argmax": false,
+  "success_by_stage": {
+   "S0": [
+    2,
+    40
+   ],
+   "S1": [
+    1,
+    40
+   ],
+   "S2": [
+    0,
+    40
+   ]
+  },
+  "unstick_label_share": 0.0008,
+  "student_decision_share": 1.0,
+  "agree_all": 0.0065,
+  "capped": 0
+ }
+}

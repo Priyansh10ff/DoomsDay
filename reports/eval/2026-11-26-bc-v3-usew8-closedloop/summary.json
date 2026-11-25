@@ -1,0 +1,924 @@
+{
+ "config": {
+  "stages": [
+   "S0",
+   "S1",
+   "S2"
+  ],
+  "episodes_per_map": 2,
+  "out": "reports/eval/2026-11-26-bc-v3-usew8-closedloop",
+  "noise": 0.0,
+  "clean_every": 0,
+  "burst_max": 3,
+  "workers": 2,
+  "seed": 777,
+  "keep_failures": false,
+  "save": false,
+  "map_ids": [],
+  "trace": false,
+  "resume": false,
+  "student": "reports/runs/20261126-bc-v3-usew8/bc_model.pt",
+  "beta": 0.0,
+  "max_steps": 0,
+  "student_argmax": false
+ },
+ "env_config": "train_generated",
+ "bundle": "maps\\bundles\\train-all.wad",
+ "jobs": 120,
+ "episodes_finished": 120,
+ "wall_s": 321.7,
+ "errors": [],
+ "stopped_low_memory": false,
+ "worker_reductions": 0,
+ "complete": true,
+ "min_available_gib": 3.91,
+ "by_stage_noise": {
+  "S0@noise0.0": {
+   "episodes": 40,
+   "success": 4,
+   "success_rate": 0.1,
+   "decisions_all": 38340,
+   "mean_length_success": 135.0,
+   "saved": 0,
+   "decisions_saved": 0,
+   "use_label_share": 0.0001,
+   "use_edges_exec": 382,
+   "press_open_target": 0,
+   "press_into_moving": 0,
+   "door_presses": 0,
+   "switch_presses": 3,
+   "ineffective_presses": 1,
+   "repress_after_close": 0,
+   "reversals_label": 0,
+   "reversals_other": 0,
+   "max_presses_per_closed_spell": 0,
+   "pressable_now": 4,
+   "pressable_but_use_held": 0,
+   "closed_door_ahead_far": 0,
+   "open_door_ahead": 0,
+   "near_closed_target_door": 0
+  },
+  "S1@noise0.0": {
+   "episodes": 40,
+   "success": 2,
+   "success_rate": 0.05,
+   "decisions_all": 40048,
+   "mean_length_success": 74.0,
+   "saved": 0,
+   "decisions_saved": 0,
+   "use_label_share": 0.001,
+   "use_edges_exec": 319,
+   "press_open_target": 0,
+   "press_into_moving": 0,
+   "door_presses": 37,
+   "switch_presses": 1,
+   "ineffective_presses": 0,
+   "repress_after_close": 3,
+   "reversals_label": 0,
+   "reversals_other": 0,
+   "max_presses_per_closed_spell": 1,
+   "pressable_now": 43,
+   "pressable_but_use_held": 1,
+   "closed_door_ahead_far": 95,
+   "open_door_ahead": 287,
+   "near_closed_target_door": 104
+  },
+  "S2@noise0.0": {
+   "episodes": 40,
+   "success": 2,
+   "success_rate": 0.05,
+   "decisions_all": 40343,
+   "mean_length_success": 221.5,
+   "saved": 0,
+   "decisions_saved": 0,
+   "use_label_share": 0.0038,
+   "use_edges_exec": 1306,
+   "press_open_target": 3,
+   "press_into_moving": 0,
+   "door_presses": 41,
+   "switch_presses": 2,
+   "ineffective_presses": 2,
+   "repress_after_close": 4,
+   "reversals_label": 0,
+   "reversals_other": 0,
+   "max_presses_per_closed_spell": 1,
+   "pressable_now": 156,
+   "pressable_but_use_held": 1,
+   "closed_door_ahead_far": 126,
+   "open_door_ahead": 402,
+   "near_closed_target_door": 2414
+  }
+ },
+ "decisions_saved": 0,
+ "episodes_saved": 0,
+ "failures": [
+  {
+   "map_id": "S0-train-100001",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100002",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100003",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100004",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100005",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100006",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100007",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100008",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100010",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100011",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100012",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100013",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100014",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100015",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100016",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100017",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100018",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100019",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100020",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S1-train-101001",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 2
+  },
+  {
+   "map_id": "S1-train-101002",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 2,
+   "anchors": 4
+  },
+  {
+   "map_id": "S1-train-101003",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 2
+  },
+  {
+   "map_id": "S1-train-101004",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-101005",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-101006",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 2
+  },
+  {
+   "map_id": "S1-train-101007",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-101008",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 2
+  },
+  {
+   "map_id": "S1-train-101010",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 3,
+   "anchors": 4
+  },
+  {
+   "map_id": "S1-train-101011",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-101012",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-101013",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-101014",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-101015",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-101016",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S1-train-101017",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-101018",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-101019",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 2
+  },
+  {
+   "map_id": "S1-train-101020",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 2
+  },
+  {
+   "map_id": "S2-train-102001",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 4,
+   "anchors": 6
+  },
+  {
+   "map_id": "S2-train-102002",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 6
+  },
+  {
+   "map_id": "S2-train-102003",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 5
+  },
+  {
+   "map_id": "S2-train-102004",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 3,
+   "anchors": 7
+  },
+  {
+   "map_id": "S2-train-102005",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 4
+  },
+  {
+   "map_id": "S2-train-102006",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 3
+  },
+  {
+   "map_id": "S2-train-102007",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 3,
+   "anchors": 4
+  },
+  {
+   "map_id": "S2-train-102009",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 4
+  },
+  {
+   "map_id": "S2-train-102010",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 5
+  },
+  {
+   "map_id": "S2-train-102011",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 3,
+   "anchors": 8
+  },
+  {
+   "map_id": "S2-train-102012",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 4,
+   "anchors": 6
+  },
+  {
+   "map_id": "S2-train-102013",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 4
+  },
+  {
+   "map_id": "S2-train-102014",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 3,
+   "anchors": 6
+  },
+  {
+   "map_id": "S2-train-102015",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 5
+  },
+  {
+   "map_id": "S2-train-102016",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 6
+  },
+  {
+   "map_id": "S2-train-102018",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 5
+  },
+  {
+   "map_id": "S2-train-102019",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 2,
+   "anchors": 6
+  },
+  {
+   "map_id": "S2-train-102020",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 2,
+   "anchors": 7
+  },
+  {
+   "map_id": "S0-train-100001",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100002",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100004",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100005",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100006",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100007",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100008",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100010",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100011",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100012",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100013",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100014",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100015",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100016",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100017",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100019",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S0-train-100020",
+   "stage": "S0",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S1-train-101001",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 2
+  },
+  {
+   "map_id": "S1-train-101003",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 2
+  },
+  {
+   "map_id": "S1-train-101004",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-101005",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 2,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-101006",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 2
+  },
+  {
+   "map_id": "S1-train-101007",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-101008",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 2
+  },
+  {
+   "map_id": "S1-train-101009",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-101010",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 4
+  },
+  {
+   "map_id": "S1-train-101011",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-101012",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-101013",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-101014",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-101015",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-101016",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 1
+  },
+  {
+   "map_id": "S1-train-101017",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-101018",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 3
+  },
+  {
+   "map_id": "S1-train-101019",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 2
+  },
+  {
+   "map_id": "S1-train-101020",
+   "stage": "S1",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 2
+  },
+  {
+   "map_id": "S2-train-102001",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 2,
+   "anchors": 6
+  },
+  {
+   "map_id": "S2-train-102002",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 6
+  },
+  {
+   "map_id": "S2-train-102003",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 2,
+   "anchors": 5
+  },
+  {
+   "map_id": "S2-train-102004",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 7
+  },
+  {
+   "map_id": "S2-train-102005",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 4
+  },
+  {
+   "map_id": "S2-train-102006",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 3
+  },
+  {
+   "map_id": "S2-train-102007",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 3,
+   "anchors": 4
+  },
+  {
+   "map_id": "S2-train-102008",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 6
+  },
+  {
+   "map_id": "S2-train-102009",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 1,
+   "anchors": 4
+  },
+  {
+   "map_id": "S2-train-102010",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 5
+  },
+  {
+   "map_id": "S2-train-102011",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 4,
+   "anchors": 8
+  },
+  {
+   "map_id": "S2-train-102012",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 5,
+   "anchors": 6
+  },
+  {
+   "map_id": "S2-train-102013",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 4
+  },
+  {
+   "map_id": "S2-train-102014",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 5,
+   "anchors": 6
+  },
+  {
+   "map_id": "S2-train-102015",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 3,
+   "anchors": 5
+  },
+  {
+   "map_id": "S2-train-102016",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 6
+  },
+  {
+   "map_id": "S2-train-102017",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 4
+  },
+  {
+   "map_id": "S2-train-102018",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 0,
+   "anchors": 5
+  },
+  {
+   "map_id": "S2-train-102019",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 2,
+   "anchors": 6
+  },
+  {
+   "map_id": "S2-train-102020",
+   "stage": "S2",
+   "length": 1050,
+   "anchor_reached": 3,
+   "anchors": 7
+  }
+ ],
+ "dagger": {
+  "student": "D:\\DoomsDay\\reports\\runs\\20261126-bc-v3-usew8\\bc_model.pt",
+  "beta": 0.0,
+  "max_steps": 0,
+  "student_argmax": false,
+  "success_by_stage": {
+   "S0": [
+    4,
+    40
+   ],
+   "S1": [
+    2,
+    40
+   ],
+   "S2": [
+    2,
+    40
+   ]
+  },
+  "unstick_label_share": 0.0004,
+  "student_decision_share": 1.0,
+  "agree_all": 0.0158,
+  "capped": 0
+ }
+}

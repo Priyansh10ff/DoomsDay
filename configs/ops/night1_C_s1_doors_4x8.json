@@ -1,0 +1,33 @@
+{
+  "description": "Overnight run 2 (replaces night1-A, which stayed on S0 and never exercised the door reward): PPO on generated maps starting at stage S1 (door maps, 20% S0 replay), full_level_doors reward, from the DAgger round-1 model with a 20-update value warm-up. 4x8, 8 torch threads, flag-only monitor. Chosen by the coordinator after Priyansh said restart.",
+  "baseline": "RunConfig defaults (1x1, 2 torch threads)",
+  "argv": [
+    "--workers",
+    "4",
+    "--envs-per-worker",
+    "8",
+    "--torch-threads",
+    "8",
+    "--allow-multi-instance",
+    "32",
+    "--maps",
+    "generated",
+    "--shaping",
+    "full_level_doors",
+    "--start-stage",
+    "S1",
+    "--checkpoint-interval",
+    "600",
+    "--init-from",
+    "reports/runs/20261125-bc-dagger-r1/bc_model.pt",
+    "--value-warmup-updates",
+    "20",
+    "--max-seconds",
+    "30000"
+  ],
+  "env_overrides": {},
+  "safety_overrides": {},
+  "health_overrides": {
+    "stop_enabled": false
+  }
+}

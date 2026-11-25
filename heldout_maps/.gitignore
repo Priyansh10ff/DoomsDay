@@ -1,0 +1,3 @@
+# ADR 0008: held-out WADs stay out of git; MANIFEST.json and maps/splits.json are tracked.
+# Regenerate byte-identically with: python -m maps.build
+generated/*.wad

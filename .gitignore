@@ -1,0 +1,31 @@
+# Teacher demonstrations and other generated datasets (teachers/collect.py): large, rebuildable
+data/
+
+# Python and tool caches
+__pycache__/
+*.pyc
+.pytest_cache/
+_vizdoom.ini
+
+# Local Claude Code settings (may hold personal or secret values)
+.claude/settings.local.json
+
+# Model checkpoints: large and many. The submitted model is added explicitly later.
+*.pt
+*.pt.prev
+
+# Bulky per-run logs. Each run keeps its config.json and the written reports;
+# the raw logs stay on the laptop.
+reports/runs/**/checkpoints/
+reports/runs/**/metrics.jsonl
+reports/runs/**/episodes.jsonl
+reports/runs/**/stdout*.log
+reports/runs/**/stderr*.log
+reports/runs/**/system.csv
+reports/runs/**/*.pid
+runs/
+
+# Evaluation recordings (videos) and per-episode result dumps
+*.mp4
+*.gif
+reports/eval/**/results.jsonl

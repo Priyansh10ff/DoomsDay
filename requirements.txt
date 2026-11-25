@@ -1,0 +1,19 @@
+# DoomsDay: packages the code imports, pinned to the versions installed on the
+# training machine (Python 3.12, Windows 11). Install: pip install -r requirements.txt
+#
+# torch: installed as 2.9.1+cu128 from the official PyTorch index
+#   pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cu128
+# The plain PyPI / CPU build of 2.9.1 also works for inference and evaluation
+# (python -m evaluate.run --device cpu, the default); CUDA is only used for training.
+torch==2.9.1
+numpy==2.2.6
+vizdoom==1.3.3
+gymnasium==1.4.0
+# memory guard / process priority in train/ and env/bench.py
+psutil==7.0.0
+# evaluate.record: GIF (Pillow) and MP4 (OpenCV) writers; recording falls back to
+# PNG frames if neither is present. Evaluation itself does not need them.
+pillow==11.3.0
+opencv-python-headless==5.0.0.93
+# tests
+pytest==9.0.2

@@ -1,0 +1,1 @@
+val sample: 5/60 success (Wilson 95% 0.036-0.181), death 0.167, timeout 0.750, mean length 897.9, exit_unknown 0 -> reports/eval/2026-11-25-bc-v1/ppo_gen_run1

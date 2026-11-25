@@ -1,0 +1,162 @@
+{
+ "bc_v2": {
+  "S1": {
+   "lit_width_by_centre_depth_bin(mean, n)": {
+    "0.0-0.02": [
+     72.15,
+     12060
+    ],
+    "0.02-0.05": [
+     44.15,
+     3861
+    ],
+    "0.05-0.1": [
+     23.47,
+     3003
+    ],
+    "0.1-0.2": [
+     11.15,
+     1660
+    ],
+    "0.2-1.01": [
+     6.82,
+     169
+    ]
+   },
+   "at_USE=1: centre door-lit fraction mean": 0.769,
+   "at_USE=1: all 8 centre columns lit": 0.758,
+   "at_USE=1: centre depth p10/p50/p90": [
+    0.0039,
+    0.0118,
+    0.0275
+   ],
+   "share of steps with centre lit & depth<0.05": 0.27,
+   "P(USE=1 | centre lit & depth<0.05)": 0.0498,
+   "knn_on_lit_near_steps": {
+    "n": 5303,
+    "turn_agree": 0.47,
+    "move_agree": 0.815,
+    "turn_label_entropy_bits": 2.593
+   }
+  },
+  "S2": {
+   "lit_width_by_centre_depth_bin(mean, n)": {
+    "0.0-0.02": [
+     72.24,
+     22988
+    ],
+    "0.02-0.05": [
+     44.44,
+     7400
+    ],
+    "0.05-0.1": [
+     23.06,
+     5763
+    ],
+    "0.1-0.2": [
+     11.35,
+     3590
+    ],
+    "0.2-1.01": [
+     8.39,
+     450
+    ]
+   },
+   "at_USE=1: centre door-lit fraction mean": 0.724,
+   "at_USE=1: all 8 centre columns lit": 0.715,
+   "at_USE=1: centre depth p10/p50/p90": [
+    0.0039,
+    0.0157,
+    0.1451
+   ],
+   "share of steps with centre lit & depth<0.05": 0.2711,
+   "P(USE=1 | centre lit & depth<0.05)": 0.0479,
+   "knn_on_lit_near_steps": {
+    "n": 5892,
+    "turn_agree": 0.442,
+    "move_agree": 0.797,
+    "turn_label_entropy_bits": 2.608
+   }
+  }
+ },
+ "bc_v3": {
+  "S1": {
+   "lit_width_by_centre_depth_bin(mean, n)": {
+    "0.0-0.02": [
+     71.3,
+     7462
+    ],
+    "0.02-0.05": [
+     44.61,
+     3147
+    ],
+    "0.05-0.1": [
+     23.05,
+     2968
+    ],
+    "0.1-0.2": [
+     10.98,
+     1748
+    ],
+    "0.2-1.01": [
+     7.01,
+     181
+    ]
+   },
+   "at_USE=1: centre door-lit fraction mean": 0.901,
+   "at_USE=1: all 8 centre columns lit": 0.874,
+   "at_USE=1: centre depth p10/p50/p90": [
+    0.0039,
+    0.0157,
+    0.0235
+   ],
+   "share of steps with centre lit & depth<0.05": 0.2111,
+   "P(USE=1 | centre lit & depth<0.05)": 0.1465,
+   "knn_on_lit_near_steps": {
+    "n": 5031,
+    "turn_agree": 0.451,
+    "move_agree": 0.817,
+    "turn_label_entropy_bits": 2.69
+   }
+  },
+  "S2": {
+   "lit_width_by_centre_depth_bin(mean, n)": {
+    "0.0-0.02": [
+     71.26,
+     14375
+    ],
+    "0.02-0.05": [
+     43.68,
+     5438
+    ],
+    "0.05-0.1": [
+     22.67,
+     5051
+    ],
+    "0.1-0.2": [
+     11.39,
+     3474
+    ],
+    "0.2-1.01": [
+     8.24,
+     483
+    ]
+   },
+   "at_USE=1: centre door-lit fraction mean": 0.899,
+   "at_USE=1: all 8 centre columns lit": 0.87,
+   "at_USE=1: centre depth p10/p50/p90": [
+    0.0039,
+    0.0157,
+    0.0235
+   ],
+   "share of steps with centre lit & depth<0.05": 0.2125,
+   "P(USE=1 | centre lit & depth<0.05)": 0.1465,
+   "knn_on_lit_near_steps": {
+    "n": 5832,
+    "turn_agree": 0.417,
+    "move_agree": 0.786,
+    "turn_label_entropy_bits": 2.713
+   }
+  }
+ }
+}

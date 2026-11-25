@@ -1,0 +1,27 @@
+{
+  "description": "90 s pre-launch check of the generated-maps run: 4 workers x 8 envs, 8 torch threads, --maps generated --shaping full_level, CPU, health monitor flag-only. Layout chosen by the coordinator because only 5.0 GiB was available.",
+  "baseline": "RunConfig defaults (1x1, 2 torch threads)",
+  "argv": [
+    "--workers",
+    "4",
+    "--envs-per-worker",
+    "8",
+    "--torch-threads",
+    "8",
+    "--allow-multi-instance",
+    "32",
+    "--maps",
+    "generated",
+    "--shaping",
+    "full_level",
+    "--checkpoint-interval",
+    "600",
+    "--max-seconds",
+    "90"
+  ],
+  "env_overrides": {},
+  "safety_overrides": {},
+  "health_overrides": {
+    "stop_enabled": false
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "description": "Resume of night1-C after its memory guard stopped it at 23:07 (another agent ran CUDA pytest alongside 32 engines). Smaller 4x6 layout to leave room for concurrent build/test work. Resume keeps the curriculum (S1) and weights.",
+  "baseline": "RunConfig defaults (1x1, 2 torch threads)",
+  "argv": [
+    "--workers",
+    "4",
+    "--envs-per-worker",
+    "6",
+    "--torch-threads",
+    "4",
+    "--allow-multi-instance",
+    "24",
+    "--maps",
+    "generated",
+    "--shaping",
+    "full_level_doors",
+    "--checkpoint-interval",
+    "600",
+    "--max-seconds",
+    "28000"
+  ],
+  "env_overrides": {},
+  "safety_overrides": {},
+  "health_overrides": {
+    "stop_enabled": false
+  }
+}

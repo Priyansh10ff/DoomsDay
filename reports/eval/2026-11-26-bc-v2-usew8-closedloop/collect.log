@@ -1,0 +1,126 @@
+[collect] 1/120 episodes, success 0/1, 1050 decisions, 9s, avail 5.8 GiB
+[collect] 14/120 episodes, success 4/14, 12267 decisions, 40s, avail 3.4 GiB
+[collect] 24/120 episodes, success 9/24, 20532 decisions, 70s, avail 3.4 GiB
+[collect] 35/120 episodes, success 12/35, 31104 decisions, 101s, avail 3.4 GiB
+[collect] 47/120 episodes, success 16/47, 41665 decisions, 132s, avail 3.4 GiB
+[collect] 59/120 episodes, success 21/59, 51083 decisions, 163s, avail 3.4 GiB
+[collect] 72/120 episodes, success 27/72, 59553 decisions, 194s, avail 3.4 GiB
+[collect] 82/120 episodes, success 29/82, 68730 decisions, 225s, avail 3.4 GiB
+[collect] 97/120 episodes, success 37/97, 79119 decisions, 255s, avail 3.4 GiB
+[collect] 108/120 episodes, success 39/108, 88912 decisions, 285s, avail 3.4 GiB
+[collect] 118/120 episodes, success 42/118, 98443 decisions, 315s, avail 3.4 GiB
+{
+ "env_config": "train_generated",
+ "bundle": "maps\\bundles\\train-all.wad",
+ "jobs": 120,
+ "episodes_finished": 120,
+ "wall_s": 325.1,
+ "errors": [],
+ "stopped_low_memory": false,
+ "worker_reductions": 0,
+ "complete": true,
+ "min_available_gib": 3.36,
+ "by_stage_noise": {
+  "S0@noise0.0": {
+   "episodes": 40,
+   "success": 14,
+   "success_rate": 0.35,
+   "decisions_all": 32652,
+   "mean_length_success": 382.3,
+   "saved": 0,
+   "decisions_saved": 0,
+   "use_label_share": 0.0002,
+   "use_edges_exec": 2871,
+   "press_open_target": 0,
+   "press_into_moving": 0,
+   "door_presses": 0,
+   "switch_presses": 4,
+   "ineffective_presses": 1,
+   "repress_after_close": 0,
+   "reversals_label": 0,
+   "reversals_other": 0,
+   "max_presses_per_closed_spell": 0,
+   "pressable_now": 7,
+   "pressable_but_use_held": 1,
+   "closed_door_ahead_far": 0,
+   "open_door_ahead": 0,
+   "near_closed_target_door": 0
+  },
+  "S1@noise0.0": {
+   "episodes": 40,
+   "success": 17,
+   "success_rate": 0.425,
+   "decisions_all": 32251,
+   "mean_length_success": 476.5,
+   "saved": 0,
+   "decisions_saved": 0,
+   "use_label_share": 0.0312,
+   "use_edges_exec": 2633,
+   "press_open_target": 140,
+   "press_into_moving": 0,
+   "door_presses": 218,
+   "switch_presses": 4,
+   "ineffective_presses": 0,
+   "repress_after_close": 138,
+   "reversals_label": 0,
+   "reversals_other": 28,
+   "max_presses_per_closed_spell": 1,
+   "pressable_now": 1008,
+   "pressable_but_use_held": 3,
+   "closed_door_ahead_far": 630,
+   "open_door_ahead": 1809,
+   "near_closed_target_door": 862
+  },
+  "S2@noise0.0": {
+   "episodes": 40,
+   "success": 11,
+   "success_rate": 0.275,
+   "decisions_all": 35640,
+   "mean_length_success": 471.8,
+   "saved": 0,
+   "decisions_saved": 0,
+   "use_label_share": 0.0418,
+   "use_edges_exec": 2496,
+   "press_open_target": 127,
+   "press_into_moving": 0,
+   "door_presses": 262,
+   "switch_presses": 5,
+   "ineffective_presses": 1,
+   "repress_after_close": 172,
+   "reversals_label": 0,
+   "reversals_other": 63,
+   "max_presses_per_closed_spell": 1,
+   "pressable_now": 1493,
+   "pressable_but_use_held": 3,
+   "closed_door_ahead_far": 934,
+   "open_door_ahead": 2230,
+   "near_closed_target_door": 3572
+  }
+ },
+ "decisions_saved": 0,
+ "episodes_saved": 0,
+ "dagger": {
+  "student": "D:\\DoomsDay\\reports\\runs\\20261125-bc-v2-usew8\\bc_model.pt",
+  "beta": 0.0,
+  "max_steps": 0,
+  "student_argmax": false,
+  "success_by_stage": {
+   "S0": [
+    14,
+    40
+   ],
+   "S1": [
+    17,
+    40
+   ],
+   "S2": [
+    11,
+    40
+   ]
+  },
+  "unstick_label_share": 0.001,
+  "student_decision_share": 1.0,
+  "agree_all": 0.1184,
+  "capped": 0
+ }
+}

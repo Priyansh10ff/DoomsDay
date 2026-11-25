@@ -1,0 +1,7 @@
+{
+  "description": "First Stage A0 training run (my_way_home), recommended by trainer-ops from the 2026-11-25 layout benchmark: 4 workers x 2 envs (8 engine instances), 4 torch threads, non-daemon workers, default 8 GiB cap, below-normal priority, checkpoint every 600 s, stops after 8400 s (2 h 20 min) so it ends before the 11:00 approval window closes when launched by 08:20.",
+  "baseline": "RunConfig defaults (1x1, 2 torch threads); differs only in layout, torch threads and the time limit",
+  "argv": ["--workers", "4", "--envs-per-worker", "2", "--torch-threads", "4", "--allow-multi-instance", "8", "--max-seconds", "8400", "--checkpoint-interval", "600"],
+  "env_overrides": {},
+  "safety_overrides": {}
+}

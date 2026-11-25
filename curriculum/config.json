@@ -1,0 +1,17 @@
+{
+  "_comment": "Curriculum scheduler config (curriculum/scheduler.py). Training only.",
+  "_status": "ALL THRESHOLDS, WINDOWS AND PROPORTIONS BELOW ARE UNMEASURED PLACEHOLDERS. No agent has trained on generated maps yet; set them from a measured random baseline and learning curve per stage before relying on them.",
+  "stages": ["S0", "S1", "S2", "S3"],
+  "promotion": {
+    "threshold": {"S0": 0.6, "S1": 0.6, "S2": 0.5},
+    "window": 200,
+    "count_replay_episodes": false
+  },
+  "replay": {
+    "fraction": 0.2,
+    "stage_weights": "uniform"
+  },
+  "map_order": "shuffled_cycle",
+  "seed": 0,
+  "bundle_id": "train-all"
+}

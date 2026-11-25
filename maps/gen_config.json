@@ -1,0 +1,45 @@
+{
+  "_comment": "Generator config (maps/generator.py). Stage S0 nav, S1 +doors, S2 +key/locked door, S3 +monsters/pickups. Splits partition themes and seed ranges; held-out widens size ranges and adds corridor width 4.",
+  "defaults": {
+    "max_attempts": 12,
+    "layout_tries": 300,
+    "rooms": [3, 6],
+    "room_size": [6, 14],
+    "corr_len": [1, 6],
+    "corr_width": [2, 3],
+    "chain_bias": 0.5,
+    "loop_prob": 0.35,
+    "max_loops": 1,
+    "floor_steps": [-24, -16, -8, 0, 0, 0, 8, 16, 24],
+    "room_heights": [96, 128, 160, 192, 256],
+    "corr_heights": [72, 96, 128],
+    "light": [112, 240],
+    "alt_theme_prob": 0.2,
+    "door_prob": 0.0,
+    "keys": false,
+    "key_colors": ["blue", "yellow", "red"],
+    "skull_key_prob": 0.3,
+    "exit_kinds": ["pad", "switch"],
+    "monsters": [0, 0],
+    "monster_weights": {"zombieman": 0.5, "shotgunguy": 0.25, "imp": 0.25},
+    "pickups": [0, 0],
+    "pickup_weights": {"stimpack": 0.25, "medikit": 0.1, "healthbonus": 0.1, "greenarmor": 0.05,
+                       "clip": 0.3, "shells": 0.1, "shotgun": 0.1}
+  },
+  "stages": {
+    "S0": {"stage_name": "nav-only"},
+    "S1": {"stage_name": "doors", "door_prob": 0.6},
+    "S2": {"stage_name": "keycard+locked-door", "door_prob": 0.5, "keys": true, "rooms": [4, 7]},
+    "S3": {"stage_name": "full", "door_prob": 0.5, "keys": true, "rooms": [4, 7],
+           "monsters": [2, 5], "pickups": [2, 5]}
+  },
+  "splits": {
+    "train":   {"seed_range": [100000, 199999], "themes": ["tech", "brick", "wood", "cement", "brown", "rock"]},
+    "val":     {"seed_range": [500000, 599999], "themes": ["metal", "aqua"]},
+    "heldout": {"seed_range": [900000, 999999], "themes": ["marble", "flesh", "ashwall"],
+                "params": {"room_size": [5, 17], "corr_len": [1, 8], "corr_width": [2, 4],
+                           "light": [96, 255]},
+                "stage_params": {"S0": {"rooms": [4, 8]}, "S1": {"rooms": [4, 8]},
+                                 "S2": {"rooms": [5, 9]}, "S3": {"rooms": [5, 9], "monsters": [3, 6]}}}
+  }
+}

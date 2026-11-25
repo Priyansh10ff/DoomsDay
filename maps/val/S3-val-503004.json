@@ -1,0 +1,312 @@
+{
+ "attempt": 0,
+ "counts": {
+  "corridors": 6,
+  "doors": 3,
+  "linedefs": 84,
+  "locked_doors": 1,
+  "loops": 0,
+  "monsters": 4,
+  "pickups": 3,
+  "rooms": 7,
+  "sectors": 19,
+  "things": 9
+ },
+ "failed_attempts": [],
+ "generator": "doomsday-mapgen",
+ "generator_version": "0.1.1",
+ "graph": {
+  "corridors": [
+   {
+    "a": 0,
+    "b": 1,
+    "door": "normal",
+    "loop": false
+   },
+   {
+    "a": 1,
+    "b": 2,
+    "door": null,
+    "loop": false
+   },
+   {
+    "a": 0,
+    "b": 3,
+    "door": null,
+    "loop": false
+   },
+   {
+    "a": 3,
+    "b": 4,
+    "door": "normal",
+    "loop": false
+   },
+   {
+    "a": 4,
+    "b": 5,
+    "door": "red",
+    "loop": false
+   },
+   {
+    "a": 5,
+    "b": 6,
+    "door": "normal",
+    "loop": false
+   }
+  ],
+  "exit_kind": "switch",
+  "exit_room": 6,
+  "key_room": 2,
+  "lock": 4,
+  "lock_color": "red",
+  "lock_door_sector": 14,
+  "room_sector": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6
+  ],
+  "rooms": [
+   {
+    "h": 12,
+    "w": 7,
+    "x": 0,
+    "y": 0
+   },
+   {
+    "h": 12,
+    "w": 14,
+    "x": -2,
+    "y": 15
+   },
+   {
+    "h": 12,
+    "w": 8,
+    "x": 3,
+    "y": 30
+   },
+   {
+    "h": 9,
+    "w": 6,
+    "x": 0,
+    "y": -12
+   },
+   {
+    "h": 12,
+    "w": 13,
+    "x": -17,
+    "y": -10
+   },
+   {
+    "h": 13,
+    "w": 6,
+    "x": -29,
+    "y": -12
+   },
+   {
+    "h": 9,
+    "w": 13,
+    "x": -48,
+    "y": -9
+   }
+  ],
+  "start_room": 0
+ },
+ "mods": [],
+ "params": {
+  "alt_theme_prob": 0.2,
+  "chain_bias": 0.5,
+  "corr_heights": [
+   72,
+   96,
+   128
+  ],
+  "corr_len": [
+   1,
+   6
+  ],
+  "corr_width": [
+   2,
+   3
+  ],
+  "door_prob": 0.5,
+  "exit_kinds": [
+   "pad",
+   "switch"
+  ],
+  "floor_steps": [
+   -24,
+   -16,
+   -8,
+   0,
+   0,
+   0,
+   8,
+   16,
+   24
+  ],
+  "key_colors": [
+   "blue",
+   "yellow",
+   "red"
+  ],
+  "keys": true,
+  "layout_tries": 300,
+  "light": [
+   112,
+   240
+  ],
+  "loop_prob": 0.35,
+  "max_attempts": 12,
+  "max_loops": 1,
+  "monster_weights": {
+   "imp": 0.25,
+   "shotgunguy": 0.25,
+   "zombieman": 0.5
+  },
+  "monsters": [
+   2,
+   5
+  ],
+  "pickup_weights": {
+   "clip": 0.3,
+   "greenarmor": 0.05,
+   "healthbonus": 0.1,
+   "medikit": 0.1,
+   "shells": 0.1,
+   "shotgun": 0.1,
+   "stimpack": 0.25
+  },
+  "pickups": [
+   2,
+   5
+  ],
+  "room_heights": [
+   96,
+   128,
+   160,
+   192,
+   256
+  ],
+  "room_size": [
+   6,
+   14
+  ],
+  "rooms": [
+   4,
+   7
+  ],
+  "skull_key_prob": 0.3,
+  "stage_name": "full"
+ },
+ "seed": 503004,
+ "split": "val",
+ "stage": "S3",
+ "themes": [
+  "metal",
+  "aqua"
+ ],
+ "things": [
+  {
+   "class": "DoomPlayer",
+   "role": "start",
+   "room": 0,
+   "type": 1,
+   "x": 144,
+   "y": 272
+  },
+  {
+   "class": "RedCard",
+   "role": "key",
+   "room": 2,
+   "type": 13,
+   "x": 144,
+   "y": 1200
+  },
+  {
+   "class": "ShotgunGuy",
+   "role": "monster",
+   "room": 6,
+   "type": 9,
+   "x": -1360,
+   "y": -80
+  },
+  {
+   "class": "Zombieman",
+   "role": "monster",
+   "room": 4,
+   "type": 3004,
+   "x": -272,
+   "y": -112
+  },
+  {
+   "class": "Zombieman",
+   "role": "monster",
+   "room": 5,
+   "type": 3004,
+   "x": -784,
+   "y": -240
+  },
+  {
+   "class": "Zombieman",
+   "role": "monster",
+   "room": 3,
+   "type": 3004,
+   "x": 48,
+   "y": -240
+  },
+  {
+   "class": "Clip",
+   "role": "pickup",
+   "room": 2,
+   "type": 2007,
+   "x": 240,
+   "y": 1232
+  },
+  {
+   "class": "Clip",
+   "role": "pickup",
+   "room": 5,
+   "type": 2007,
+   "x": -880,
+   "y": -240
+  },
+  {
+   "class": "Clip",
+   "role": "pickup",
+   "room": 3,
+   "type": 2007,
+   "x": 112,
+   "y": -176
+  }
+ ],
+ "validation": {
+  "engine": {
+   "exit_finished": true,
+   "exit_reward": 1.0,
+   "locked_with_key_ceil": 88.0,
+   "locked_without_key": {
+    "ceil_after": 40.0,
+    "ceil_before": 40.0,
+    "message": "Red key needed for this door."
+   },
+   "objects": {
+    "Clip": 3,
+    "DoomPlayer": 1,
+    "RedCard": 1,
+    "ShotgunGuy": 1,
+    "Zombieman": 3
+   },
+   "ok": true,
+   "problems": [],
+   "spawn": [
+    144.0,
+    272.0
+   ]
+  },
+  "static_problems": []
+ }
+}

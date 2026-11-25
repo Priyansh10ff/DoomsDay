@@ -1,0 +1,110 @@
+{
+ "init": "reports/runs/20261125-bc-dagger-r1/bc_model.pt",
+ "current": "reports/runs/20261125-night1-C-s1-doors/checkpoint.pt",
+ "weights_unchanged_sha256": "2d666ccdc00af856b022a82f9a146fa2af6aa8c453bcf0c5b5e48e87f910e8b5",
+ "imitation_batch_steps": 2410,
+ "groups": {
+  "rays": {
+   "params": 43872,
+   "rel_change": 0.08253253043092675,
+   "grad_norm": 9.439920848338064,
+   "grad_over_weight": 0.4930894390138061
+  },
+  "entities": {
+   "params": 39520,
+   "rel_change": 0.023371468693642913,
+   "grad_norm": 1.4454656572963962,
+   "grad_over_weight": 0.05727937992559246
+  },
+  "self_enc": {
+   "params": 3936,
+   "rel_change": 0.02521295202465868,
+   "grad_norm": 1.8088072862892357,
+   "grad_over_weight": 0.21223702052042753
+  },
+  "prev_action": {
+   "params": 304,
+   "rel_change": 0.00901161056358065,
+   "grad_norm": 1.1714773393491578,
+   "grad_over_weight": 0.06277638806375929
+  },
+  "fusion": {
+   "params": 34560,
+   "rel_change": 0.10375215498360751,
+   "grad_norm": 5.062530264351888,
+   "grad_over_weight": 0.35184292700545095
+  },
+  "core": {
+   "params": 345600,
+   "rel_change": 0.1335963783849821,
+   "grad_norm": 9.291277080848229,
+   "grad_over_weight": 0.22244481877454914
+  },
+  "policy_heads.0": {
+   "params": 771,
+   "rel_change": 0.06973474855489212,
+   "grad_norm": 3.3797438459862357,
+   "grad_over_weight": 0.9485605354010557
+  },
+  "policy_heads.1": {
+   "params": 771,
+   "rel_change": 0.13378485428966047,
+   "grad_norm": 0.7065633060399266,
+   "grad_over_weight": 0.29724899829709944
+  },
+  "policy_heads.2": {
+   "params": 1799,
+   "rel_change": 0.0653379756477134,
+   "grad_norm": 4.92996468497747,
+   "grad_over_weight": 0.6835703896218699
+  },
+  "policy_heads.3": {
+   "params": 514,
+   "rel_change": 0.021094680361910104,
+   "grad_norm": 1.0565512899633605e-05,
+   "grad_over_weight": 8.655053351621494e-06
+  },
+  "policy_heads.4": {
+   "params": 514,
+   "rel_change": 0.08288036251597136,
+   "grad_norm": 3.539300382168769,
+   "grad_over_weight": 1.2465128654539968
+  },
+  "policy_heads.5": {
+   "params": 514,
+   "rel_change": 0.06888312166935796,
+   "grad_norm": 0.35775504696673466,
+   "grad_over_weight": 0.13957645333118504
+  },
+  "value_ext": {
+   "params": 257,
+   "rel_change": 0.445570352107581,
+   "grad_norm": 0.0,
+   "grad_over_weight": 0.0
+  },
+  "value_int": {
+   "params": 257,
+   "rel_change": 0.0,
+   "grad_norm": 0.0,
+   "grad_over_weight": 0.0
+  },
+  "aux_keys": {
+   "params": 771,
+   "rel_change": 1.1571141308154682,
+   "grad_norm": 0.0,
+   "grad_over_weight": 0.0
+  },
+  "aux_damage": {
+   "params": 257,
+   "rel_change": 1.161318678453571,
+   "grad_norm": 0.0,
+   "grad_over_weight": 0.0
+  },
+  "aux_monsters": {
+   "params": 257,
+   "rel_change": 0.6805422078353026,
+   "grad_norm": 0.0,
+   "grad_over_weight": 0.0
+  }
+ }
+}

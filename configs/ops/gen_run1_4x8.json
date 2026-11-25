@@ -1,0 +1,27 @@
+{
+  "description": "First training run on the generated maps (curriculum S0-S3, full_level shaping + coverage bonus), 4 workers x 8 envs, 8 torch threads, CPU, default seed and entropy coefficient, health monitor flag-only. Layout, flag-only monitor and time limit chosen by the coordinator: 5.0 GiB was available at launch, and the user shuts the laptop down at 17:00, so the run stops itself at about 16:43.",
+  "baseline": "RunConfig defaults (1x1, 2 torch threads)",
+  "argv": [
+    "--workers",
+    "4",
+    "--envs-per-worker",
+    "8",
+    "--torch-threads",
+    "8",
+    "--allow-multi-instance",
+    "32",
+    "--maps",
+    "generated",
+    "--shaping",
+    "full_level",
+    "--checkpoint-interval",
+    "600",
+    "--max-seconds",
+    "10000"
+  ],
+  "env_overrides": {},
+  "safety_overrides": {},
+  "health_overrides": {
+    "stop_enabled": false
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "description": "Resume leg of the generated-maps run 20261125-nogit-45275c79 for the night of 2026-11-25: same settings as gen_run1_4x8.json, only --max-seconds differs (36000 s = 10 h from the moment of launch; edit before launching if the laptop will be shut down sooner). Launch with --resume <run>/checkpoint.pt. Written by the coordinator.",
+  "baseline": "RunConfig defaults (1x1, 2 torch threads)",
+  "argv": [
+    "--workers",
+    "4",
+    "--envs-per-worker",
+    "8",
+    "--torch-threads",
+    "8",
+    "--allow-multi-instance",
+    "32",
+    "--maps",
+    "generated",
+    "--shaping",
+    "full_level",
+    "--checkpoint-interval",
+    "600",
+    "--max-seconds",
+    "36000"
+  ],
+  "env_overrides": {},
+  "safety_overrides": {},
+  "health_overrides": {
+    "stop_enabled": false
+  }
+}

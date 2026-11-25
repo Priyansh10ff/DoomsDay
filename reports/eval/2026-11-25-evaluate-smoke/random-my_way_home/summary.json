@@ -1,0 +1,147 @@
+{
+ "interval": "Wilson score interval, 95 %",
+ "meta": {
+  "argmax_heads": null,
+  "checkpoint": null,
+  "engine_instances": 1,
+  "iwad_sha256": {
+   "C:\\Users\\priyansh\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\vizdoom\\freedoom2.wad": "a8772e088847032510d97ba2312406a6998f21cbab44d4ff10696faa9c0ecd4b"
+  },
+  "maps": [
+   {
+    "env_config": {
+     "engine_rewards": [
+      [
+       "map_exit_reward",
+       1.0
+      ]
+     ],
+     "episode_timeout_tics": 2100,
+     "extra": {},
+     "frame_skip": 4,
+     "game_args": [],
+     "iwad": "freedoom2",
+     "iwad_file": null,
+     "map_wad": "C:\\Users\\priyansh\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\vizdoom\\scenarios\\my_way_home.wad",
+     "maps": [
+      "MAP01"
+     ],
+     "max_entities": 24,
+     "name": "eval_my_way_home",
+     "objects_info": false,
+     "phase2_engine_test": false,
+     "render_hud": true,
+     "scenario_wad": null,
+     "screen_enabled": false,
+     "sectors_info": false,
+     "skill": 5,
+     "turn_bins": [
+      -10.0,
+      -4.0,
+      -1.0,
+      0.0,
+      1.0,
+      4.0,
+      10.0
+     ],
+     "vanilla_eval": true,
+     "win_timer_ms": null
+    },
+    "lumps": [
+     "MAP01"
+    ],
+    "map_id": "my_way_home",
+    "notes": [
+     "in-distribution: the map A0 trained on",
+     "PWAD carries its ACS goal script (pays reward, then exits); not a vanilla held-out map",
+     "EVAL engine rewards: no living reward, map_exit_reward 1.0 on top of the ACS reward; returns are not comparable to training logs"
+    ],
+    "source_file": "C:\\Users\\priyansh\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\vizdoom\\scenarios\\my_way_home.wad",
+    "stage": "my_way_home",
+    "staged": false,
+    "wad_sha256": "18e98ff4c9186808eb00696b799cfe88a79e7486429c1692aafbed8ef359c0b1"
+   }
+  ],
+  "maps_skipped": [],
+  "reproducibility_note": "per-episode engine reproducibility under set_seed is not established by any probe (ADR 0007-recipe Decision 5.2)",
+  "run_config": {
+   "base_seed": 20261125,
+   "ci_z": 1.959963984540054,
+   "device": "cpu",
+   "episodes_per_map": 20,
+   "exit_reward_fraction": 1.0,
+   "max_maps": null,
+   "policy": "random",
+   "seed_stride_map": 10000,
+   "split": "my_way_home",
+   "timeout_tics_override": null,
+   "torch_threads": 1
+  },
+  "seed_rule": "seed = base_seed + map_index * seed_stride_map + episode_index; env.reset(seed=seed); policy generator seeded with the same value, fresh per episode",
+  "time_limit_source": "a0_train_env_config() (bundled my_way_home.cfg): skill and timeout",
+  "versions": {
+   "gymnasium": "1.4.0",
+   "numpy": "2.2.6",
+   "python": "3.12.10",
+   "torch": "2.9.1+cu128",
+   "vizdoom": "1.3.3"
+  },
+  "wall_seconds": 570.8530421257019,
+  "written": "2026-11-25 13:13:55"
+ },
+ "summary": {
+  "overall": {
+   "death_rate": 0.0,
+   "episodes": 20,
+   "exit_unknown": 0,
+   "mean_kills": 0.0,
+   "mean_length": 504.1,
+   "mean_length_successful": 316.0,
+   "mean_return": 0.2,
+   "success_ci95_wilson": [
+    0.027866481213768224,
+    0.3010336452284873
+   ],
+   "success_rate": 0.1,
+   "successes": 2,
+   "timeout_rate": 0.9
+  },
+  "per_map": {
+   "my_way_home": {
+    "death_rate": 0.0,
+    "episodes": 20,
+    "exit_unknown": 0,
+    "mean_kills": 0.0,
+    "mean_length": 504.1,
+    "mean_length_successful": 316.0,
+    "mean_return": 0.2,
+    "success_ci95_wilson": [
+     0.027866481213768224,
+     0.3010336452284873
+    ],
+    "success_rate": 0.1,
+    "successes": 2,
+    "timeout_rate": 0.9
+   }
+  },
+  "per_stage": {
+   "my_way_home": {
+    "death_rate": 0.0,
+    "episodes": 20,
+    "exit_unknown": 0,
+    "mean_kills": 0.0,
+    "mean_length": 504.1,
+    "mean_length_successful": 316.0,
+    "mean_return": 0.2,
+    "success_ci95_wilson": [
+     0.027866481213768224,
+     0.3010336452284873
+    ],
+    "success_rate": 0.1,
+    "successes": 2,
+    "timeout_rate": 0.9
+   }
+  }
+ },
+ "verification": "random policy: assert_vanilla passed on every map config; no checkpoint, sensor check not applicable"
+}
