@@ -12,7 +12,7 @@
   "health_overrides": {
     "stop_enabled": false
   },
-  "description": "Day run 1 (2026-11-26): PPO from the exploration-imitation model reports/runs/20261126-bc-explore-v4-avg (val 33/60), observation v4 (locked-door channel) with goal head, mixed stages + PLR map sampling, 3-minute episodes (6300 tics; 8400 failed the reward check: time penalty + caps would exceed the death penalty), skill mix 1,3,3,3, full_level_doors_v2, imitation pull on route+combat (S2/S3) and exploration (S0/S1) teacher data, gentle settings from night 3b. 4x6 CPU.",
+  "description": "Day run 1 (2026-11-26): PPO from the exploration-imitation model reports/runs/20261126-bc-explore-v4-avg (val 33/60), observation v4 (locked-door channel) with goal head, mixed stages + PLR map sampling, 3-minute episodes (6300 tics; 8400 failed the reward check: time penalty + caps would exceed the death penalty), skill mix 1,3,3,3, full_level_doors_v2, imitation pull on route+combat (S2/S3) and exploration (S0/S1) teacher data, gentle settings from night 3b. 4x6 CPU. Launched about 10:32, max-seconds 31400 so it stops itself about 19:15, before the 20:00 freeze.",
   "argv": [
     "--workers",
     "4",
@@ -66,6 +66,6 @@
     "--start-stage",
     "S3",
     "--max-seconds",
-    "36000"
+    "31400"
   ]
 }
