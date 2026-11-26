@@ -1,0 +1,1 @@
+val sample T=0.7: 26/60 success (Wilson 95% 0.316-0.559), death 0.000, timeout 0.567, mean length 675.3, exit_unknown 0 -> reports/eval/2026-11-26-val/n3b-avg_t07

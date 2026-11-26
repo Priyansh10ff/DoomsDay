@@ -1,0 +1,2 @@
+episode 0: success False death False timeout True length 300 attention max diff 4.8e-07 -> {'mp4': 'reports/eval/2026-11-26-dashboard-smoke\\episode_000.mp4', 'gif': 'reports/eval/2026-11-26-dashboard-smoke\\episode_000.gif', 'frames': '313'}
+episode 1: success False death False timeout True length 300 attention max diff 4.8e-07 -> {'mp4': 'reports/eval/2026-11-26-dashboard-smoke\\episode_001.mp4', 'gif': 'reports/eval/2026-11-26-dashboard-smoke\\episode_001.gif', 'frames': '313'}

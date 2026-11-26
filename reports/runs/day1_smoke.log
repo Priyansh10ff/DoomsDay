@@ -1,0 +1,34 @@
+ops_launch: process_env DOOMSDAY_TRAIN_BUNDLE=train-all-b2
+ops_launch: process_env DOOMSDAY_CURRICULUM_CONFIG=curriculum/config_mixed_plr.json
+ops_launch: process_env DOOMSDAY_OBS_VERSION=4
+ops_launch: process_env DOOMSDAY_EPISODE_TICS=8400
+ops_launch: process_env DOOMSDAY_SKILL_MIX=1,3,3,3
+ops_launch: config configs/ops/day1_smoke.json -> reports/runs/20261126-day1-smoke
+ops_launch: effective episode_timeout_tics=2100 (my_way_home base; --maps generated uses configs.a0_env.GENERATED_MAPS unless overridden here) frame_skip=4 worker_daemon=False memory_cap_gib=8.0 below_normal=True health_enabled=True health_stop_enabled=False
+ops_launch: run_doom argv ['--workers', '4', '--envs-per-worker', '6', '--torch-threads', '8', '--allow-multi-instance', '24', '--device', 'cpu', '--maps', 'generated', '--shaping', 'full_level_doors_v2', '--goal-head', '--goal-head-coef', '0.5', '--value-warmup-updates', '5', '--lr', '5e-5', '--lr-warmup-updates', '100', '--clip', '0.1', '--ppo-epochs', '2', '--entropy-coef', '0', '--kl-stop', '0.03', '--bc-data', 'data/teacher/bc_v7_route_s23,data/teacher/bc_v7_explore_s01', '--bc-coef', '1.0', '--bc-coef-final', '0.5', '--bc-decay-mode', 'exp', '--bc-decay-rate', '0.9995', '--bc-max-gb', '0.9', '--checkpoint-every-updates', '50', '--checkpoint-interval', '600', '--init-from', 'reports/runs/20261126-bc-explore-v4-avg/bc_model.pt', '--start-stage', 'S3', '--max-seconds', '90', '--run-dir', 'reports/runs/20261126-day1-smoke']
+planned layout: 24 engine instance(s) in 4 worker process(es), 8 torch thread(s), estimated memory 2318 MiB
+run settings: entropy_coef=0.0 shaping=full_level_doors_v2 maps=generated value_warmup_updates=5 start_stage=S3 lr=5e-05 clip=0.1 epochs=2 lr_warmup_updates=100 kl_stop=0.03 bc_coef=1.0 rnd_int_coef=0.0 rnd_ext_coef=1.0 inv_dyn_coef=0.0 device=cpu (--device cpu) seed=0 layout=4x6
+maps: generated bundle D:\DoomsDay\maps/bundles/train-all-b2.wad (780 train maps), stages ['S0', 'S1', 'S2', 'S3'], skill 3, episode limit 8400 tics
+init-from: reports/runs/20261126-bc-explore-v4-avg/bc_model.pt (weights_only, sha256 c10d7281cf1874ff14b2b0b487a03e001e7119dc269c8c4e25ca3aac8f383afc)
+bc aux: 780 episodes, 182248 steps from ['d:\\doomsday\\data\\teacher\\bc_v7_route_s23', 'd:\\doomsday\\data\\teacher\\bc_v7_explore_s01']; coef 1.0 -> 0.5 (exp), K=16 L=64
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "D:\DoomsDay\configs\ops_launch.py", line 107, in <module>
+    sys.exit(launch(sys.argv[1], sys.argv[2], extra))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\DoomsDay\configs\ops_launch.py", line 97, in launch
+    return R.main(argv)
+           ^^^^^^^^^^^^
+  File "D:\DoomsDay\train\run_doom.py", line 455, in main
+    factory = build_env_factory(env_cfg, ns.shaping, decisions_done, clock_envs)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\DoomsDay\train\run_doom.py", line 141, in build_env_factory
+    return ShapedEnvFactory(inner, reward, coverage,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 10, in __init__
+  File "D:\DoomsDay\rewards\factory.py", line 56, in __post_init__
+    check_reward_setup(self.reward, self.coverage, engine_rewards, limit)
+  File "D:\DoomsDay\rewards\validate.py", line 191, in check_reward_setup
+    raise RewardConfigError(
+rewards.validate.RewardConfigError: death costs 0.75 but the time penalty over a full episode (2100 decisions) plus the USE/door penalty caps costs 0.77: dying early would be cheaper. Lower `time`, raise `death`, or shorten the training episode limit

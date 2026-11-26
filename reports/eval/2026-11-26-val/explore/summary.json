@@ -1,0 +1,1715 @@
+{
+ "interval": "Wilson score interval, 95 %",
+ "meta": {
+  "argmax_heads": [
+   false,
+   false,
+   false,
+   false,
+   false,
+   false
+  ],
+  "checkpoint": {
+   "argument": "reports/runs/20261126-bc-explore-v4/bc_model.pt",
+   "loaded_from": "reports/runs/20261126-bc-explore-v4/bc_model.pt",
+   "model_config": {
+    "core_hidden": 256,
+    "egomap_conv_channels": [
+     16,
+     32,
+     32
+    ],
+    "egomap_conv_kernel": 3,
+    "egomap_conv_padding": 1,
+    "egomap_conv_stride": 2,
+    "egomap_dim": 128,
+    "entity_attn_heads": 4,
+    "entity_mlp_hidden": 64,
+    "entity_pool_heads": 4,
+    "entity_token_dim": 64,
+    "entity_type_embed_dim": 16,
+    "fusion_dim": 192,
+    "goal_head": true,
+    "gru_retention_max": 256.0,
+    "gru_retention_min": 2.0,
+    "gru_update_bias_init": false,
+    "init_scheme": "default",
+    "learned_token_init_std": 0.02,
+    "modality_ego_index": 2,
+    "modality_telemetry_index": 0,
+    "n_key_bits": 3,
+    "orthogonal_hidden_gain": 1.4142135623730951,
+    "orthogonal_unit_gain": 1.0,
+    "policy_head_init_gain": 0.01,
+    "prev_action_dim": 16,
+    "ray_conv_channels": [
+     16,
+     32
+    ],
+    "ray_conv_kernel": 5,
+    "ray_conv_stride": 2,
+    "ray_dim": 64,
+    "recurrent": true,
+    "self_dim": 32,
+    "self_ego_dims": 4,
+    "self_hidden": 64
+   },
+   "obs_spec_json": "{\"egomap_shape\": [6, 32, 32], \"entity_feat_dim\": 8, \"head_sizes\": [3, 3, 7, 2, 2, 2], \"max_entities\": 24, \"modality_dim\": 3, \"n_entity_types\": 14, \"ray_channels\": 4, \"ray_width\": 80, \"self_dim\": 34}",
+   "run_config": {
+    "aux": {
+     "damage_horizon_k": 8,
+     "damage_weight": 0.1,
+     "keys_weight": 0.1,
+     "monster_count_cap": 8,
+     "monster_type_id": 1,
+     "monsters_weight": 0.1,
+     "self_damage_index": 3
+    },
+    "bc_aux": {
+     "batch_seqs": 16,
+     "coef": 0.0,
+     "coef_final": 0.0,
+     "data_dirs": [],
+     "data_sha256": [],
+     "decay_mode": "linear",
+     "decay_rate": 0.999,
+     "decay_updates": 0,
+     "goal_coef": 0.0,
+     "max_bytes": 2147483648,
+     "seq_len": 64
+    },
+    "curriculum_log": {
+     "recent_window": 100
+    },
+    "device": "cpu",
+    "envs_per_worker": 1,
+    "health": {
+     "enabled": true,
+     "event_drop_from_best": 0.15,
+     "event_margin_over_p0": 0.1,
+     "head_names": [
+      "move",
+      "strafe",
+      "turn",
+      "attack",
+      "use",
+      "speed"
+     ],
+     "p0_episodes": 200,
+     "p0_successes": 28,
+     "stop_after_updates": 600,
+     "stop_enabled": true,
+     "warn_head_fraction": 0.1,
+     "warn_mean_updates": 50,
+     "watch_entropy_fraction": 0.5,
+     "watch_mean_updates": 100,
+     "watch_success_below": 0.5,
+     "window_episodes": 500
+    },
+    "init_from": null,
+    "init_from_growth": null,
+    "init_from_sha256": null,
+    "inv_dyn": {
+     "coef": 0.0,
+     "hidden_dim": 256,
+     "lr": 0.0003,
+     "max_grad_norm": 1.0
+    },
+    "maps": "generated",
+    "num_workers": 1,
+    "ppo": {
+     "adam_eps": 1e-05,
+     "advantage_eps": 1e-08,
+     "clip": 0.2,
+     "entropy_coef": 0.01,
+     "epochs": 3,
+     "gae_lambda": 0.95,
+     "gamma": 0.997,
+     "kl_stop": 0.0,
+     "lr": 0.0003,
+     "lr_decay_decisions": null,
+     "lr_decay_floor_fraction": 0.1,
+     "lr_final_fraction": 1.0,
+     "lr_warmup_updates": 0,
+     "max_grad_norm": 1.0,
+     "num_minibatches": 4,
+     "return_scale_eps": 1e-08,
+     "return_scale_min": 0.1,
+     "rollout_len": 64,
+     "value_coef": 0.5,
+     "value_warmup_updates": 0
+    },
+    "rnd": {
+     "ext_coef": 1.0,
+     "extra_keys": [
+      "egomap"
+     ],
+     "extra_pool": 2,
+     "gae_lambda_int": 0.95,
+     "gamma_int": 0.99,
+     "hidden_dim": 256,
+     "int_coef": 0.0,
+     "max_extra_dim": 4096,
+     "norm_eps": 0.0001,
+     "obs_clip": 5.0,
+     "obs_std_floor": 0.01,
+     "out_dim": 128,
+     "predictor_epochs": 3,
+     "predictor_fraction": 0.25,
+     "predictor_lr": 0.0001,
+     "predictor_max_grad_norm": 1.0,
+     "predictor_minibatches": 4,
+     "return_std_floor": 0.01,
+     "self_exclude": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13
+     ]
+    },
+    "safety": {
+     "below_normal_priority": true,
+     "checkpoint_every_updates": 0,
+     "checkpoint_interval_s": 600.0,
+     "cooldown_s": 0.0,
+     "emergency_available_bytes": 805306368,
+     "engine_process_names": [
+      "vizdoom.exe",
+      "vizdoom"
+     ],
+     "est_engine_bytes": 75497472,
+     "est_trainer_bytes": 346030080,
+     "est_worker_bytes": 68157440,
+     "keep_numbered_checkpoints": true,
+     "memory_cap_bytes": 8589934592,
+     "memory_check_interval_s": 5.0,
+     "min_available_bytes": 1610612736,
+     "numbered_checkpoint_budget_bytes": 1000000000,
+     "parent_poll_interval_s": 1.0,
+     "worker_daemon": false,
+     "worker_join_timeout_s": 10.0,
+     "worker_start_method": "spawn"
+    },
+    "seed": 1,
+    "shaping": null,
+    "start_stage": null,
+    "telemetry_mask": {
+     "episode_prob": 0.0
+    },
+    "torch_threads": 2
+   },
+   "sensor_signature_json": "[[\"frame_skip\", 4], [\"render_hud\", true], [\"turn_bins\", [-10.0, -4.0, -1.0, 0.0, 1.0, 4.0, 10.0]], [\"max_entities\", 24], [\"screen_enabled\", false], [\"ray_bands\", [[30, 46], [46, 54], [54, 70]]], [\"obs_version\", 4]]",
+   "sha256": "e18913697457bffd4f90976c67e73b895852978bd1f814cb4aa0bc586314e2f0"
+  },
+  "engine_instances": 1,
+  "iwad_sha256": {
+   "C:\\Users\\priyansh\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\vizdoom\\freedoom2.wad": "a8772e088847032510d97ba2312406a6998f21cbab44d4ff10696faa9c0ecd4b"
+  },
+  "maps": [
+   {
+    "env_config": {
+     "engine_rewards": [
+      [
+       "map_exit_reward",
+       1.0
+      ]
+     ],
+     "episode_timeout_tics": 4200,
+     "extra": {},
+     "frame_skip": 4,
+     "game_args": [],
+     "iwad": "freedoom2",
+     "iwad_file": null,
+     "map_wad": "C:\\Users\\priyansh\\AppData\\Local\\Temp\\doomsday-eval-ch5byfum\\S0-val-500001.wad",
+     "maps": [
+      "MAP01"
+     ],
+     "max_entities": 24,
+     "name": "eval_val",
+     "objects_info": false,
+     "obs_version": 4,
+     "phase2_engine_test": false,
+     "render_hud": true,
+     "scenario_wad": null,
+     "screen_enabled": false,
+     "sectors_info": false,
+     "skill": 3,
+     "skill_mix": [],
+     "turn_bins": [
+      -10.0,
+      -4.0,
+      -1.0,
+      0.0,
+      1.0,
+      4.0,
+      10.0
+     ],
+     "vanilla_eval": true,
+     "win_timer_ms": null
+    },
+    "lumps": [
+     "MAP01"
+    ],
+    "map_id": "S0-val-500001",
+    "notes": [
+     "staged copy of maps/val/S0-val-500001.wad (env refuses map_wad under maps/)"
+    ],
+    "source_file": "maps/val/S0-val-500001.wad",
+    "stage": "S0",
+    "staged": true,
+    "wad_sha256": "40a2a1721fdad597d389f9fce81533835baa0cf704ed53694ec17bb968affcea"
+   },
+   {
+    "env_config": {
+     "engine_rewards": [
+      [
+       "map_exit_reward",
+       1.0
+      ]
+     ],
+     "episode_timeout_tics": 4200,
+     "extra": {},
+     "frame_skip": 4,
+     "game_args": [],
+     "iwad": "freedoom2",
+     "iwad_file": null,
+     "map_wad": "C:\\Users\\priyansh\\AppData\\Local\\Temp\\doomsday-eval-ch5byfum\\S0-val-500002.wad",
+     "maps": [
+      "MAP01"
+     ],
+     "max_entities": 24,
+     "name": "eval_val",
+     "objects_info": false,
+     "obs_version": 4,
+     "phase2_engine_test": false,
+     "render_hud": true,
+     "scenario_wad": null,
+     "screen_enabled": false,
+     "sectors_info": false,
+     "skill": 3,
+     "skill_mix": [],
+     "turn_bins": [
+      -10.0,
+      -4.0,
+      -1.0,
+      0.0,
+      1.0,
+      4.0,
+      10.0
+     ],
+     "vanilla_eval": true,
+     "win_timer_ms": null
+    },
+    "lumps": [
+     "MAP01"
+    ],
+    "map_id": "S0-val-500002",
+    "notes": [
+     "staged copy of maps/val/S0-val-500002.wad (env refuses map_wad under maps/)"
+    ],
+    "source_file": "maps/val/S0-val-500002.wad",
+    "stage": "S0",
+    "staged": true,
+    "wad_sha256": "05a019f38b7a55055f86f40b2957a4ea264bbda82f1cbf021a5dd2ec0430f18c"
+   },
+   {
+    "env_config": {
+     "engine_rewards": [
+      [
+       "map_exit_reward",
+       1.0
+      ]
+     ],
+     "episode_timeout_tics": 4200,
+     "extra": {},
+     "frame_skip": 4,
+     "game_args": [],
+     "iwad": "freedoom2",
+     "iwad_file": null,
+     "map_wad": "C:\\Users\\priyansh\\AppData\\Local\\Temp\\doomsday-eval-ch5byfum\\S0-val-500003.wad",
+     "maps": [
+      "MAP01"
+     ],
+     "max_entities": 24,
+     "name": "eval_val",
+     "objects_info": false,
+     "obs_version": 4,
+     "phase2_engine_test": false,
+     "render_hud": true,
+     "scenario_wad": null,
+     "screen_enabled": false,
+     "sectors_info": false,
+     "skill": 3,
+     "skill_mix": [],
+     "turn_bins": [
+      -10.0,
+      -4.0,
+      -1.0,
+      0.0,
+      1.0,
+      4.0,
+      10.0
+     ],
+     "vanilla_eval": true,
+     "win_timer_ms": null
+    },
+    "lumps": [
+     "MAP01"
+    ],
+    "map_id": "S0-val-500003",
+    "notes": [
+     "staged copy of maps/val/S0-val-500003.wad (env refuses map_wad under maps/)"
+    ],
+    "source_file": "maps/val/S0-val-500003.wad",
+    "stage": "S0",
+    "staged": true,
+    "wad_sha256": "6a5a1f98a3191b37b92da04b310744a8b5167deda54d775a9ccf6193bbc3511b"
+   },
+   {
+    "env_config": {
+     "engine_rewards": [
+      [
+       "map_exit_reward",
+       1.0
+      ]
+     ],
+     "episode_timeout_tics": 4200,
+     "extra": {},
+     "frame_skip": 4,
+     "game_args": [],
+     "iwad": "freedoom2",
+     "iwad_file": null,
+     "map_wad": "C:\\Users\\priyansh\\AppData\\Local\\Temp\\doomsday-eval-ch5byfum\\S0-val-500004.wad",
+     "maps": [
+      "MAP01"
+     ],
+     "max_entities": 24,
+     "name": "eval_val",
+     "objects_info": false,
+     "obs_version": 4,
+     "phase2_engine_test": false,
+     "render_hud": true,
+     "scenario_wad": null,
+     "screen_enabled": false,
+     "sectors_info": false,
+     "skill": 3,
+     "skill_mix": [],
+     "turn_bins": [
+      -10.0,
+      -4.0,
+      -1.0,
+      0.0,
+      1.0,
+      4.0,
+      10.0
+     ],
+     "vanilla_eval": true,
+     "win_timer_ms": null
+    },
+    "lumps": [
+     "MAP01"
+    ],
+    "map_id": "S0-val-500004",
+    "notes": [
+     "staged copy of maps/val/S0-val-500004.wad (env refuses map_wad under maps/)"
+    ],
+    "source_file": "maps/val/S0-val-500004.wad",
+    "stage": "S0",
+    "staged": true,
+    "wad_sha256": "cf68ee1de7da84c9776aaecf19cbbb8dc32a556712ed4e451f95461c40c7b5f5"
+   },
+   {
+    "env_config": {
+     "engine_rewards": [
+      [
+       "map_exit_reward",
+       1.0
+      ]
+     ],
+     "episode_timeout_tics": 4200,
+     "extra": {},
+     "frame_skip": 4,
+     "game_args": [],
+     "iwad": "freedoom2",
+     "iwad_file": null,
+     "map_wad": "C:\\Users\\priyansh\\AppData\\Local\\Temp\\doomsday-eval-ch5byfum\\S0-val-500005.wad",
+     "maps": [
+      "MAP01"
+     ],
+     "max_entities": 24,
+     "name": "eval_val",
+     "objects_info": false,
+     "obs_version": 4,
+     "phase2_engine_test": false,
+     "render_hud": true,
+     "scenario_wad": null,
+     "screen_enabled": false,
+     "sectors_info": false,
+     "skill": 3,
+     "skill_mix": [],
+     "turn_bins": [
+      -10.0,
+      -4.0,
+      -1.0,
+      0.0,
+      1.0,
+      4.0,
+      10.0
+     ],
+     "vanilla_eval": true,
+     "win_timer_ms": null
+    },
+    "lumps": [
+     "MAP01"
+    ],
+    "map_id": "S0-val-500005",
+    "notes": [
+     "staged copy of maps/val/S0-val-500005.wad (env refuses map_wad under maps/)"
+    ],
+    "source_file": "maps/val/S0-val-500005.wad",
+    "stage": "S0",
+    "staged": true,
+    "wad_sha256": "9242dbfadbdd6e95cc03056b62798590a131bec9949b9707ef1dca88e15ad7ec"
+   },
+   {
+    "env_config": {
+     "engine_rewards": [
+      [
+       "map_exit_reward",
+       1.0
+      ]
+     ],
+     "episode_timeout_tics": 4200,
+     "extra": {},
+     "frame_skip": 4,
+     "game_args": [],
+     "iwad": "freedoom2",
+     "iwad_file": null,
+     "map_wad": "C:\\Users\\priyansh\\AppData\\Local\\Temp\\doomsday-eval-ch5byfum\\S1-val-501001.wad",
+     "maps": [
+      "MAP01"
+     ],
+     "max_entities": 24,
+     "name": "eval_val",
+     "objects_info": false,
+     "obs_version": 4,
+     "phase2_engine_test": false,
+     "render_hud": true,
+     "scenario_wad": null,
+     "screen_enabled": false,
+     "sectors_info": false,
+     "skill": 3,
+     "skill_mix": [],
+     "turn_bins": [
+      -10.0,
+      -4.0,
+      -1.0,
+      0.0,
+      1.0,
+      4.0,
+      10.0
+     ],
+     "vanilla_eval": true,
+     "win_timer_ms": null
+    },
+    "lumps": [
+     "MAP01"
+    ],
+    "map_id": "S1-val-501001",
+    "notes": [
+     "staged copy of maps/val/S1-val-501001.wad (env refuses map_wad under maps/)"
+    ],
+    "source_file": "maps/val/S1-val-501001.wad",
+    "stage": "S1",
+    "staged": true,
+    "wad_sha256": "dfc532bf4ad2f4cf2e34c9516e93b86550dac09d0039ff0bdab3debe5215ae8e"
+   },
+   {
+    "env_config": {
+     "engine_rewards": [
+      [
+       "map_exit_reward",
+       1.0
+      ]
+     ],
+     "episode_timeout_tics": 4200,
+     "extra": {},
+     "frame_skip": 4,
+     "game_args": [],
+     "iwad": "freedoom2",
+     "iwad_file": null,
+     "map_wad": "C:\\Users\\priyansh\\AppData\\Local\\Temp\\doomsday-eval-ch5byfum\\S1-val-501002.wad",
+     "maps": [
+      "MAP01"
+     ],
+     "max_entities": 24,
+     "name": "eval_val",
+     "objects_info": false,
+     "obs_version": 4,
+     "phase2_engine_test": false,
+     "render_hud": true,
+     "scenario_wad": null,
+     "screen_enabled": false,
+     "sectors_info": false,
+     "skill": 3,
+     "skill_mix": [],
+     "turn_bins": [
+      -10.0,
+      -4.0,
+      -1.0,
+      0.0,
+      1.0,
+      4.0,
+      10.0
+     ],
+     "vanilla_eval": true,
+     "win_timer_ms": null
+    },
+    "lumps": [
+     "MAP01"
+    ],
+    "map_id": "S1-val-501002",
+    "notes": [
+     "staged copy of maps/val/S1-val-501002.wad (env refuses map_wad under maps/)"
+    ],
+    "source_file": "maps/val/S1-val-501002.wad",
+    "stage": "S1",
+    "staged": true,
+    "wad_sha256": "75fa8961c239e9e1f05fac7cd47af610b0379e058ba21e9d9c432d2f92600490"
+   },
+   {
+    "env_config": {
+     "engine_rewards": [
+      [
+       "map_exit_reward",
+       1.0
+      ]
+     ],
+     "episode_timeout_tics": 4200,
+     "extra": {},
+     "frame_skip": 4,
+     "game_args": [],
+     "iwad": "freedoom2",
+     "iwad_file": null,
+     "map_wad": "C:\\Users\\priyansh\\AppData\\Local\\Temp\\doomsday-eval-ch5byfum\\S1-val-501003.wad",
+     "maps": [
+      "MAP01"
+     ],
+     "max_entities": 24,
+     "name": "eval_val",
+     "objects_info": false,
+     "obs_version": 4,
+     "phase2_engine_test": false,
+     "render_hud": true,
+     "scenario_wad": null,
+     "screen_enabled": false,
+     "sectors_info": false,
+     "skill": 3,
+     "skill_mix": [],
+     "turn_bins": [
+      -10.0,
+      -4.0,
+      -1.0,
+      0.0,
+      1.0,
+      4.0,
+      10.0
+     ],
+     "vanilla_eval": true,
+     "win_timer_ms": null
+    },
+    "lumps": [
+     "MAP01"
+    ],
+    "map_id": "S1-val-501003",
+    "notes": [
+     "staged copy of maps/val/S1-val-501003.wad (env refuses map_wad under maps/)"
+    ],
+    "source_file": "maps/val/S1-val-501003.wad",
+    "stage": "S1",
+    "staged": true,
+    "wad_sha256": "8d929cd16de75fc3f7e612608884de2016f836ef6df243bed6c34b4e8949455f"
+   },
+   {
+    "env_config": {
+     "engine_rewards": [
+      [
+       "map_exit_reward",
+       1.0
+      ]
+     ],
+     "episode_timeout_tics": 4200,
+     "extra": {},
+     "frame_skip": 4,
+     "game_args": [],
+     "iwad": "freedoom2",
+     "iwad_file": null,
+     "map_wad": "C:\\Users\\priyansh\\AppData\\Local\\Temp\\doomsday-eval-ch5byfum\\S1-val-501004.wad",
+     "maps": [
+      "MAP01"
+     ],
+     "max_entities": 24,
+     "name": "eval_val",
+     "objects_info": false,
+     "obs_version": 4,
+     "phase2_engine_test": false,
+     "render_hud": true,
+     "scenario_wad": null,
+     "screen_enabled": false,
+     "sectors_info": false,
+     "skill": 3,
+     "skill_mix": [],
+     "turn_bins": [
+      -10.0,
+      -4.0,
+      -1.0,
+      0.0,
+      1.0,
+      4.0,
+      10.0
+     ],
+     "vanilla_eval": true,
+     "win_timer_ms": null
+    },
+    "lumps": [
+     "MAP01"
+    ],
+    "map_id": "S1-val-501004",
+    "notes": [
+     "staged copy of maps/val/S1-val-501004.wad (env refuses map_wad under maps/)"
+    ],
+    "source_file": "maps/val/S1-val-501004.wad",
+    "stage": "S1",
+    "staged": true,
+    "wad_sha256": "39935474c7fd63c18c24d66a6fcfdac23cb733a23a32e4709d1c0e0813574bf9"
+   },
+   {
+    "env_config": {
+     "engine_rewards": [
+      [
+       "map_exit_reward",
+       1.0
+      ]
+     ],
+     "episode_timeout_tics": 4200,
+     "extra": {},
+     "frame_skip": 4,
+     "game_args": [],
+     "iwad": "freedoom2",
+     "iwad_file": null,
+     "map_wad": "C:\\Users\\priyansh\\AppData\\Local\\Temp\\doomsday-eval-ch5byfum\\S1-val-501005.wad",
+     "maps": [
+      "MAP01"
+     ],
+     "max_entities": 24,
+     "name": "eval_val",
+     "objects_info": false,
+     "obs_version": 4,
+     "phase2_engine_test": false,
+     "render_hud": true,
+     "scenario_wad": null,
+     "screen_enabled": false,
+     "sectors_info": false,
+     "skill": 3,
+     "skill_mix": [],
+     "turn_bins": [
+      -10.0,
+      -4.0,
+      -1.0,
+      0.0,
+      1.0,
+      4.0,
+      10.0
+     ],
+     "vanilla_eval": true,
+     "win_timer_ms": null
+    },
+    "lumps": [
+     "MAP01"
+    ],
+    "map_id": "S1-val-501005",
+    "notes": [
+     "staged copy of maps/val/S1-val-501005.wad (env refuses map_wad under maps/)"
+    ],
+    "source_file": "maps/val/S1-val-501005.wad",
+    "stage": "S1",
+    "staged": true,
+    "wad_sha256": "8dfb7f980426b8dfaa527b6636129831d49e851a23032055183fbafa3bfe241c"
+   },
+   {
+    "env_config": {
+     "engine_rewards": [
+      [
+       "map_exit_reward",
+       1.0
+      ]
+     ],
+     "episode_timeout_tics": 4200,
+     "extra": {},
+     "frame_skip": 4,
+     "game_args": [],
+     "iwad": "freedoom2",
+     "iwad_file": null,
+     "map_wad": "C:\\Users\\priyansh\\AppData\\Local\\Temp\\doomsday-eval-ch5byfum\\S2-val-502001.wad",
+     "maps": [
+      "MAP01"
+     ],
+     "max_entities": 24,
+     "name": "eval_val",
+     "objects_info": false,
+     "obs_version": 4,
+     "phase2_engine_test": false,
+     "render_hud": true,
+     "scenario_wad": null,
+     "screen_enabled": false,
+     "sectors_info": false,
+     "skill": 3,
+     "skill_mix": [],
+     "turn_bins": [
+      -10.0,
+      -4.0,
+      -1.0,
+      0.0,
+      1.0,
+      4.0,
+      10.0
+     ],
+     "vanilla_eval": true,
+     "win_timer_ms": null
+    },
+    "lumps": [
+     "MAP01"
+    ],
+    "map_id": "S2-val-502001",
+    "notes": [
+     "staged copy of maps/val/S2-val-502001.wad (env refuses map_wad under maps/)"
+    ],
+    "source_file": "maps/val/S2-val-502001.wad",
+    "stage": "S2",
+    "staged": true,
+    "wad_sha256": "f6cd00a3876b73b764325abff896989135e85d2dc65f293be10d63d52542a6b6"
+   },
+   {
+    "env_config": {
+     "engine_rewards": [
+      [
+       "map_exit_reward",
+       1.0
+      ]
+     ],
+     "episode_timeout_tics": 4200,
+     "extra": {},
+     "frame_skip": 4,
+     "game_args": [],
+     "iwad": "freedoom2",
+     "iwad_file": null,
+     "map_wad": "C:\\Users\\priyansh\\AppData\\Local\\Temp\\doomsday-eval-ch5byfum\\S2-val-502002.wad",
+     "maps": [
+      "MAP01"
+     ],
+     "max_entities": 24,
+     "name": "eval_val",
+     "objects_info": false,
+     "obs_version": 4,
+     "phase2_engine_test": false,
+     "render_hud": true,
+     "scenario_wad": null,
+     "screen_enabled": false,
+     "sectors_info": false,
+     "skill": 3,
+     "skill_mix": [],
+     "turn_bins": [
+      -10.0,
+      -4.0,
+      -1.0,
+      0.0,
+      1.0,
+      4.0,
+      10.0
+     ],
+     "vanilla_eval": true,
+     "win_timer_ms": null
+    },
+    "lumps": [
+     "MAP01"
+    ],
+    "map_id": "S2-val-502002",
+    "notes": [
+     "staged copy of maps/val/S2-val-502002.wad (env refuses map_wad under maps/)"
+    ],
+    "source_file": "maps/val/S2-val-502002.wad",
+    "stage": "S2",
+    "staged": true,
+    "wad_sha256": "35a858b030b0e827a4185ad022f3f1da2f73fa7bb9154bf6650456a827c96403"
+   },
+   {
+    "env_config": {
+     "engine_rewards": [
+      [
+       "map_exit_reward",
+       1.0
+      ]
+     ],
+     "episode_timeout_tics": 4200,
+     "extra": {},
+     "frame_skip": 4,
+     "game_args": [],
+     "iwad": "freedoom2",
+     "iwad_file": null,
+     "map_wad": "C:\\Users\\priyansh\\AppData\\Local\\Temp\\doomsday-eval-ch5byfum\\S2-val-502003.wad",
+     "maps": [
+      "MAP01"
+     ],
+     "max_entities": 24,
+     "name": "eval_val",
+     "objects_info": false,
+     "obs_version": 4,
+     "phase2_engine_test": false,
+     "render_hud": true,
+     "scenario_wad": null,
+     "screen_enabled": false,
+     "sectors_info": false,
+     "skill": 3,
+     "skill_mix": [],
+     "turn_bins": [
+      -10.0,
+      -4.0,
+      -1.0,
+      0.0,
+      1.0,
+      4.0,
+      10.0
+     ],
+     "vanilla_eval": true,
+     "win_timer_ms": null
+    },
+    "lumps": [
+     "MAP01"
+    ],
+    "map_id": "S2-val-502003",
+    "notes": [
+     "staged copy of maps/val/S2-val-502003.wad (env refuses map_wad under maps/)"
+    ],
+    "source_file": "maps/val/S2-val-502003.wad",
+    "stage": "S2",
+    "staged": true,
+    "wad_sha256": "324583dfa60911caa8a83b3ce7d28c406772f0b12aa9a8b01f76f514aae78927"
+   },
+   {
+    "env_config": {
+     "engine_rewards": [
+      [
+       "map_exit_reward",
+       1.0
+      ]
+     ],
+     "episode_timeout_tics": 4200,
+     "extra": {},
+     "frame_skip": 4,
+     "game_args": [],
+     "iwad": "freedoom2",
+     "iwad_file": null,
+     "map_wad": "C:\\Users\\priyansh\\AppData\\Local\\Temp\\doomsday-eval-ch5byfum\\S2-val-502004.wad",
+     "maps": [
+      "MAP01"
+     ],
+     "max_entities": 24,
+     "name": "eval_val",
+     "objects_info": false,
+     "obs_version": 4,
+     "phase2_engine_test": false,
+     "render_hud": true,
+     "scenario_wad": null,
+     "screen_enabled": false,
+     "sectors_info": false,
+     "skill": 3,
+     "skill_mix": [],
+     "turn_bins": [
+      -10.0,
+      -4.0,
+      -1.0,
+      0.0,
+      1.0,
+      4.0,
+      10.0
+     ],
+     "vanilla_eval": true,
+     "win_timer_ms": null
+    },
+    "lumps": [
+     "MAP01"
+    ],
+    "map_id": "S2-val-502004",
+    "notes": [
+     "staged copy of maps/val/S2-val-502004.wad (env refuses map_wad under maps/)"
+    ],
+    "source_file": "maps/val/S2-val-502004.wad",
+    "stage": "S2",
+    "staged": true,
+    "wad_sha256": "7e28a6b5a1cad6efc30de5194c2c5db0313797d18e8b309bc37ee8f353a2fc63"
+   },
+   {
+    "env_config": {
+     "engine_rewards": [
+      [
+       "map_exit_reward",
+       1.0
+      ]
+     ],
+     "episode_timeout_tics": 4200,
+     "extra": {},
+     "frame_skip": 4,
+     "game_args": [],
+     "iwad": "freedoom2",
+     "iwad_file": null,
+     "map_wad": "C:\\Users\\priyansh\\AppData\\Local\\Temp\\doomsday-eval-ch5byfum\\S2-val-502005.wad",
+     "maps": [
+      "MAP01"
+     ],
+     "max_entities": 24,
+     "name": "eval_val",
+     "objects_info": false,
+     "obs_version": 4,
+     "phase2_engine_test": false,
+     "render_hud": true,
+     "scenario_wad": null,
+     "screen_enabled": false,
+     "sectors_info": false,
+     "skill": 3,
+     "skill_mix": [],
+     "turn_bins": [
+      -10.0,
+      -4.0,
+      -1.0,
+      0.0,
+      1.0,
+      4.0,
+      10.0
+     ],
+     "vanilla_eval": true,
+     "win_timer_ms": null
+    },
+    "lumps": [
+     "MAP01"
+    ],
+    "map_id": "S2-val-502005",
+    "notes": [
+     "staged copy of maps/val/S2-val-502005.wad (env refuses map_wad under maps/)"
+    ],
+    "source_file": "maps/val/S2-val-502005.wad",
+    "stage": "S2",
+    "staged": true,
+    "wad_sha256": "0e78df2a30ac8d8aae71b550cbc3e1ef2883d7f838c80a34b711b7fbd9a4fed9"
+   },
+   {
+    "env_config": {
+     "engine_rewards": [
+      [
+       "map_exit_reward",
+       1.0
+      ]
+     ],
+     "episode_timeout_tics": 4200,
+     "extra": {},
+     "frame_skip": 4,
+     "game_args": [],
+     "iwad": "freedoom2",
+     "iwad_file": null,
+     "map_wad": "C:\\Users\\priyansh\\AppData\\Local\\Temp\\doomsday-eval-ch5byfum\\S3-val-503001.wad",
+     "maps": [
+      "MAP01"
+     ],
+     "max_entities": 24,
+     "name": "eval_val",
+     "objects_info": false,
+     "obs_version": 4,
+     "phase2_engine_test": false,
+     "render_hud": true,
+     "scenario_wad": null,
+     "screen_enabled": false,
+     "sectors_info": false,
+     "skill": 3,
+     "skill_mix": [],
+     "turn_bins": [
+      -10.0,
+      -4.0,
+      -1.0,
+      0.0,
+      1.0,
+      4.0,
+      10.0
+     ],
+     "vanilla_eval": true,
+     "win_timer_ms": null
+    },
+    "lumps": [
+     "MAP01"
+    ],
+    "map_id": "S3-val-503001",
+    "notes": [
+     "staged copy of maps/val/S3-val-503001.wad (env refuses map_wad under maps/)"
+    ],
+    "source_file": "maps/val/S3-val-503001.wad",
+    "stage": "S3",
+    "staged": true,
+    "wad_sha256": "1ad81dde5ea971f26d7e8cd78184326c9eb41232872dab9b25113d21b06549da"
+   },
+   {
+    "env_config": {
+     "engine_rewards": [
+      [
+       "map_exit_reward",
+       1.0
+      ]
+     ],
+     "episode_timeout_tics": 4200,
+     "extra": {},
+     "frame_skip": 4,
+     "game_args": [],
+     "iwad": "freedoom2",
+     "iwad_file": null,
+     "map_wad": "C:\\Users\\priyansh\\AppData\\Local\\Temp\\doomsday-eval-ch5byfum\\S3-val-503002.wad",
+     "maps": [
+      "MAP01"
+     ],
+     "max_entities": 24,
+     "name": "eval_val",
+     "objects_info": false,
+     "obs_version": 4,
+     "phase2_engine_test": false,
+     "render_hud": true,
+     "scenario_wad": null,
+     "screen_enabled": false,
+     "sectors_info": false,
+     "skill": 3,
+     "skill_mix": [],
+     "turn_bins": [
+      -10.0,
+      -4.0,
+      -1.0,
+      0.0,
+      1.0,
+      4.0,
+      10.0
+     ],
+     "vanilla_eval": true,
+     "win_timer_ms": null
+    },
+    "lumps": [
+     "MAP01"
+    ],
+    "map_id": "S3-val-503002",
+    "notes": [
+     "staged copy of maps/val/S3-val-503002.wad (env refuses map_wad under maps/)"
+    ],
+    "source_file": "maps/val/S3-val-503002.wad",
+    "stage": "S3",
+    "staged": true,
+    "wad_sha256": "ced871102853136569546516b33cf4481a92bd6afead5d37cc7d2ce4bbff0669"
+   },
+   {
+    "env_config": {
+     "engine_rewards": [
+      [
+       "map_exit_reward",
+       1.0
+      ]
+     ],
+     "episode_timeout_tics": 4200,
+     "extra": {},
+     "frame_skip": 4,
+     "game_args": [],
+     "iwad": "freedoom2",
+     "iwad_file": null,
+     "map_wad": "C:\\Users\\priyansh\\AppData\\Local\\Temp\\doomsday-eval-ch5byfum\\S3-val-503003.wad",
+     "maps": [
+      "MAP01"
+     ],
+     "max_entities": 24,
+     "name": "eval_val",
+     "objects_info": false,
+     "obs_version": 4,
+     "phase2_engine_test": false,
+     "render_hud": true,
+     "scenario_wad": null,
+     "screen_enabled": false,
+     "sectors_info": false,
+     "skill": 3,
+     "skill_mix": [],
+     "turn_bins": [
+      -10.0,
+      -4.0,
+      -1.0,
+      0.0,
+      1.0,
+      4.0,
+      10.0
+     ],
+     "vanilla_eval": true,
+     "win_timer_ms": null
+    },
+    "lumps": [
+     "MAP01"
+    ],
+    "map_id": "S3-val-503003",
+    "notes": [
+     "staged copy of maps/val/S3-val-503003.wad (env refuses map_wad under maps/)"
+    ],
+    "source_file": "maps/val/S3-val-503003.wad",
+    "stage": "S3",
+    "staged": true,
+    "wad_sha256": "2a3d7eec13f2c36555f8bfbe4b0f643f56a95b7d12eb8a367a4cd65902dcc048"
+   },
+   {
+    "env_config": {
+     "engine_rewards": [
+      [
+       "map_exit_reward",
+       1.0
+      ]
+     ],
+     "episode_timeout_tics": 4200,
+     "extra": {},
+     "frame_skip": 4,
+     "game_args": [],
+     "iwad": "freedoom2",
+     "iwad_file": null,
+     "map_wad": "C:\\Users\\priyansh\\AppData\\Local\\Temp\\doomsday-eval-ch5byfum\\S3-val-503004.wad",
+     "maps": [
+      "MAP01"
+     ],
+     "max_entities": 24,
+     "name": "eval_val",
+     "objects_info": false,
+     "obs_version": 4,
+     "phase2_engine_test": false,
+     "render_hud": true,
+     "scenario_wad": null,
+     "screen_enabled": false,
+     "sectors_info": false,
+     "skill": 3,
+     "skill_mix": [],
+     "turn_bins": [
+      -10.0,
+      -4.0,
+      -1.0,
+      0.0,
+      1.0,
+      4.0,
+      10.0
+     ],
+     "vanilla_eval": true,
+     "win_timer_ms": null
+    },
+    "lumps": [
+     "MAP01"
+    ],
+    "map_id": "S3-val-503004",
+    "notes": [
+     "staged copy of maps/val/S3-val-503004.wad (env refuses map_wad under maps/)"
+    ],
+    "source_file": "maps/val/S3-val-503004.wad",
+    "stage": "S3",
+    "staged": true,
+    "wad_sha256": "9f0cf3031e7c61cfb016cf8ef11b2043c98f77f38410adddf18e3569e8e93b13"
+   },
+   {
+    "env_config": {
+     "engine_rewards": [
+      [
+       "map_exit_reward",
+       1.0
+      ]
+     ],
+     "episode_timeout_tics": 4200,
+     "extra": {},
+     "frame_skip": 4,
+     "game_args": [],
+     "iwad": "freedoom2",
+     "iwad_file": null,
+     "map_wad": "C:\\Users\\priyansh\\AppData\\Local\\Temp\\doomsday-eval-ch5byfum\\S3-val-503005.wad",
+     "maps": [
+      "MAP01"
+     ],
+     "max_entities": 24,
+     "name": "eval_val",
+     "objects_info": false,
+     "obs_version": 4,
+     "phase2_engine_test": false,
+     "render_hud": true,
+     "scenario_wad": null,
+     "screen_enabled": false,
+     "sectors_info": false,
+     "skill": 3,
+     "skill_mix": [],
+     "turn_bins": [
+      -10.0,
+      -4.0,
+      -1.0,
+      0.0,
+      1.0,
+      4.0,
+      10.0
+     ],
+     "vanilla_eval": true,
+     "win_timer_ms": null
+    },
+    "lumps": [
+     "MAP01"
+    ],
+    "map_id": "S3-val-503005",
+    "notes": [
+     "staged copy of maps/val/S3-val-503005.wad (env refuses map_wad under maps/)"
+    ],
+    "source_file": "maps/val/S3-val-503005.wad",
+    "stage": "S3",
+    "staged": true,
+    "wad_sha256": "b1fd7b63212a0e54a8fa6c03039a44f9a1ab7e7e5b585e77513b5b4a0095dfea"
+   }
+  ],
+  "maps_skipped": [
+   "freedoom-phase1: external freedoom set, not evaluated by this tool"
+  ],
+  "reproducibility_note": "per-episode engine reproducibility under set_seed is not established by any probe (ADR 0007-recipe Decision 5.2)",
+  "run_config": {
+   "base_seed": 11,
+   "ci_z": 1.959963984540054,
+   "device": "cpu",
+   "episodes_per_map": 3,
+   "exit_reward_fraction": 1.0,
+   "max_maps": null,
+   "policy": "sample",
+   "seed_stride_map": 10000,
+   "split": "val",
+   "temperature": 1.0,
+   "timeout_tics_override": null,
+   "torch_threads": 1
+  },
+  "seed_rule": "seed = base_seed + map_index * seed_stride_map + episode_index; env.reset(seed=seed); policy generator seeded with the same value, fresh per episode",
+  "time_limit_source": "configs.a0_env.GENERATED_MAPS: skill 3, 4200 tics (no per-map limit in the records)",
+  "versions": {
+   "gymnasium": "1.4.0",
+   "numpy": "2.2.6",
+   "python": "3.12.10",
+   "torch": "2.9.1+cu128",
+   "vizdoom": "1.3.3"
+  },
+  "wall_seconds": 963.8195700645447,
+  "written": "2026-11-26 08:12:10"
+ },
+ "summary": {
+  "overall": {
+   "death_rate": 0.0,
+   "episodes": 60,
+   "exit_unknown": 0,
+   "mean_kills": 0.4666666666666667,
+   "mean_length": 808.4,
+   "mean_length_successful": 492.46153846153845,
+   "mean_return": 0.43333333333333335,
+   "success_ci95_wilson": [
+    0.3157239680468677,
+    0.5589656122387444
+   ],
+   "success_rate": 0.43333333333333335,
+   "successes": 26,
+   "timeout_rate": 0.5666666666666667
+  },
+  "per_map": {
+   "S0-val-500001": {
+    "death_rate": 0.0,
+    "episodes": 3,
+    "exit_unknown": 0,
+    "mean_kills": 0.0,
+    "mean_length": 900.6666666666666,
+    "mean_length_successful": 602.0,
+    "mean_return": 0.3333333333333333,
+    "success_ci95_wilson": [
+     0.06149194472039621,
+     0.7923403991979522
+    ],
+    "success_rate": 0.3333333333333333,
+    "successes": 1,
+    "timeout_rate": 0.6666666666666666
+   },
+   "S0-val-500002": {
+    "death_rate": 0.0,
+    "episodes": 3,
+    "exit_unknown": 0,
+    "mean_kills": 0.0,
+    "mean_length": 99.33333333333333,
+    "mean_length_successful": 99.33333333333333,
+    "mean_return": 1.0,
+    "success_ci95_wilson": [
+     0.4385029682449546,
+     1.0
+    ],
+    "success_rate": 1.0,
+    "successes": 3,
+    "timeout_rate": 0.0
+   },
+   "S0-val-500003": {
+    "death_rate": 0.0,
+    "episodes": 3,
+    "exit_unknown": 0,
+    "mean_kills": 0.0,
+    "mean_length": 535.6666666666666,
+    "mean_length_successful": 535.6666666666666,
+    "mean_return": 1.0,
+    "success_ci95_wilson": [
+     0.4385029682449546,
+     1.0
+    ],
+    "success_rate": 1.0,
+    "successes": 3,
+    "timeout_rate": 0.0
+   },
+   "S0-val-500004": {
+    "death_rate": 0.0,
+    "episodes": 3,
+    "exit_unknown": 0,
+    "mean_kills": 0.0,
+    "mean_length": 874.3333333333334,
+    "mean_length_successful": 786.5,
+    "mean_return": 0.6666666666666666,
+    "success_ci95_wilson": [
+     0.2076596008020477,
+     0.9385080552796037
+    ],
+    "success_rate": 0.6666666666666666,
+    "successes": 2,
+    "timeout_rate": 0.3333333333333333
+   },
+   "S0-val-500005": {
+    "death_rate": 0.0,
+    "episodes": 3,
+    "exit_unknown": 0,
+    "mean_kills": 0.0,
+    "mean_length": 534.6666666666666,
+    "mean_length_successful": 534.6666666666666,
+    "mean_return": 1.0,
+    "success_ci95_wilson": [
+     0.4385029682449546,
+     1.0
+    ],
+    "success_rate": 1.0,
+    "successes": 3,
+    "timeout_rate": 0.0
+   },
+   "S1-val-501001": {
+    "death_rate": 0.0,
+    "episodes": 3,
+    "exit_unknown": 0,
+    "mean_kills": 0.0,
+    "mean_length": 1050.0,
+    "mean_length_successful": null,
+    "mean_return": 0.0,
+    "success_ci95_wilson": [
+     5.551115123125783e-17,
+     0.5614970317550454
+    ],
+    "success_rate": 0.0,
+    "successes": 0,
+    "timeout_rate": 1.0
+   },
+   "S1-val-501002": {
+    "death_rate": 0.0,
+    "episodes": 3,
+    "exit_unknown": 0,
+    "mean_kills": 0.0,
+    "mean_length": 778.6666666666666,
+    "mean_length_successful": 643.0,
+    "mean_return": 0.6666666666666666,
+    "success_ci95_wilson": [
+     0.2076596008020477,
+     0.9385080552796037
+    ],
+    "success_rate": 0.6666666666666666,
+    "successes": 2,
+    "timeout_rate": 0.3333333333333333
+   },
+   "S1-val-501003": {
+    "death_rate": 0.0,
+    "episodes": 3,
+    "exit_unknown": 0,
+    "mean_kills": 0.0,
+    "mean_length": 822.0,
+    "mean_length_successful": 366.0,
+    "mean_return": 0.3333333333333333,
+    "success_ci95_wilson": [
+     0.06149194472039621,
+     0.7923403991979522
+    ],
+    "success_rate": 0.3333333333333333,
+    "successes": 1,
+    "timeout_rate": 0.6666666666666666
+   },
+   "S1-val-501004": {
+    "death_rate": 0.0,
+    "episodes": 3,
+    "exit_unknown": 0,
+    "mean_kills": 0.0,
+    "mean_length": 607.0,
+    "mean_length_successful": 385.5,
+    "mean_return": 0.6666666666666666,
+    "success_ci95_wilson": [
+     0.2076596008020477,
+     0.9385080552796037
+    ],
+    "success_rate": 0.6666666666666666,
+    "successes": 2,
+    "timeout_rate": 0.3333333333333333
+   },
+   "S1-val-501005": {
+    "death_rate": 0.0,
+    "episodes": 3,
+    "exit_unknown": 0,
+    "mean_kills": 0.0,
+    "mean_length": 1050.0,
+    "mean_length_successful": null,
+    "mean_return": 0.0,
+    "success_ci95_wilson": [
+     5.551115123125783e-17,
+     0.5614970317550454
+    ],
+    "success_rate": 0.0,
+    "successes": 0,
+    "timeout_rate": 1.0
+   },
+   "S2-val-502001": {
+    "death_rate": 0.0,
+    "episodes": 3,
+    "exit_unknown": 0,
+    "mean_kills": 0.0,
+    "mean_length": 753.0,
+    "mean_length_successful": 604.5,
+    "mean_return": 0.6666666666666666,
+    "success_ci95_wilson": [
+     0.2076596008020477,
+     0.9385080552796037
+    ],
+    "success_rate": 0.6666666666666666,
+    "successes": 2,
+    "timeout_rate": 0.3333333333333333
+   },
+   "S2-val-502002": {
+    "death_rate": 0.0,
+    "episodes": 3,
+    "exit_unknown": 0,
+    "mean_kills": 0.0,
+    "mean_length": 1050.0,
+    "mean_length_successful": null,
+    "mean_return": 0.0,
+    "success_ci95_wilson": [
+     5.551115123125783e-17,
+     0.5614970317550454
+    ],
+    "success_rate": 0.0,
+    "successes": 0,
+    "timeout_rate": 1.0
+   },
+   "S2-val-502003": {
+    "death_rate": 0.0,
+    "episodes": 3,
+    "exit_unknown": 0,
+    "mean_kills": 0.0,
+    "mean_length": 451.0,
+    "mean_length_successful": 451.0,
+    "mean_return": 1.0,
+    "success_ci95_wilson": [
+     0.4385029682449546,
+     1.0
+    ],
+    "success_rate": 1.0,
+    "successes": 3,
+    "timeout_rate": 0.0
+   },
+   "S2-val-502004": {
+    "death_rate": 0.0,
+    "episodes": 3,
+    "exit_unknown": 0,
+    "mean_kills": 0.0,
+    "mean_length": 903.0,
+    "mean_length_successful": 609.0,
+    "mean_return": 0.3333333333333333,
+    "success_ci95_wilson": [
+     0.06149194472039621,
+     0.7923403991979522
+    ],
+    "success_rate": 0.3333333333333333,
+    "successes": 1,
+    "timeout_rate": 0.6666666666666666
+   },
+   "S2-val-502005": {
+    "death_rate": 0.0,
+    "episodes": 3,
+    "exit_unknown": 0,
+    "mean_kills": 0.0,
+    "mean_length": 884.6666666666666,
+    "mean_length_successful": 554.0,
+    "mean_return": 0.3333333333333333,
+    "success_ci95_wilson": [
+     0.06149194472039621,
+     0.7923403991979522
+    ],
+    "success_rate": 0.3333333333333333,
+    "successes": 1,
+    "timeout_rate": 0.6666666666666666
+   },
+   "S3-val-503001": {
+    "death_rate": 0.0,
+    "episodes": 3,
+    "exit_unknown": 0,
+    "mean_kills": 4.0,
+    "mean_length": 928.6666666666666,
+    "mean_length_successful": 686.0,
+    "mean_return": 0.3333333333333333,
+    "success_ci95_wilson": [
+     0.06149194472039621,
+     0.7923403991979522
+    ],
+    "success_rate": 0.3333333333333333,
+    "successes": 1,
+    "timeout_rate": 0.6666666666666666
+   },
+   "S3-val-503002": {
+    "death_rate": 0.0,
+    "episodes": 3,
+    "exit_unknown": 0,
+    "mean_kills": 0.0,
+    "mean_length": 1050.0,
+    "mean_length_successful": null,
+    "mean_return": 0.0,
+    "success_ci95_wilson": [
+     5.551115123125783e-17,
+     0.5614970317550454
+    ],
+    "success_rate": 0.0,
+    "successes": 0,
+    "timeout_rate": 1.0
+   },
+   "S3-val-503003": {
+    "death_rate": 0.0,
+    "episodes": 3,
+    "exit_unknown": 0,
+    "mean_kills": 1.3333333333333333,
+    "mean_length": 1050.0,
+    "mean_length_successful": null,
+    "mean_return": 0.0,
+    "success_ci95_wilson": [
+     5.551115123125783e-17,
+     0.5614970317550454
+    ],
+    "success_rate": 0.0,
+    "successes": 0,
+    "timeout_rate": 1.0
+   },
+   "S3-val-503004": {
+    "death_rate": 0.0,
+    "episodes": 3,
+    "exit_unknown": 0,
+    "mean_kills": 2.0,
+    "mean_length": 1050.0,
+    "mean_length_successful": null,
+    "mean_return": 0.0,
+    "success_ci95_wilson": [
+     5.551115123125783e-17,
+     0.5614970317550454
+    ],
+    "success_rate": 0.0,
+    "successes": 0,
+    "timeout_rate": 1.0
+   },
+   "S3-val-503005": {
+    "death_rate": 0.0,
+    "episodes": 3,
+    "exit_unknown": 0,
+    "mean_kills": 2.0,
+    "mean_length": 795.3333333333334,
+    "mean_length_successful": 286.0,
+    "mean_return": 0.3333333333333333,
+    "success_ci95_wilson": [
+     0.06149194472039621,
+     0.7923403991979522
+    ],
+    "success_rate": 0.3333333333333333,
+    "successes": 1,
+    "timeout_rate": 0.6666666666666666
+   }
+  },
+  "per_stage": {
+   "S0": {
+    "death_rate": 0.0,
+    "episodes": 15,
+    "exit_unknown": 0,
+    "mean_kills": 0.0,
+    "mean_length": 588.9333333333333,
+    "mean_length_successful": 473.6666666666667,
+    "mean_return": 0.8,
+    "success_ci95_wilson": [
+     0.5481455128483065,
+     0.9295245065301844
+    ],
+    "success_rate": 0.8,
+    "successes": 12,
+    "timeout_rate": 0.2
+   },
+   "S1": {
+    "death_rate": 0.0,
+    "episodes": 15,
+    "exit_unknown": 0,
+    "mean_kills": 0.0,
+    "mean_length": 861.5333333333333,
+    "mean_length_successful": 484.6,
+    "mean_return": 0.3333333333333333,
+    "success_ci95_wilson": [
+     0.1517632443971473,
+     0.5828645226148023
+    ],
+    "success_rate": 0.3333333333333333,
+    "successes": 5,
+    "timeout_rate": 0.6666666666666666
+   },
+   "S2": {
+    "death_rate": 0.0,
+    "episodes": 15,
+    "exit_unknown": 0,
+    "mean_kills": 0.0,
+    "mean_length": 808.3333333333334,
+    "mean_length_successful": 532.1428571428571,
+    "mean_return": 0.4666666666666667,
+    "success_ci95_wilson": [
+     0.24809535365737387,
+     0.698830199745016
+    ],
+    "success_rate": 0.4666666666666667,
+    "successes": 7,
+    "timeout_rate": 0.5333333333333333
+   },
+   "S3": {
+    "death_rate": 0.0,
+    "episodes": 15,
+    "exit_unknown": 0,
+    "mean_kills": 1.8666666666666667,
+    "mean_length": 974.8,
+    "mean_length_successful": 486.0,
+    "mean_return": 0.13333333333333333,
+    "success_ci95_wilson": [
+     0.03736125910306537,
+     0.37881982832322364
+    ],
+    "success_rate": 0.13333333333333333,
+    "successes": 2,
+    "timeout_rate": 0.8666666666666667
+   }
+  }
+ },
+ "verification": "assert_vanilla and assert_same_sensors(checkpoint signature, a0_eval_env_config) passed on every map config"
+}

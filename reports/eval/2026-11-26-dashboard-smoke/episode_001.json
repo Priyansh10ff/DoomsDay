@@ -1,0 +1,39 @@
+{
+ "attention_max_abs_diff": 4.76837158203125e-07,
+ "attention_mismatches_total": 0,
+ "attention_steps": 300,
+ "death": false,
+ "decisions_drawn": 300,
+ "episode_index": 1,
+ "episode_seed_engine": 154781663,
+ "exit_unknown": false,
+ "final_health": 100.0,
+ "final_obs_fresh": true,
+ "final_step_reward": 0.0,
+ "fps": 8.75,
+ "frame_size": [
+  720,
+  1280,
+  3
+ ],
+ "goal_head": true,
+ "keys_picked": [],
+ "kills": 0.0,
+ "length": 300,
+ "level_exit_flag": false,
+ "map_id": "S2-val-502001",
+ "map_lump": "MAP01",
+ "policy": "sample",
+ "return": 0.0,
+ "seed": 20261126,
+ "split": "val",
+ "stage": "S2",
+ "success": false,
+ "temperature": 1.0,
+ "timeout": true,
+ "videos": {
+  "frames": "313",
+  "gif": "reports/eval/2026-11-26-dashboard-smoke\\episode_001.gif",
+  "mp4": "reports/eval/2026-11-26-dashboard-smoke\\episode_001.mp4"
+ }
+}

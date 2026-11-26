@@ -1,0 +1,106 @@
+{
+ "checkpoint": {
+  "argument": "reports/runs/20261126-bc-explore-v4/bc_model.pt",
+  "sensor_signature_json": "[[\"frame_skip\", 4], [\"render_hud\", true], [\"turn_bins\", [-10.0, -4.0, -1.0, 0.0, 1.0, 4.0, 10.0]], [\"max_entities\", 24], [\"screen_enabled\", false], [\"ray_bands\", [[30, 46], [46, 54], [54, 70]]], [\"obs_version\", 4]]",
+  "sha256": "e18913697457bffd4f90976c67e73b895852978bd1f814cb4aa0bc586314e2f0"
+ },
+ "episodes": [
+  {
+   "attention_max_abs_diff": 4.76837158203125e-07,
+   "attention_mismatches_total": 0,
+   "attention_steps": 300,
+   "death": false,
+   "decisions_drawn": 300,
+   "episode_index": 0,
+   "episode_seed_engine": 916452843,
+   "exit_unknown": false,
+   "final_health": 100.0,
+   "final_obs_fresh": true,
+   "final_step_reward": 0.0,
+   "fps": 8.75,
+   "frame_size": [
+    720,
+    1280,
+    3
+   ],
+   "goal_head": true,
+   "keys_picked": [
+    "blue"
+   ],
+   "kills": 0.0,
+   "length": 300,
+   "level_exit_flag": false,
+   "map_id": "S2-val-502001",
+   "map_lump": "MAP01",
+   "policy": "sample",
+   "return": 0.0,
+   "seed": 20261125,
+   "split": "val",
+   "stage": "S2",
+   "success": false,
+   "temperature": 1.0,
+   "timeout": true,
+   "videos": {
+    "frames": "313",
+    "gif": "reports/eval/2026-11-26-dashboard-smoke\\episode_000.gif",
+    "mp4": "reports/eval/2026-11-26-dashboard-smoke\\episode_000.mp4"
+   }
+  },
+  {
+   "attention_max_abs_diff": 4.76837158203125e-07,
+   "attention_mismatches_total": 0,
+   "attention_steps": 300,
+   "death": false,
+   "decisions_drawn": 300,
+   "episode_index": 1,
+   "episode_seed_engine": 154781663,
+   "exit_unknown": false,
+   "final_health": 100.0,
+   "final_obs_fresh": true,
+   "final_step_reward": 0.0,
+   "fps": 8.75,
+   "frame_size": [
+    720,
+    1280,
+    3
+   ],
+   "goal_head": true,
+   "keys_picked": [],
+   "kills": 0.0,
+   "length": 300,
+   "level_exit_flag": false,
+   "map_id": "S2-val-502001",
+   "map_lump": "MAP01",
+   "policy": "sample",
+   "return": 0.0,
+   "seed": 20261126,
+   "split": "val",
+   "stage": "S2",
+   "success": false,
+   "temperature": 1.0,
+   "timeout": true,
+   "videos": {
+    "frames": "313",
+    "gif": "reports/eval/2026-11-26-dashboard-smoke\\episode_001.gif",
+    "mp4": "reports/eval/2026-11-26-dashboard-smoke\\episode_001.mp4"
+   }
+  }
+ ],
+ "live": null,
+ "map": {
+  "lumps": [
+   "MAP01"
+  ],
+  "map_id": "S2-val-502001",
+  "notes": [
+   "staged copy of maps/val/S2-val-502001.wad"
+  ],
+  "skill": 3,
+  "source_file": "maps/val/S2-val-502001.wad",
+  "timeout_tics": 1200,
+  "wad_sha256": "f6cd00a3876b73b764325abff896989135e85d2dc65f293be10d63d52542a6b6"
+ },
+ "temperature_applied_by": "evaluate NetworkPolicy -> agent.inference.PolicyRunner",
+ "verification": "assert_vanilla and assert_same_sensors(checkpoint signature, a0_eval_env_config) passed on every map config",
+ "written": "2026-11-26 07:56:49"
+}
