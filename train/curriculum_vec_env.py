@@ -189,6 +189,8 @@ class CurriculumVecEnv:
             out[f"curriculum_recent_episodes_{s}"] = float(len(r))
             # current stage mix: share of the envs whose running episode is on stage s
             out[f"curriculum_mix_{s}"] = float(sum(c.stage == s for c in self.current) / self.num_envs)
+        if getattr(sch, "map_order", None) == "plr":   # PLR per-stage stats; no keys in shuffled_cycle
+            out.update(sch.plr_metrics())
         out.update(diag_metrics(self._diag))
         self._diag = []   # per update: run_loop calls metrics() once per update
         return out

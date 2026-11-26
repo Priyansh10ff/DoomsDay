@@ -13,6 +13,7 @@ from dataclasses import dataclass
 import torch
 from torch import nn
 
+from configs.goal_modes import N_GOAL_MODES
 from configs.model_config import ModelConfig
 
 from .init_schemes import apply_orthogonal_init, init_gru_update_bias
@@ -30,6 +31,12 @@ class AgentOutput:
     aux_keys: torch.Tensor           # (..., n_key_bits) logits
     aux_damage: torch.Tensor         # (...) logit
     aux_monsters: torch.Tensor       # (...) regression
+    # (..., N_GOAL_MODES) sub-goal logits when cfg.goal_head, else None. Auxiliary
+    # prediction only (training signal and display); never read to choose actions.
+    goal_logits: torch.Tensor | None = None
+
+
+GOAL_HEAD_NAME = "goal_head"   # attribute name, hence the state-dict key prefix "goal_head."
 
 
 class A0Agent(nn.Module):
@@ -68,6 +75,13 @@ class A0Agent(nn.Module):
             raise ValueError(f"unknown init_scheme {cfg.init_scheme!r}")
         if cfg.gru_update_bias_init:  # after any scheme: overrides "biases 0" (ADR 0008)
             init_gru_update_bias(self.core, cfg)
+        # Sub-goal head: built LAST, after every other init, so the RNG draws (hence the
+        # values) of every other parameter are the same with the head on or off.
+        self.goal_head: nn.Linear | None = None
+        if cfg.goal_head:
+            self.goal_head = nn.Linear(h, N_GOAL_MODES)
+            nn.init.orthogonal_(self.goal_head.weight, gain=cfg.orthogonal_unit_gain)
+            nn.init.zeros_(self.goal_head.bias)
 
     # ------------------------------------------------------------ pieces
     def initial_state(self, batch: int, device: torch.device | str = "cpu") -> torch.Tensor:
@@ -110,6 +124,7 @@ class A0Agent(nn.Module):
             aux_keys=self.aux_keys(h),
             aux_damage=self.aux_damage(h).squeeze(-1),
             aux_monsters=self.aux_monsters(h).squeeze(-1),
+            goal_logits=None if self.goal_head is None else self.goal_head(h),
         )
 
     # ------------------------------------------------------------ public API

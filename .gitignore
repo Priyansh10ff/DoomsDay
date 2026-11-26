@@ -1,5 +1,5 @@
 # Teacher demonstrations and other generated datasets (teachers/collect.py): large, rebuildable
-data/
+/data/
 
 # Python and tool caches
 __pycache__/

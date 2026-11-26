@@ -5,6 +5,7 @@
         [--init-from-bc <bc_model.pt>] [--epochs N] [--seq-len 64] [--batch-seqs 32] [--lr 3e-4] [--device cpu|cuda|auto]
         [--seed S] [--val-frac 0.1] [--max-seconds S] [--head-weights 1,1,1,0,1,1]
         [--torch-threads 2] [--max-dataset-gb 3] [--use-pos-weight 1.0] [--prev-action-dropout 0.0]
+        [--goal-head [--goal-head-coef C]]
 
 What it does
   * Loads every episode of the dataset (train/bc_data.py), validates shapes and
@@ -27,6 +28,11 @@ What it does
     the env's reset value (all zeros, env/doom_env.py reset), so the student cannot
     lean on copying its previous action (the wall-wedge of
     reports/eval/2026-11-26-bc-v3-regression.md). Validation is never dropped.
+  * `--goal-head` builds the sub-goal prediction head (train/goal_head.py; auxiliary,
+    never feeds actions); `--goal-head-coef C` > 0 adds C x its cross-entropy against
+    the dataset's `goal_mode` (unlabelled steps masked; a dir with no labels refused)
+    and logs goal accuracy per epoch. With --init-from-bc from a model without the
+    head, the head is added freshly initialised and the record says so.
   * Model built with agent.model.build_agent + configs.model_config.ModelConfig(),
     the same path the PPO trainer uses, so weights are interchangeable.
 
@@ -64,6 +70,8 @@ from configs.train_config import HealthMonitorConfig, RunConfig
 from .bc_data import INDEX_NAME, ChunkStream, Episode, load_episodes, split_map_ids, step_bytes
 from .bc_spec import SIGNATURE_SOURCE
 from .checkpoint import save_weights_checkpoint
+from .goal_head import (GOAL_KEY_PREFIX, GoalLoss, add_goal_head_state, addition_record, goal_head_added,
+                        goal_loss, labelled_fraction, require_goal_labels)
 
 MODEL_NAME = "bc_model.pt"
 METRICS_NAME = "bc_metrics.jsonl"
@@ -75,6 +83,8 @@ VALUE_HEAD_NOTE = ("value head untouched by BC (no value loss); fit it with "
                    "train.run_doom --init-from <bc_model.pt> --value-warmup-updates N")
 # Key read_init_bc adds to the returned record when it grew the egomap input.
 INIT_GROWTH_KEY = "init_egomap_growth"
+# Key read_init_bc adds to the returned record when it added the goal head.
+INIT_GOAL_HEAD_KEY = "init_goal_head_added"
 
 
 def head_names(n: int) -> list[str]:
@@ -155,6 +165,16 @@ class Accumulator:
         self.weighted_loss_sum = 0.0
         self.chunks = 0
         self.use_tp = self.use_pos = self.use_pred_pos = 0
+        # sub-goal head (train/goal_head.py); reported only when tracked
+        self.goal_tracked = False
+        self.goal_loss = 0.0
+        self.goal_correct = self.goal_labelled = 0
+
+    def add_goal(self, g: GoalLoss) -> None:
+        self.goal_tracked = True
+        self.goal_loss += g.loss_sum
+        self.goal_correct += g.correct
+        self.goal_labelled += g.n_labelled
 
     def add(self, c: ChunkLoss) -> None:
         for h in range(len(self.loss)):
@@ -180,6 +200,11 @@ class Accumulator:
         out[f"{prefix}_use_recall"] = self.use_tp / self.use_pos if self.use_pos else None
         out[f"{prefix}_use_precision"] = self.use_tp / self.use_pred_pos if self.use_pred_pos else None
         out[f"{prefix}_use_label_presses"] = float(self.use_pos)
+        if self.goal_tracked:
+            gl = self.goal_labelled
+            out[f"{prefix}_goal_labelled_steps"] = float(gl)
+            out[f"{prefix}_goal_loss"] = self.goal_loss / gl if gl else None
+            out[f"{prefix}_goal_acc"] = self.goal_correct / gl if gl else None
         return out
 
 
@@ -191,11 +216,14 @@ def run_epoch(model: A0Agent, stream: ChunkStream, head_weights: tuple[float, ..
               optimizer: torch.optim.Optimizer | None, max_grad_norm: float,
               should_stop: Callable[[], bool] = lambda: False,
               use_pos_weight: float = 1.0, prev_action_dropout: float = 0.0,
-              dropout_generator: torch.Generator | None = None) -> tuple[Accumulator, bool]:
+              dropout_generator: torch.Generator | None = None,
+              goal_coef: float = 0.0) -> tuple[Accumulator, bool]:
     """One pass over `stream`. Trains when `optimizer` is given, else evaluates under
     no_grad. Hidden state carried across chunks, detached. Returns (metrics, stopped).
     `prev_action_dropout` > 0 applies drop_prev_action (with `dropout_generator`) to
-    training chunks only; an evaluation pass never drops."""
+    training chunks only; an evaluation pass never drops. `goal_coef` > 0 adds
+    goal_coef x the sub-goal cross-entropy (train/goal_head.py) to the trained loss and
+    tracks goal accuracy; it needs the model's goal head and goal labels in the stream."""
     acc = Accumulator(model.spec.n_heads)
     device = next(model.parameters()).device
     h = model.initial_state(stream.b, device)
@@ -203,6 +231,8 @@ def run_epoch(model: A0Agent, stream: ChunkStream, head_weights: tuple[float, ..
     dropping = train and prev_action_dropout > 0.0
     if dropping and dropout_generator is None:
         raise ValueError("prev_action_dropout > 0 needs a dropout_generator")
+    if goal_coef > 0.0 and model.goal_head is None:
+        raise ValueError("goal_coef > 0 needs a model built with the goal head (ModelConfig.goal_head)")
     model.train(train)
     for chunk in stream:
         if should_stop():
@@ -215,9 +245,17 @@ def run_epoch(model: A0Agent, stream: ChunkStream, head_weights: tuple[float, ..
         with torch.set_grad_enabled(train):
             out, h_last = model.forward_sequence(obs, h, chunk.episode_start)
             c = bc_loss(out.logits, chunk.labels, chunk.valid, head_weights, use_pos_weight)
-        if train and c.n_valid > 0 and c.total.requires_grad:
+            loss = c.total
+            if goal_coef > 0.0:
+                if chunk.goal is None:
+                    raise ValueError("goal_coef > 0 but the data stream carries no goal_mode labels")
+                assert out.goal_logits is not None
+                g = goal_loss(out.goal_logits, chunk.goal, chunk.valid)
+                loss = loss + goal_coef * g.loss
+                acc.add_goal(g)
+        if train and c.n_valid > 0 and loss.requires_grad:
             optimizer.zero_grad(set_to_none=True)
-            c.total.backward()
+            loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
             optimizer.step()
         h = h_last.detach()
@@ -245,13 +283,16 @@ def index_sha256(data_dir: str) -> str:
         return hashlib.sha256(f.read()).hexdigest()
 
 
-def read_init_bc(path: str, spec: ObsSpec, model_cfg: ModelConfig, signature: tuple
+def read_init_bc(path: str, spec: ObsSpec, model_cfg: ModelConfig, signature: tuple, seed: int = 0
                  ) -> tuple[dict[str, torch.Tensor], dict[str, Any]]:
     """(model state, its BC record) of a previous BC model, for --init-from-bc (DAgger
     rounds). Refuses a different sensor signature, model config or obs spec, except an
     obs spec with extra egomap channels appended (and a signature differing only by a
     higher obs_version): the state is then grown with zero input slices
-    (train/egomap_growth.py) and the returned record carries INIT_GROWTH_KEY."""
+    (train/egomap_growth.py) and the returned record carries INIT_GROWTH_KEY. A model
+    config that differs ONLY by the goal head switched on (train/goal_head.py) gets
+    the head added, freshly initialised from build_agent(spec, model_cfg, seed); the
+    record then carries INIT_GOAL_HEAD_KEY."""
     from .checkpoint import WEIGHTS_ONLY_KEY, CheckpointMismatch, canonical_json, load_checkpoint
     from .egomap_growth import egomap_growth, grow_state, obs_version_change, state_shapes
     blob = load_checkpoint(path)
@@ -261,8 +302,10 @@ def read_init_bc(path: str, spec: ObsSpec, model_cfg: ModelConfig, signature: tu
         version_change = obs_version_change(blob["sensor_signature_json"], run_sig)
         if version_change is None:
             raise CheckpointMismatch(f"--init-from-bc {path!r}: sensor signature differs")
-    if blob["model_config"] != model_cfg:
-        raise CheckpointMismatch(f"--init-from-bc {path!r}: model config differs")
+    try:
+        add_head = goal_head_added(blob["model_config"], model_cfg)
+    except ValueError as e:
+        raise CheckpointMismatch(f"--init-from-bc {path!r}: {e}") from e
     rec = json.loads(blob[WEIGHTS_ONLY_KEY]) if WEIGHTS_ONLY_KEY in blob else {}
     state = blob["trainer"]["model"]
     if blob["obs_spec_json"] != canonical_json(dataclasses.asdict(spec)):
@@ -278,6 +321,11 @@ def read_init_bc(path: str, spec: ObsSpec, model_cfg: ModelConfig, signature: tu
     elif version_change is not None:
         raise CheckpointMismatch(f"--init-from-bc {path!r}: obs_version differs {version_change} "
                                  f"but the observation spec is the same; refusing")
+    if add_head:
+        state = add_goal_head_state(state, build_agent(spec, model_cfg, seed=seed))
+        rec[INIT_GOAL_HEAD_KEY] = addition_record()
+        print(f"--init-from-bc GOAL HEAD ADDED: {GOAL_KEY_PREFIX}* freshly initialised (seed {seed}); "
+              f"every other weight copied unchanged")
     return state, rec
 
 
@@ -302,6 +350,15 @@ def train_bc(train_eps: list[Episode], val_eps: list[Episode], spec: ObsSpec, mo
         note = "weight 0, fine" if weights[h] == 0.0 else "WARNING: weight > 0 will crush its entropy"
         log(f"head {names[h]}: teacher label constant ({v}) in the train split ({note})")
     log(VALUE_HEAD_NOTE)
+    goal_coef = cfg.goal_head_coef
+    if goal_coef > 0.0:
+        if not model_cfg.goal_head:
+            raise ValueError("--goal-head-coef > 0 needs the goal head (--goal-head)")
+        require_goal_labels(train_eps, "BC train split")
+        log(f"goal head: coef {goal_coef}; goal_mode labelled on {labelled_fraction(train_eps):.1%} of train "
+            f"steps, {labelled_fraction(val_eps):.1%} of val steps (unlabelled steps masked)")
+    elif model_cfg.goal_head:
+        log("goal head built but --goal-head-coef is 0: it is not trained here")
     log(f"prev_action dropout P = {cfg.prev_action_dropout} (training chunks only"
         f"{'; off' if cfg.prev_action_dropout == 0.0 else ''})")
 
@@ -327,13 +384,14 @@ def train_bc(train_eps: list[Episode], val_eps: list[Episode], spec: ObsSpec, mo
     with open(os.path.join(out_dir, METRICS_NAME), "a", encoding="utf-8") as mf:
         for epoch in range(cfg.epochs):
             tr, stopped = run_epoch(model, train_stream, weights, opt, cfg.max_grad_norm, should_stop,
-                                    cfg.use_pos_weight, cfg.prev_action_dropout, drop_gen)
+                                    cfg.use_pos_weight, cfg.prev_action_dropout, drop_gen, goal_coef)
             row: dict[str, Any] = {"epoch": epoch + 1, "partial": stopped, "seconds": time.monotonic() - t0,
                                    "prev_action_dropout": cfg.prev_action_dropout,
                                    **tr.metrics("train", names)}
             if val_stream is not None:
                 va, _ = run_epoch(model, val_stream, weights, None, cfg.max_grad_norm,
-                                  use_pos_weight=cfg.use_pos_weight)
+                                  use_pos_weight=cfg.use_pos_weight,
+                                  goal_coef=goal_coef if val_stream.has_goal else 0.0)
                 row.update(va.metrics("val", names))
             history.append(row)
             mf.write(json.dumps(row) + "\n")
@@ -342,7 +400,9 @@ def train_bc(train_eps: list[Episode], val_eps: list[Episode], spec: ObsSpec, mo
                 f"{n} acc {row['train_acc_' + n]:.3f}/{row.get('val_acc_' + n, float('nan')):.3f}"
                 for n in names) + f"  loss {row['train_loss']:.4f}  (train/val)  use recall/precision "
                 f"{_fmt(row.get('train_use_recall'))}/{_fmt(row.get('train_use_precision'))} train, "
-                f"{_fmt(row.get('val_use_recall'))}/{_fmt(row.get('val_use_precision'))} val")
+                f"{_fmt(row.get('val_use_recall'))}/{_fmt(row.get('val_use_precision'))} val"
+                + (f"  goal acc {_fmt(row.get('train_goal_acc'))}/{_fmt(row.get('val_goal_acc'))}"
+                   if goal_coef > 0.0 else ""))
             rec = {**record, "epochs_done": epoch + 1, "stopped_early": stopped, "last_epoch_metrics": row}
             save_weights_checkpoint(model_path, model, model_cfg, spec, run_cfg, signature, rec)
             if stopped:
@@ -355,6 +415,7 @@ def train_bc(train_eps: list[Episode], val_eps: list[Episode], spec: ObsSpec, mo
                "constant_label_heads": {names[h]: v for h, v in const.items()},
                "value_head": VALUE_HEAD_NOTE, "sensor_signature_source": SIGNATURE_SOURCE,
                "use_pos_weight": cfg.use_pos_weight, "prev_action_dropout": cfg.prev_action_dropout,
+               "goal_head": model_cfg.goal_head, "goal_head_coef": goal_coef,
                "final_use_recall_precision": ({k: history[-1].get(k) for k in (
                    "train_use_recall", "train_use_precision", "val_use_recall", "val_use_precision")}
                    if history else None),
@@ -401,14 +462,25 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     a.add_argument("--prev-action-dropout", type=float, default=d.prev_action_dropout, metavar="P",
                    help="training only: per step, with probability P replace the prev_action input by "
                         "the episode-start value (no previous action); default 0 (off)")
-    return a.parse_args(argv)
+    a.add_argument("--goal-head", action="store_true",
+                   help="build the model with the sub-goal prediction head (auxiliary; never feeds actions)")
+    a.add_argument("--goal-head-coef", type=float, default=d.goal_head_coef, metavar="C",
+                   help="loss += C x cross-entropy of the goal head against the dataset's goal_mode; "
+                        "needs --goal-head; default 0 (off)")
+    ns = a.parse_args(argv)
+    if not ns.goal_head_coef >= 0:
+        a.error(f"--goal-head-coef must be >= 0, got {ns.goal_head_coef}")
+    if ns.goal_head_coef > 0 and not ns.goal_head:
+        a.error("--goal-head-coef > 0 needs --goal-head")
+    return ns
 
 
 def config_from_args(ns: argparse.Namespace) -> BCConfig:
     return BCConfig(epochs=ns.epochs, seq_len=ns.seq_len, batch_seqs=ns.batch_seqs, lr=ns.lr, seed=ns.seed,
                     val_frac=ns.val_frac, head_weights=tuple(ns.head_weights), max_seconds=ns.max_seconds,
                     torch_threads=ns.torch_threads, max_dataset_bytes=int(ns.max_dataset_gb * GIB),
-                    use_pos_weight=ns.use_pos_weight, prev_action_dropout=ns.prev_action_dropout)
+                    use_pos_weight=ns.use_pos_weight, prev_action_dropout=ns.prev_action_dropout,
+                    goal_head_coef=ns.goal_head_coef)
 
 
 def data_dirs_from_args(values: list[str] | str) -> list[str]:
@@ -435,6 +507,8 @@ def prepare(data_dir: str | list[str], spec: ObsSpec, cfg: BCConfig, log: Callab
     budget = cfg.max_dataset_bytes
     for d in dirs:
         part = load_episodes(d, spec, budget)
+        if cfg.goal_head_coef > 0.0:
+            require_goal_labels(part, f"dataset {d!r}")
         budget -= sum(e.length for e in part) * step_bytes(spec)
         eps.extend(part)
     if val_map_ids is None:
@@ -475,9 +549,10 @@ def main(argv: list[str] | None = None) -> int:
         return 6
     from .bc_spec import a0_training_spec_and_signature
     spec, signature = a0_training_spec_and_signature()
+    model_cfg = ModelConfig(goal_head=bool(ns.goal_head))
     init_state, val_ids = None, None
     if ns.init_from_bc:
-        init_state, init_rec = read_init_bc(ns.init_from_bc, spec, ModelConfig(), signature)
+        init_state, init_rec = read_init_bc(ns.init_from_bc, spec, model_cfg, signature, seed=cfg.seed)
         val_ids = init_rec.get("val_map_ids")
         if val_ids is None:
             print(f"--init-from-bc {ns.init_from_bc}: no val_map_ids in its record; splitting afresh",
@@ -491,7 +566,9 @@ def main(argv: list[str] | None = None) -> int:
         record["init_from_bc_sha256"] = sha256_file(ns.init_from_bc)
         if INIT_GROWTH_KEY in init_rec:
             record["init_from_bc_growth"] = init_rec[INIT_GROWTH_KEY]
-    summary = train_bc(train, val, spec, ModelConfig(), cfg, device, ns.out, signature, record,
+        if INIT_GOAL_HEAD_KEY in init_rec:
+            record["init_from_bc_goal_head"] = init_rec[INIT_GOAL_HEAD_KEY]
+    summary = train_bc(train, val, spec, model_cfg, cfg, device, ns.out, signature, record,
                        init_state=init_state)
     print(f"wrote {summary['model']} after {summary['epochs_done']} epochs")
     return 0

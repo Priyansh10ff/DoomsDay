@@ -1,7 +1,7 @@
 """Record the trained policy playing, as video of what the player sees.
 
     python -m evaluate.record --checkpoint <ckpt> --split val --map-id <id> --out <dir>
-        [--episodes N] [--seed S] [--argmax] [--timeout-tics N] [--skill N]
+        [--episodes N] [--seed S] [--argmax | --temperature T] [--timeout-tics N] [--skill N]
     python -m evaluate.record --checkpoint <ckpt> --wad <map.wad> --map MAP01 --out <dir> ...
     python -m evaluate.record --checkpoint <ckpt> --iwad <iwad> --map MAP05 --out <dir> ...
 
@@ -43,8 +43,7 @@ from .episode import map_exit_reward, run_episode
 from .external import EXTERNAL_DEFAULTS, ExternalEvalRunConfig, ExternalTarget, plan_external
 from .map_jobs import MapJob, MapPlan, _stage_copy, _train_hashes
 from .obs_select import pin_obs_version
-from .policies import NetworkPolicy
-from .run import _jsonable, verify_configs
+from .run import _jsonable, add_temperature_arg, check_temperature_arg, decode_fields, network_policy, verify_configs
 from .video import VideoConfig, write_video
 
 TICRATE = 35                      # Doom game tics per second
@@ -118,9 +117,11 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     p.add_argument("--seed", type=int, default=EvalRunConfig.base_seed)
     p.add_argument("--device", default=EvalRunConfig.device)
     p.add_argument("--argmax", action="store_const", dest="policy", const=POLICY_ARGMAX, default=POLICY_SAMPLE)
+    add_temperature_arg(p)
     p.add_argument("--no-mp4", action="store_true")
     p.add_argument("--no-gif", action="store_true")
     a = p.parse_args(argv)
+    check_temperature_arg(p, a)
     ext = a.wad is not None or a.iwad is not None
     if ext == (a.split is not None):
         p.error("give exactly one of --split val --map-id <id>, or --wad/--iwad --map MAPxx")
@@ -152,7 +153,8 @@ def build_plan(a: argparse.Namespace) -> MapPlan:
 def record(a: argparse.Namespace) -> dict:
     loaded = load_model(a.checkpoint, a.device)
     pin_obs_version(loaded.signature_json)          # before any EVAL config is built
-    common = dict(episodes_per_map=a.episodes, policy=a.policy, base_seed=a.seed, device=a.device)
+    common = dict(episodes_per_map=a.episodes, policy=a.policy, base_seed=a.seed, device=a.device,
+                  temperature=a.temperature)
     run = EvalRunConfig(split="val", **common) if a.split else ExternalEvalRunConfig(**common)
     torch.set_num_threads(run.torch_threads)
     video_cfg = VideoConfig(write_mp4=not a.no_mp4, write_gif=not a.no_gif)
@@ -168,7 +170,7 @@ def record(a: argparse.Namespace) -> dict:
         env = DoomEnv(job.env_config, render_mode="rgb_array")   # the only engine instance
         try:
             check_spec_matches(loaded.spec, spec_from_spaces(env.observation_space, env.action_space))
-            policy = NetworkPolicy(loaded.model, run.argmax_heads(loaded.spec.n_heads), run.device)
+            policy = network_policy(run, loaded)
             rec_env = RecordingEnv(env)
             for ei in range(run.episodes_per_map):
                 seed = run.episode_seed(0, ei)
@@ -176,7 +178,7 @@ def record(a: argparse.Namespace) -> dict:
                 stem = os.path.join(a.out, f"episode_{ei:03d}")
                 videos = write_video(rec_env.frames, stem, fps, video_cfg)
                 row = {"map_id": job.map_id, "stage": job.stage, "split": job.split, "episode_index": ei,
-                       "seed": seed, "policy": run.policy, **rec, "frames": len(rec_env.frames),
+                       "seed": seed, **decode_fields(run), **rec, "frames": len(rec_env.frames),
                        "fps": fps, "frame_size": list(rec_env.frames[0].shape), "videos": videos}
                 with open(stem + ".json", "w", encoding="utf-8") as f:
                     json.dump(_jsonable(row), f, indent=1, sort_keys=True)

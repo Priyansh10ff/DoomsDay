@@ -417,7 +417,7 @@ class Trainer:
             bc_coef = self.bc_coef_now()
             if bc_coef > 0.0:  # coefficient 0: nothing drawn, nothing computed
                 from .bc_aux import make_term
-                bc_fn = make_term(self.bc_sampler)
+                bc_fn = make_term(self.bc_sampler, self.run.bc_aux.goal_coef)
         if warm:
             self._freeze_all_but_value_and_aux(True)
         try:

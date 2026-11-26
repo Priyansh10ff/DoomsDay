@@ -32,6 +32,15 @@ chases a monster out of sight. With no monster in view the combat branch returns
 touching any state, so S0-S2 labels are unchanged (tests/test_teachers_combat.py pins
 them). Attack is 0 in every non-combat label.
 
+GOAL MODE (2026-11-26): after every label `self.goal_mode` holds one id of the fixed table
+in teachers/goal_modes.py, computed from the controller state AFTER the label was made
+(read-only: it never changes a label). Priority: combat label -> FIGHT; unstick label ->
+RECOVER; a labelled door press, or the current anchor is a door in its align / push phase
+-> OPEN_DOOR; otherwise the leg (`_leg_mode`). Route teacher legs: the first anchor from
+the current one on that is a key -> GET_KEY, a locked door -> GO_LOCKED_DOOR, an exit ->
+GO_EXIT (approaching any door on the way counts as that leg). The route teacher never
+reports EXPLORE; the explore teacher (teachers/explore.py) maps its goal instead.
+
 Turning: TURN_LEFT_RIGHT_DELTA is degrees per tic, positive turns right (ANGLE, which
 is counter-clockwise, decreases); one decision holds it for `frame_skip` tics, so bin
 value b changes the heading by -frame_skip * b degrees.
@@ -44,6 +53,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from teachers import goal_modes as GM
 from teachers.combat import (MELEE_ONLY, CombatConfig, aim_tolerance, choose_target, incoming)
 from teachers.navigator import VOID, Anchor, Route, descend, segment_clear
 from teachers.use_label import (CLOSED_GAP, USE_RANGE_LABEL, lines_from_grid, press_target,
@@ -133,6 +143,7 @@ class TeacherController:
         self.target_id: int | None = None
         self.attack_labels = 0
         self.combat_decisions = 0
+        self.goal_mode = GM.EXPLORE         # set by act(); see the module docstring
 
     @property
     def anchor(self) -> Anchor:
@@ -175,7 +186,33 @@ class TeacherController:
             a = self._decide(x, y, ang, info)
         a = self._use_overlay(a, x, y, ang, info, use_exec)
         self.last_label = a
+        self.goal_mode = self._goal_mode()
         return a
+
+    # ------------------------------------------------------------ goal-mode label
+    def _goal_mode(self) -> int:
+        """Goal-mode id of the label just made (read-only; module docstring)."""
+        if self.label_source == "combat":
+            return GM.FIGHT
+        if self.label_source == "unstick":
+            return GM.RECOVER
+        if self.press_target is not None and self.press_target[0] == "door":
+            return GM.OPEN_DOOR
+        if self.k < len(self.route.anchors) and self.anchor.kind == "door" \
+                and self.phase in ("align", "push"):
+            return GM.OPEN_DOOR
+        return self._leg_mode()
+
+    def _leg_mode(self) -> int:
+        """Route teacher: the leg the current anchor belongs to."""
+        for an in self.route.anchors[self.k:]:
+            if an.kind == "key":
+                return GM.GET_KEY
+            if an.kind == "door" and an.door_color:
+                return GM.GO_LOCKED_DOOR
+            if an.kind in ("exit_pad", "exit_switch"):
+                return GM.GO_EXIT
+        return GM.GO_EXIT
 
     def _use_overlay(self, a: np.ndarray, x: float, y: float, ang: float, info: dict,
                      use_exec: int) -> np.ndarray:

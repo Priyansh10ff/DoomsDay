@@ -8,7 +8,9 @@ with ONE exception (train/egomap_growth.py): an observation spec that differs on
 extra egomap channels appended at the end (and a sensor signature that differs only
 by a higher obs_version) is accepted; the first egomap conv weight then gets zero
 input slices for the new channels, so the run starts computing exactly what the file
-computed. The source path and its sha256 are recorded in the run config
+computed. A second exception (train/goal_head.py): a model config that differs only
+by the goal head switched on in the run; the head is then added freshly initialised
+(InitSource.goal_head_added) and every other weight is copied. The source path and its sha256 are recorded in the run config
 (RunConfig.init_from, RunConfig.init_from_sha256), and any growth in
 RunConfig.init_from_growth, hence in every checkpoint the run writes.
 """
@@ -19,6 +21,7 @@ import hashlib
 from dataclasses import dataclass
 from typing import Any
 
+from .goal_head import add_goal_head_state, goal_head_added
 from .egomap_growth import EgomapGrowth, egomap_growth, grow_state, obs_version_change, state_shapes
 from .checkpoint import (LOADED_FROM_KEY, WEIGHTS_ONLY_KEY, CheckpointMismatch, canonical_json,
                          load_checkpoint)
@@ -45,6 +48,9 @@ class InitSource:
     # (file, run) obs_version when the sensor signatures differ only there (upward);
     # accepted only if apply_init then finds an egomap channel growth.
     obs_version_change: tuple[int, int] | None = None
+    # Set by apply_init: True when the run's model has the goal head and the file's
+    # does not (train/goal_head.py); the head then starts freshly initialised.
+    goal_head_added: bool = False
 
 
 def read_init_source(path: str, sensor_signature: tuple) -> InitSource:
@@ -77,8 +83,10 @@ def apply_init(trainer: Trainer, src: InitSource) -> EgomapGrowth | None:
     hybrid actor copy. Nothing else of the file's trainer state is used. Returns the
     egomap growth applied (None when the specs were equal)."""
     blob = src.blob
-    if blob["model_config"] != trainer.model.cfg:
-        raise CheckpointMismatch(f"--init-from {src.loaded_from!r}: model config differs from this run's")
+    try:
+        add_head = goal_head_added(blob["model_config"], trainer.model.cfg)
+    except ValueError as e:
+        raise CheckpointMismatch(f"--init-from {src.loaded_from!r}: {e}") from e
     run_spec = canonical_json(dataclasses.asdict(trainer.spec))
     state = blob["trainer"]["model"]
     growth = None
@@ -91,6 +99,9 @@ def apply_init(trainer: Trainer, src: InitSource) -> EgomapGrowth | None:
     elif src.obs_version_change is not None:
         raise CheckpointMismatch(f"--init-from {src.loaded_from!r}: obs_version differs "
                                  f"{src.obs_version_change} but the observation spec is the same; refusing")
+    if add_head:   # exactly the head's keys from the run's own seeded fresh build
+        state = add_goal_head_state(state, trainer.learner)
+    src.goal_head_added = add_head
     trainer.learner.load_state_dict(state, strict=True)
     trainer.sync_actor()
     return growth

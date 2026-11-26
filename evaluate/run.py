@@ -2,7 +2,11 @@
 
     python -m evaluate.run --checkpoint <path> --split val|heldout|my_way_home
         [--episodes-per-map N] [--max-maps M] [--out <dir>] [--sample|--argmax]
-        [--random-policy] [--seed S] [--device cpu]
+        [--random-policy] [--temperature T] [--seed S] [--device cpu]
+
+--temperature T (sampling only; default 1.0 = plain sampling, exclusive with --argmax
+and --random-policy): every head samples from softmax(logits / T). It is recorded in
+each results row and in the summary's run_config.
 
     python -m evaluate.run --checkpoint <path> --wad <map.wad> [--map MAP01 ...]
         [--iwad <iwad path or freedoom1|freedoom2>] [--skill N] [--timeout-tics N] ...
@@ -35,6 +39,7 @@ import numpy as np
 import torch
 import vizdoom as vzd
 
+from agent.inference import DEFAULT_TEMPERATURE, check_temperature
 from agent.obs_spec import spec_from_spaces
 from configs.a0_env import a0_eval_env_config
 from env.doom_env import DoomEnv
@@ -61,6 +66,17 @@ def _jsonable(x: Any) -> Any:
     if isinstance(x, float) and (x != x):
         return None
     return x
+
+
+def decode_fields(run: EvalRunConfig) -> dict:
+    """Per-row decoding record: the policy and its temperature (None for the random
+    baseline, which has no network heads)."""
+    return {"policy": run.policy, "temperature": None if run.policy == POLICY_RANDOM else run.temperature}
+
+
+def network_policy(run: EvalRunConfig, loaded: LoadedCheckpoint) -> NetworkPolicy:
+    return NetworkPolicy(loaded.model, run.argmax_heads(loaded.spec.n_heads), run.device,
+                         temperature=run.temperature)
 
 
 def verify_configs(plan: MapPlan, loaded: LoadedCheckpoint | None) -> str:
@@ -93,7 +109,7 @@ def evaluate(run: EvalRunConfig, out_dir: str, loaded: LoadedCheckpoint | None,
                 try:
                     if loaded is not None:
                         check_spec_matches(loaded.spec, spec_from_spaces(env.observation_space, env.action_space))
-                        policy = NetworkPolicy(loaded.model, run.argmax_heads(loaded.spec.n_heads), run.device)
+                        policy = network_policy(run, loaded)
                     else:
                         policy = RandomPolicy(env.action_space)
                     thr = map_exit_reward(job.env_config.engine_rewards)
@@ -103,7 +119,7 @@ def evaluate(run: EvalRunConfig, out_dir: str, loaded: LoadedCheckpoint | None,
                         rec = run_episode(env, policy, seed, thr)
                         row = {"map_id": job.map_id, "stage": job.stage, "split": job.split,
                                "map_index": mi, "episode_index": ei, "seed": seed,
-                               "policy": run.policy, **rec}
+                               **decode_fields(run), **rec}
                         rows.append(row)
                         f.write(json.dumps(_jsonable(row)) + "\n")
                         f.flush()
@@ -172,9 +188,30 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     g.add_argument("--argmax", action="store_const", dest="policy", const=POLICY_ARGMAX)
     g.add_argument("--random-policy", action="store_const", dest="policy", const=POLICY_RANDOM)
     p.set_defaults(policy=POLICY_SAMPLE)
+    add_temperature_arg(p)
     a = p.parse_args(argv)
     check_target_args(p, a)
+    check_temperature_arg(p, a)
     return a
+
+
+def add_temperature_arg(p: argparse.ArgumentParser) -> None:
+    p.add_argument("--temperature", type=float, default=None, metavar="T",
+                   help="sampled actions from softmax(logits / T), the same T for every head "
+                        f"(default {DEFAULT_TEMPERATURE} = plain sampling); not with --argmax / --random-policy")
+
+
+def check_temperature_arg(p: argparse.ArgumentParser, a: argparse.Namespace) -> None:
+    """--temperature needs sampling; fills the default (1.0) when it is not given."""
+    if a.temperature is not None:
+        if a.policy != POLICY_SAMPLE:
+            p.error(f"--temperature cannot be combined with --{a.policy.replace('random', 'random-policy')}")
+        try:
+            check_temperature(a.temperature)
+        except ValueError as e:
+            p.error(str(e))
+    else:
+        a.temperature = DEFAULT_TEMPERATURE
 
 
 def add_external_args(p: argparse.ArgumentParser) -> None:
@@ -220,7 +257,7 @@ def main(argv: list[str] | None = None) -> int:
     a = parse_args(argv)
     ext = is_external(a)
     common = dict(episodes_per_map=a.episodes_per_map, max_maps=a.max_maps, policy=a.policy,
-                  base_seed=a.seed, device=a.device)
+                  base_seed=a.seed, device=a.device, temperature=a.temperature)
     run = ExternalEvalRunConfig(**common) if ext else EvalRunConfig(split=a.split, **common)
     if run.policy == POLICY_RANDOM and a.checkpoint:
         raise SystemExit("--random-policy takes no --checkpoint")
@@ -233,7 +270,8 @@ def main(argv: list[str] | None = None) -> int:
     out = a.out or os.path.join(DEFAULT_OUT_ROOT, f"{time.strftime('%Y%m%d-%H%M%S')}-{run.policy}-{run.split}")
     s = evaluate(run, out, loaded, a.checkpoint, plan=plan)
     o = s["summary"]["overall"]
-    print(f"{run.split} {run.policy}: {o['successes']}/{o['episodes']} success "
+    tag = f" T={run.temperature}" if run.temperature != DEFAULT_TEMPERATURE else ""
+    print(f"{run.split} {run.policy}{tag}: {o['successes']}/{o['episodes']} success "
           f"(Wilson 95% {o['success_ci95_wilson'][0]:.3f}-{o['success_ci95_wilson'][1]:.3f}), "
           f"death {o['death_rate']:.3f}, timeout {o['timeout_rate']:.3f}, mean length {o['mean_length']:.1f}, "
           f"exit_unknown {o['exit_unknown']} -> {out}")

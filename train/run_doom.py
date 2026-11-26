@@ -45,6 +45,14 @@ schedule counts policy updates after the value warm-up (the term is off during i
 The data is loaded and validated (observation version must match) BEFORE any engine
 starts. A resume refuses changed BC settings.
 
+Sub-goal head (train/goal_head.py; auxiliary prediction, never feeds actions):
+  --goal-head builds the model with it (a resume of such a run must repeat the flag);
+  --init-from a file without the head then adds it freshly initialised (logged and
+  recorded in init_from_growth). --goal-head-coef C (needs --goal-head and --bc-data)
+  adds C x its cross-entropy against the BC data's goal_mode to the BC term (same
+  coefficient schedule); BC data with no goal_mode in a dir is then refused. PPO
+  itself puts no loss on the head.
+
 --resume reads the checkpoint before the vec env is built and refuses a --shaping
 different from the one the checkpoint was trained with (ADR 0011 F6); the anneal
 offset uses the env count recorded in the checkpoint.
@@ -206,6 +214,11 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     a.add_argument("--bc-batch-seqs", type=int, default=b.batch_seqs)
     a.add_argument("--bc-seq-len", type=int, default=b.seq_len)
     a.add_argument("--bc-max-gb", type=float, default=b.max_bytes / GIB)
+    a.add_argument("--goal-head", action="store_true",
+                   help="build the model with the sub-goal prediction head (auxiliary; never feeds actions)")
+    a.add_argument("--goal-head-coef", type=float, default=b.goal_coef, metavar="C",
+                   help="BC term += C x goal-head cross-entropy on the BC data's goal_mode; needs "
+                        "--goal-head and --bc-data; default 0 (off)")
     r, iv = RNDConfig(), InvDynConfig()
     a.add_argument("--rnd-int-coef", type=float, default=r.int_coef,
                    help="RND exploration bonus: weight of the intrinsic advantage; 0 = off (default)")
@@ -233,6 +246,10 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
                 f"give --bc-decay-updates N (linear) or --bc-decay-mode exp")
     if not (0.0 < ns.bc_decay_rate <= 1.0):
         a.error(f"--bc-decay-rate must be in (0, 1], got {ns.bc_decay_rate}")
+    if not ns.goal_head_coef >= 0:
+        a.error(f"--goal-head-coef must be >= 0, got {ns.goal_head_coef}")
+    if ns.goal_head_coef > 0 and not (ns.goal_head and ns.bc_data):
+        a.error("--goal-head-coef > 0 needs --goal-head and --bc-data")
     if ns.init_from is not None and ns.resume is not None:
         a.error("--init-from starts a fresh run; it cannot be combined with --resume")
     if ns.value_warmup_updates < 0:
@@ -287,7 +304,7 @@ def bc_aux_from_args(ns: argparse.Namespace) -> BCAuxConfig:
     return BCAuxConfig(data_dirs=dirs, coef=ns.bc_coef, coef_final=ns.bc_coef_final,
                        decay_updates=ns.bc_decay_updates, decay_mode=ns.bc_decay_mode,
                        decay_rate=ns.bc_decay_rate, batch_seqs=ns.bc_batch_seqs, seq_len=ns.bc_seq_len,
-                       max_bytes=int(ns.bc_max_gb * GIB))
+                       max_bytes=int(ns.bc_max_gb * GIB), goal_coef=getattr(ns, "goal_head_coef", 0.0))
 
 
 def apply_start_stage(scheduler: Any, stage: str | None) -> None:
@@ -427,7 +444,8 @@ def main(argv: list[str] | None = None) -> int:
         try:
             if bc_sig != signature:
                 raise BCDataRefused("the engine-free A0 sensor signature differs from this run's")
-            bc_episodes = load_bc_data(run.bc_aux.data_dirs, bc_spec, run.bc_aux.max_bytes, obs_version())
+            bc_episodes = load_bc_data(run.bc_aux.data_dirs, bc_spec, run.bc_aux.max_bytes, obs_version(),
+                                       goal_required=run.bc_aux.goal_coef > 0.0)
         except BCDataRefused as e:
             print(f"refusing --bc-data: {e}", file=sys.stderr)
             return EXIT_BC_REFUSED
@@ -465,7 +483,7 @@ def main(argv: list[str] | None = None) -> int:
         from .run_loop import make_health_monitor, run_training
         from .trainer import Trainer
 
-        trainer = Trainer(venv, ModelConfig(), run)
+        trainer = Trainer(venv, ModelConfig(goal_head=bool(getattr(ns, "goal_head", False))), run)
         if bc_episodes is not None:
             if trainer.spec != bc_spec:
                 print(f"refusing --bc-data: run obs spec {trainer.spec} differs from the spec the BC data "
@@ -481,14 +499,20 @@ def main(argv: list[str] | None = None) -> int:
             except (CheckpointMismatch, RuntimeError, KeyError, AssertionError) as e:
                 print(f"refusing --init-from: {e}", file=sys.stderr)
                 return EXIT_INIT_REFUSED
-            if growth is not None:
+            if growth is not None or init_src.goal_head_added:
                 from .checkpoint import canonical_json
+                from .goal_head import addition_record
                 from .init_from import growth_record
-                grown_json = canonical_json(growth_record(init_src, growth))
+                grown = growth_record(init_src, growth) if growth is not None else {}
+                if init_src.goal_head_added:
+                    grown["goal_head"] = addition_record()
+                    print("init-from GOAL HEAD ADDED: freshly initialised; every other weight copied")
+                grown_json = canonical_json(grown)
                 run = dataclasses.replace(run, init_from_growth=grown_json)
                 trainer.run = dataclasses.replace(trainer.run, init_from_growth=grown_json)
-                print(f"init-from GROWTH: {growth.describe()}; obs_version "
-                      f"{init_src.obs_version_change or 'unchanged'}")
+                if growth is not None:
+                    print(f"init-from GROWTH: {growth.describe()}; obs_version "
+                          f"{init_src.obs_version_change or 'unchanged'}")
             print(f"fresh run initialised from {init_src.loaded_from}; value warm-up "
                   f"{run.ppo.value_warmup_updates} updates")
             if run.rnd.enabled or run.inv_dyn.enabled:

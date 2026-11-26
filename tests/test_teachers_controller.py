@@ -139,7 +139,9 @@ def test_episode_contract_on_fake_env() -> None:
     assert summ["success"], summ
     T = summ["length"]
     assert set(arrays) == {"rays", "entity_mask", "prev_action", "action", "executed_action",
-                           "engine_reward", "done", "label_unstick", "student_driven", "label_combat"}
+                           "engine_reward", "done", "label_unstick", "student_driven", "label_combat",
+                           "goal_mode"}
+    assert arrays["goal_mode"].shape == (T,) and arrays["goal_mode"].dtype == np.int64
     assert not arrays["student_driven"].any()
     assert arrays["rays"].shape == (T, 2, 4) and arrays["rays"].dtype == np.float32
     assert arrays["entity_mask"].dtype == np.bool_ and arrays["prev_action"].dtype == np.int64

@@ -25,7 +25,10 @@ Dataset contract (one file per episode, `ep_<6 digits>.npz`, np.savez_compressed
   (T, 6) teacher label; `executed_action` int64 (T, 6); `engine_reward` float32 (T,);
   `done` bool (T,) true on the last step; `label_combat` bool (T,) true where the label
   came from the combat branch (extra key: train/bc_data.py loads only the keys it
-  knows). `index.jsonl`: one line per saved episode
+  knows); `goal_mode` int64 (T,) the teacher's goal-mode id per decision (table in
+  teachers/goal_modes.py, copy in configs/goal_modes.py; added 2026-11-26, so older
+  datasets lack it and stay valid). summary.json gains `goal_mode_share_by_stage` and a
+  `goal_mode_share` per stage@noise. `index.jsonl`: one line per saved episode
   {"file", "map_id", "stage", "length", "success", "seed", "noise"}. Failed teacher
   episodes are dropped unless `--keep-failures`; they are always counted in
   `summary.json`.
@@ -59,6 +62,8 @@ from dataclasses import asdict, dataclass
 
 import numpy as np
 import psutil
+
+from teachers.goal_modes import GOAL_MODES, N_GOAL_MODES
 
 MAX_WORKERS = 8
 MIN_AVAILABLE_GIB = 2.5
@@ -104,6 +109,9 @@ class CollectConfig:
     beta: float = 0.0                 # per decision: probability the teacher's label is executed
     max_steps: int = 0                # cap on decisions per episode (0 = env time limit only)
     student_argmax: bool = False      # student acts by argmax instead of sampling
+    # "route": shortest path to the exit from the map file (teachers/navigator.py);
+    # "explore": decisions from what the player has seen only (teachers/explore.py)
+    teacher: str = "route"
 
 
 # ------------------------------------------------------------------ setup
@@ -310,16 +318,23 @@ class UseStats:
 
 def run_episode(env, route, job: Job, burst_max: int, trace: bool = False,
                 student: StudentDriver | None = None, beta: float = 0.0,
-                max_steps: int = 0) -> tuple[dict, dict]:
+                max_steps: int = 0, teacher: str = "route") -> tuple[dict, dict]:
     """Play one episode. Returns (arrays for the npz, episode summary).
     Teacher mode (student None): the teacher drives, with optional noise bursts.
     DAgger mode: at each decision the student's action is executed, except with
-    probability `beta` the teacher's label is; the label is always the teacher's."""
+    probability `beta` the teacher's label is; the label is always the teacher's.
+    teacher "route": `route` is a navigator.Route; "explore": an explore.ExploreMap."""
     from teachers.controller import ControllerConfig, TeacherController
     sizes = tuple(int(n) for n in env.action_space.nvec)
     rng = np.random.default_rng(job.seed)
-    ctrl = TeacherController(env.cfg.turn_bins, ControllerConfig(student_driven=student is not None),
-                             seed=job.seed)
+    ccfg = ControllerConfig(student_driven=student is not None)
+    if teacher == "explore":
+        from teachers.explore import ExploreController
+        ctrl = ExploreController(env.cfg.turn_bins, ccfg, seed=job.seed)
+    elif teacher == "route":
+        ctrl = TeacherController(env.cfg.turn_bins, ccfg, seed=job.seed)
+    else:
+        raise ValueError(f"unknown teacher {teacher!r}")
     obs, info = env.reset(seed=job.seed, options={"map": job.lump})
     if info.get("map") != job.lump:
         raise RuntimeError(f"env loaded {info.get('map')!r}, wanted {job.lump!r}")
@@ -330,6 +345,7 @@ def run_episode(env, route, job: Job, burst_max: int, trace: bool = False,
         student.begin(job.seed)
     obs_buf: dict[str, list] = {k: [] for k in obs if k != SCREEN_KEY}
     labels, executed, rewards, unstick, by_student, combat = [], [], [], [], [], []
+    modes: list[int] = []
     seen: set[int] = set()
     burst, noisy = 0, 0
     capped = False
@@ -353,6 +369,7 @@ def run_episode(env, route, job: Job, burst_max: int, trace: bool = False,
             by_student.append(False)
         unstick.append(ctrl.label_source == "unstick")
         combat.append(ctrl.label_source == "combat")
+        modes.append(int(ctrl.goal_mode))
         seen.update(m.id for m in info.get("monsters") or ())
         for k in obs_buf:
             obs_buf[k].append(np.array(obs[k], copy=True))
@@ -381,8 +398,10 @@ def run_episode(env, route, job: Job, burst_max: int, trace: bool = False,
     arrays["label_unstick"] = np.asarray(unstick, dtype=bool)
     arrays["student_driven"] = np.asarray(by_student, dtype=bool)
     arrays["label_combat"] = np.asarray(combat, dtype=bool)
+    arrays["goal_mode"] = np.asarray(modes, dtype=np.int64)
     success = bool(info.get("level_exit", False)) and not capped
     lab, exa = arrays["action"], arrays["executed_action"]
+    route = ctrl.route              # explore: the last dynamic route
     summ = {"episode": job.episode, "map_id": job.map_id, "stage": job.stage, "seed": job.seed,
             "noise": job.noise, "length": T, "success": success, "noisy_decisions": noisy,
             "student_decisions": int(sum(by_student)), "unstick_labels": int(sum(unstick)),
@@ -398,7 +417,17 @@ def run_episode(env, route, job: Job, burst_max: int, trace: bool = False,
             "combat_decisions": int(sum(combat)), "monsters_seen": len(seen),
             "kills": int(info.get("killcount", 0) or 0),
             "damage_taken": round(float(info.get("damage_taken_total", 0.0) or 0.0), 1),
-            "combat_give_ups": len(ctrl.given_up)}
+            "combat_give_ups": len(ctrl.given_up), "teacher": teacher,
+            "goal_mode_counts": [int(v) for v in np.bincount(arrays["goal_mode"],
+                                                              minlength=N_GOAL_MODES)]}
+    if teacher == "explore":
+        kn = ctrl.kn
+        walk = int(np.count_nonzero(ctrl.xm.grid.sector != -1))
+        summ.update({"replans": ctrl.replans, "goals": len(ctrl.goal_log),
+                     "goal_final": "/".join(str(v) for v in ctrl.goal) if ctrl.goal else None,
+                     "seen_share": round(int(kn.seen.sum()) / max(walk, 1), 3),
+                     "exit_seen": kn.exit_seen, "keys_seen": len(kn.keys_seen),
+                     "locks_learned": ctrl.locks_learned, "blacklist": len(ctrl.blacklist)})
     summ.update(ustat.summary())
     if trace:
         summ["events"] = ctrl.events
@@ -440,10 +469,15 @@ def _worker(wid: int, jobs, cfg: CollectConfig, env_cfg, results, stop_all, stop
                 job = jobs.get(timeout=JOB_GET_TIMEOUT_S)
             except queue.Empty:
                 break
-            if job.map_id not in routes:
-                routes[job.map_id] = load_route(resolve(job.map_id, "train"), map_id=job.map_id)
+            if job.map_id not in routes:       # static map data only; knowledge is per episode
+                if cfg.teacher == "explore":
+                    from teachers.explore import load_explore_map
+                    routes[job.map_id] = load_explore_map(resolve(job.map_id, "train"), map_id=job.map_id)
+                else:
+                    routes[job.map_id] = load_route(resolve(job.map_id, "train"), map_id=job.map_id)
             arrays, summ = run_episode(env, routes[job.map_id], job, cfg.burst_max, cfg.trace,
-                                       student=student, beta=cfg.beta, max_steps=cfg.max_steps)
+                                       student=student, beta=cfg.beta, max_steps=cfg.max_steps,
+                                       teacher=cfg.teacher)
             summ["saved"] = False
             if cfg.save and (summ["success"] or cfg.keep_failures or student is not None):
                 fname = f"ep_{job.episode:06d}.npz"
@@ -460,6 +494,18 @@ def _worker(wid: int, jobs, cfg: CollectConfig, env_cfg, results, stop_all, stop
 
 
 # ------------------------------------------------------------------ main
+def _mode_share(eps: list[dict]) -> dict:
+    """Share of decisions per goal mode (teachers/goal_modes.py) over these episodes;
+    episodes from before the goal-mode label carry no counts and are skipped."""
+    tot = np.zeros(N_GOAL_MODES, np.int64)
+    for e in eps:
+        c = e.get("goal_mode_counts")
+        if c is not None:
+            tot += np.asarray(c, np.int64)
+    n = max(int(tot.sum()), 1)
+    return {name: round(int(tot[i]) / n, 4) for i, name in enumerate(GOAL_MODES)}
+
+
 def _stats(eps: list[dict]) -> dict:
     out: dict = {}
     for key in sorted({(e["stage"], e["noise"]) for e in eps}):
@@ -483,6 +529,7 @@ def _stats(eps: list[dict]) -> dict:
             "damage_taken": round(float(sum(e.get("damage_taken", 0.0) for e in sel)), 1),
             "monsters_seen": int(sum(e.get("monsters_seen", 0) for e in sel)),
         }
+        out[f"{key[0]}@noise{key[1]}"]["goal_mode_share"] = _mode_share(sel)
         for k in USE_STAT_KEYS:
             if k == "max_presses_per_closed_spell":
                 out[f"{key[0]}@noise{key[1]}"][k] = max((e.get(k, 0) for e in sel), default=0)
@@ -597,6 +644,8 @@ def collect(cfg: CollectConfig) -> dict:
         "complete": len(eps) == len(jobs),
         "min_available_gib": round(min_avail / 2 ** 30, 2),
         "by_stage_noise": _stats(eps),
+        "goal_mode_share_by_stage": {s: _mode_share([e for e in eps if e["stage"] == s])
+                                     for s in sorted({e["stage"] for e in eps})},
         "decisions_saved": int(sum(e["length"] for e in eps if e.get("saved"))),
         "episodes_saved": sum(bool(e.get("saved")) for e in eps),
         "failures": [e for e in eps if not e["success"]],
@@ -643,6 +692,8 @@ def parse_args(argv: list[str] | None = None) -> CollectConfig:
                     help="DAgger: per-decision probability that the teacher's label is executed instead")
     ap.add_argument("--max-steps", type=int, default=0, help="cap on decisions per episode (0 = none)")
     ap.add_argument("--student-argmax", action="store_true", help="DAgger: student acts by argmax")
+    ap.add_argument("--teacher", choices=("route", "explore"), default="route",
+                    help="route: shortest path from the map file; explore: only what the player has seen")
     a = ap.parse_args(argv)
     if not 0.0 <= a.noise <= 1.0:
         ap.error("--noise must be in [0, 1]")
@@ -661,7 +712,7 @@ def parse_args(argv: list[str] | None = None) -> CollectConfig:
                          workers=a.workers, seed=a.seed, keep_failures=a.keep_failures,
                          save=not a.no_save, map_ids=tuple(a.map_ids), trace=a.trace,
                          resume=a.resume, student=a.student, beta=a.beta, max_steps=a.max_steps,
-                         student_argmax=a.student_argmax)
+                         student_argmax=a.student_argmax, teacher=a.teacher)
 
 
 def main(argv: list[str] | None = None) -> int:

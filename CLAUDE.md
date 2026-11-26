@@ -130,6 +130,8 @@ _Add entries as: `YYYY-MM-DD: decision (who decided, why)`._
   2. **Longer episodes** (about 4 minutes of game time instead of 2) and **mixed skill levels 1-4** per episode.
   3. **Lifts and stairs** in the generator: measure on Freedoom Phase 1 first; likely too big for the deadline.
 
+- 2026-11-26 (04:35): **Exploration teacher** (decided by Priyansh: "if it helps then i want it"): a second training-only teacher whose decisions use only what the player has seen (frontier exploration over seen cells, then key / locked door / exit once seen), to fix the generalisation gap from imitating an all-knowing route teacher. Adopt it in the day run only if a head-to-head on unseen validation maps shows it helps.
+
 ## 8. Current state of the repo
 
 - 2026-11-24: Repository started. Only this file exists. No code yet.

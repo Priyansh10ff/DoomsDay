@@ -142,12 +142,18 @@ class BCAuxConfig:
     batch_seqs: int = 16
     seq_len: int = 64
     max_bytes: int = 2 * GIB                 # refuse datasets whose arrays exceed this in RAM
+    # Sub-goal head (train/goal_head.py): the BC term adds goal_coef x the goal-head
+    # cross-entropy against the datasets' `goal_mode` (rides the same coef schedule).
+    # 0 = off, exactly the earlier term.
+    goal_coef: float = 0.0
 
     def __post_init__(self) -> None:
         if self.coef < 0 or self.coef_final < 0 or self.decay_updates < 0:
             raise ValueError("BC coef, coef_final and decay_updates must be >= 0")
         if self.batch_seqs < 1 or self.seq_len < 1:
             raise ValueError("BC batch_seqs and seq_len must be >= 1")
+        if not self.goal_coef >= 0.0:
+            raise ValueError(f"BC goal_coef must be >= 0, got {self.goal_coef}")
         if self.decay_mode not in BC_DECAY_MODES:
             raise ValueError(f"BC decay_mode must be one of {BC_DECAY_MODES}, got {self.decay_mode!r}")
         if not (0.0 < self.decay_rate <= 1.0):
@@ -169,7 +175,8 @@ class BCAuxConfig:
         """The settings a resume must not change (everything except the RAM cap)."""
         return {"data_dirs": list(self.data_dirs), "data_sha256": list(self.data_sha256),
                 "coef": self.coef, "coef_final": self.coef_final, "decay_updates": self.decay_updates,
-                "decay_mode": self.decay_mode, "decay_rate": self.decay_rate, "batch_seqs": self.batch_seqs, "seq_len": self.seq_len}
+                "decay_mode": self.decay_mode, "decay_rate": self.decay_rate, "batch_seqs": self.batch_seqs, "seq_len": self.seq_len,
+                "goal_coef": self.goal_coef}
 
 
 @dataclass(frozen=True)

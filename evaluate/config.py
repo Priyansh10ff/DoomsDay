@@ -3,6 +3,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from agent.inference import DEFAULT_TEMPERATURE, check_temperature
+
 SPLIT_CHOICES: tuple[str, ...] = ("val", "heldout", "my_way_home")
 POLICY_SAMPLE = "sample"
 POLICY_ARGMAX = "argmax"
@@ -35,12 +37,19 @@ class EvalRunConfig:
     exit_reward_fraction: float = 1.0
     # Optional override of every map's time limit (tests only; None = map default).
     timeout_tics_override: int | None = None
+    # Play-time decoding temperature for sampled heads: softmax(logits / T), the same T
+    # for every head (agent.inference). 1.0 = plain sampling; != 1.0 only with "sample".
+    temperature: float = DEFAULT_TEMPERATURE
 
     def __post_init__(self) -> None:
         if self.split not in SPLIT_CHOICES:
             raise ValueError(f"split {self.split!r} not in {SPLIT_CHOICES}")
         if self.policy not in POLICY_CHOICES:
             raise ValueError(f"policy {self.policy!r} not in {POLICY_CHOICES}")
+        check_temperature(self.temperature)
+        if self.temperature != DEFAULT_TEMPERATURE and self.policy != POLICY_SAMPLE:
+            raise ValueError(f"temperature {self.temperature} needs policy {POLICY_SAMPLE!r}, "
+                             f"got {self.policy!r} (argmax and random take no temperature)")
         if self.episodes_per_map < 1:
             raise ValueError("episodes_per_map must be >= 1")
         if self.max_maps is not None and self.max_maps < 1:

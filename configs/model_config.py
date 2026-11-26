@@ -61,6 +61,11 @@ class ModelConfig:
 
     # --- auxiliary heads (training-only outputs, never read to choose actions)
     n_key_bits: int = 3
+    # Sub-goal prediction head (2026-11-26, user request; no ADR): GRU state ->
+    # configs.goal_modes.N_GOAL_MODES logits, trained against the teacher's per-step
+    # `goal_mode` label. Auxiliary only: never feeds the policy heads. Off = the model
+    # is built exactly as before (same modules, same init RNG draws, same outputs).
+    goal_head: bool = False
 
     # --- observation layout facts from ADR 0001 that are not visible in the space
     # Number of trailing dims of `self` that are ego-motion (masked with telemetry).

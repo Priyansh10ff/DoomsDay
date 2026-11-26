@@ -3,7 +3,9 @@
 `NetworkPolicy`: the only path for a trained agent. Each episode gets a fresh
 `PolicyRunner` (hidden state zero, sampling generator seeded from the episode seed),
 so an episode's actions do not depend on earlier episodes. The observation is passed
-as given by the env (batched to B=1); nothing else reaches the model.
+as given by the env (batched to B=1); nothing else reaches the model. `temperature`
+(default 1.0 = plain sampling) is the uniform play-time decoding setting of
+agent.inference, the same for every head and every step.
 
 `RandomPolicy`: the baseline only. Uniform over each head, seeded per episode.
 """
@@ -14,20 +16,22 @@ from collections.abc import Mapping
 import numpy as np
 from gymnasium import spaces
 
-from agent.inference import PolicyRunner
+from agent.inference import DEFAULT_TEMPERATURE, PolicyRunner, check_temperature
 from agent.model import A0Agent
 
 
 class NetworkPolicy:
     name = "network"
 
-    def __init__(self, model: A0Agent, argmax_heads: tuple[bool, ...], device: str = "cpu") -> None:
+    def __init__(self, model: A0Agent, argmax_heads: tuple[bool, ...], device: str = "cpu",
+                 temperature: float = DEFAULT_TEMPERATURE) -> None:
         self.model, self.argmax_heads, self.device = model, argmax_heads, device
+        self.temperature = check_temperature(temperature)
         self.runner: PolicyRunner | None = None
 
     def begin_episode(self, seed: int) -> None:
         self.runner = PolicyRunner(self.model, num_envs=1, argmax_heads=self.argmax_heads, seed=seed,
-                                   device=self.device)
+                                   device=self.device, temperature=self.temperature)
 
     def act(self, obs: Mapping[str, np.ndarray], episode_start: bool) -> np.ndarray:
         assert self.runner is not None, "begin_episode() must be called first"

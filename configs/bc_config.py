@@ -48,6 +48,10 @@ class BCConfig:
     # the episode shuffle is the same at every probability.
     prev_action_dropout: float = 0.0
     prev_action_dropout_seed_offset: int = 1
+    # Sub-goal head (train/goal_head.py): loss += goal_head_coef x mean cross-entropy
+    # of the goal logits against the dataset's `goal_mode` (unlabelled steps masked).
+    # 0 = off, exactly the earlier loss; > 0 needs a model built with the head.
+    goal_head_coef: float = 0.0
 
     def __post_init__(self) -> None:
         if self.seq_len < 1 or self.batch_seqs < 1 or self.epochs < 0:
@@ -60,3 +64,5 @@ class BCConfig:
             raise ValueError(f"use_pos_weight must be > 0, got {self.use_pos_weight}")
         if not (0.0 <= self.prev_action_dropout <= 1.0):
             raise ValueError(f"prev_action_dropout must be in [0, 1], got {self.prev_action_dropout}")
+        if not self.goal_head_coef >= 0.0:
+            raise ValueError(f"goal_head_coef must be >= 0, got {self.goal_head_coef}")

@@ -27,7 +27,7 @@ from dataclasses import dataclass
 import numpy as np
 import torch
 
-from agent.model import A0Agent
+from agent.model import A0Agent, AgentOutput
 from agent.obs_spec import ObsSpec
 from agent.tensorize import torch_dtype
 from configs.train_config import BCAuxConfig
@@ -35,6 +35,7 @@ from configs.train_config import BCAuxConfig
 from .bc import bc_loss, head_names, index_sha256
 from .bc_data import _TORCH_DTYPES, Episode, load_episodes, step_bytes  # noqa: F401 (re-exported for tests)
 from .bc_spec import DatasetMismatch
+from .goal_head import GoalLabelError, goal_loss, require_goal_labels
 
 BC_HEAD_WEIGHT = 1.0
 
@@ -65,10 +66,11 @@ def dataset_hashes(dirs: tuple[str, ...]) -> tuple[str, ...]:
         raise BCDataRefused(f"BC dataset missing: {e}") from e
 
 
-def load_bc_data(dirs: tuple[str, ...], spec: ObsSpec, max_bytes: int, obs_version: int | None = None
-                 ) -> list[Episode]:
+def load_bc_data(dirs: tuple[str, ...], spec: ObsSpec, max_bytes: int, obs_version: int | None = None,
+                 goal_required: bool = False) -> list[Episode]:
     """Load every episode of every dir, refusing (BCDataRefused) a dataset that does
-    not match `spec` or whose arrays would exceed `max_bytes` in total."""
+    not match `spec` or whose arrays would exceed `max_bytes` in total, and, when
+    `goal_required`, a dir in which no episode carries a `goal_mode` array."""
     total_steps = 0
     for d in dirs:
         from .bc_data import read_index
@@ -83,7 +85,12 @@ def load_bc_data(dirs: tuple[str, ...], spec: ObsSpec, max_bytes: int, obs_versi
     eps: list[Episode] = []
     for d in dirs:
         try:
-            eps.extend(load_episodes(d, spec, max_bytes))
+            part = load_episodes(d, spec, max_bytes)
+            if goal_required:
+                require_goal_labels(part, f"BC dataset {d!r}")
+            eps.extend(part)
+        except GoalLabelError as e:
+            raise BCDataRefused(str(e)) from e
         except DatasetMismatch as e:
             v = f"v{obs_version}" if obs_version is not None else "this run's"
             raise BCDataRefused(f"BC dataset {d!r} does not match the run's observation layout ({v}; a "
@@ -112,6 +119,7 @@ class BCBatch:
     start: torch.Tensor                  # (L, K) float
     labels: torch.Tensor                 # (L, K, n_heads) long
     valid: torch.Tensor                  # (L, K) bool
+    goal: torch.Tensor | None = None     # (L, K) long sub-goal labels (negative = none), if any episode has them
 
 
 class BCSampler:
@@ -128,6 +136,7 @@ class BCSampler:
             raise ValueError(f"episodes carry different observation keys (first: {self.keys})")
         self.ends = np.cumsum(lengths)            # exclusive end of each episode in the flat step index
         self.total = int(self.ends[-1])
+        self.has_goal = any(e.goal is not None for e in episodes)
 
     def draw_starts(self) -> list[tuple[int, int]]:
         """K (episode, start step) pairs, uniform over all dataset steps."""
@@ -167,9 +176,11 @@ class BCSampler:
             main_start[s, 0] = 1.0 if off == 0 else 0.0
         labels = np.stack([eps[s].labels[main_idx[s]] for s in range(k)], axis=1)
         dev = self.device
+        goal = (torch.as_tensor(np.stack([eps[s].goal_rows(main_idx[s]) for s in range(k)], axis=1), device=dev).long()
+                if self.has_goal else None)
         batch = BCBatch(self._stack(burn_idx, eps), torch.as_tensor(burn_start.T.copy(), device=dev),
                         self._stack(main_idx, eps), torch.as_tensor(main_start.T.copy(), device=dev),
-                        torch.as_tensor(labels, device=dev).long(), torch.as_tensor(valid.T.copy(), device=dev))
+                        torch.as_tensor(labels, device=dev).long(), torch.as_tensor(valid.T.copy(), device=dev), goal)
         assert batch.labels.shape[:2] == (l, k), f"BC labels expected (L={l}, K={k}, heads), got {tuple(batch.labels.shape)}"
         assert batch.valid.shape == (l, k) and batch.start.shape == (l, k) and batch.burn_start.shape == (l, k)
         return batch
@@ -178,27 +189,43 @@ class BCSampler:
         return self.build(self.draw_starts())
 
 
-def batch_logits(model: A0Agent, batch: BCBatch) -> list[torch.Tensor]:
+def batch_outputs(model: A0Agent, batch: BCBatch) -> AgentOutput:
     """Burn-in under no_grad from a zero state, then the graded window with gradient."""
     k = batch.start.shape[1]
     h = model.initial_state(k, batch.start.device)
     with torch.no_grad():
         _, h = model.forward_sequence(batch.burn_obs, h, batch.burn_start)
     out, _ = model.forward_sequence(batch.obs, h.detach(), batch.start)
-    return out.logits
+    return out
 
 
-def bc_term(model: A0Agent, batch: BCBatch) -> tuple[torch.Tensor, dict[str, float]]:
-    """(loss tensor, stats): the summed per-head mean cross-entropy and per-head accuracy."""
-    logits = batch_logits(model, batch)
+def batch_logits(model: A0Agent, batch: BCBatch) -> list[torch.Tensor]:
+    return batch_outputs(model, batch).logits
+
+
+def bc_term(model: A0Agent, batch: BCBatch, goal_coef: float = 0.0) -> tuple[torch.Tensor, dict[str, float]]:
+    """(loss tensor, stats): the summed per-head mean cross-entropy and per-head accuracy;
+    with `goal_coef` > 0 plus goal_coef x the goal-head cross-entropy (train/goal_head.py)."""
+    out = batch_outputs(model, batch)
+    logits = out.logits
     c = bc_loss(logits, batch.labels, batch.valid, (BC_HEAD_WEIGHT,) * len(logits))
     n = max(c.n_valid, 1)
     stats = {"bc_loss": float(c.total.detach()), "bc_valid_steps": float(c.n_valid)}
     for h, name in enumerate(head_names(len(logits))):
         stats[f"bc_acc_{name}"] = c.head_correct[h] / n
-    return c.total, stats
+    total = c.total
+    if goal_coef > 0.0:
+        if out.goal_logits is None or batch.goal is None:
+            raise ValueError("BC goal_coef > 0 needs the model's goal head and goal_mode labels in the BC data")
+        g = goal_loss(out.goal_logits, batch.goal, batch.valid)
+        total = total + goal_coef * g.loss
+        stats["bc_goal_loss"] = float(g.loss.detach())
+        stats["bc_goal_acc"] = g.correct / max(g.n_labelled, 1)
+        stats["bc_goal_labelled_steps"] = float(g.n_labelled)
+    return total, stats
 
 
-def make_term(sampler: BCSampler) -> Callable[[A0Agent], tuple[torch.Tensor, dict[str, float]]]:
+def make_term(sampler: BCSampler, goal_coef: float = 0.0
+              ) -> Callable[[A0Agent], tuple[torch.Tensor, dict[str, float]]]:
     """A closure for ppo_update: draws a fresh batch per call."""
-    return lambda model: bc_term(model, sampler.sample())
+    return lambda model: bc_term(model, sampler.sample(), goal_coef)

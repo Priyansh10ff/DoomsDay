@@ -31,6 +31,7 @@ from agent.obs_spec import EGOMAP_KEY, ObsSpec, model_keys
 from agent.tensorize import TORCH_DTYPES, torch_dtype
 
 from .bc_spec import LABEL_KEY, DatasetMismatch, validate_arrays
+from .goal_head import GOAL_LABEL_KEY, GOAL_UNLABELLED, validate_goal
 
 INDEX_NAME = "index.jsonl"
 INDEX_FIELDS = ("file", "map_id", "stage", "length", "success", "seed", "noise")
@@ -77,6 +78,9 @@ class Episode:
     file: str
     # key -> per-step shape, for keys stored bit-packed in `obs` ((T, packed bytes) uint8)
     packed: dict[str, tuple[int, ...]] = field(default_factory=dict)
+    # (T,) int64 sub-goal label (train/goal_head.py; negative = unlabelled), or None
+    # when the file has no `goal_mode` array. Never a model input.
+    goal: np.ndarray | None = None
 
     @property
     def length(self) -> int:
@@ -86,6 +90,12 @@ class Episode:
         """obs[key] at step rows `idx`, unpacked if stored bit-packed."""
         a = self.obs[key][idx]
         return unpack_steps(a, self.packed[key]) if key in self.packed else a
+
+    def goal_rows(self, idx: np.ndarray) -> np.ndarray:
+        """goal labels at step rows `idx`; GOAL_UNLABELLED everywhere when the episode has none."""
+        if self.goal is None:
+            return np.full(idx.shape, GOAL_UNLABELLED, np.int64)
+        return self.goal[idx]
 
 
 def read_index(data_dir: str) -> list[dict]:
@@ -157,6 +167,7 @@ def load_episodes(data_dir: str, spec: ObsSpec, max_bytes: int, pack: bool = Tru
         path = os.path.join(data_dir, r["file"])
         with np.load(path, allow_pickle=False) as z:
             arrays = {k: z[k] for k in (*keys, LABEL_KEY) if k in z.files}
+            goal_raw = z[GOAL_LABEL_KEY] if GOAL_LABEL_KEY in z.files else None
         t = validate_arrays(arrays, spec, path)
         _validate_extra(arrays, spec, t, path)
         if t != int(r["length"]):
@@ -167,8 +178,9 @@ def load_episodes(data_dir: str, spec: ObsSpec, max_bytes: int, pack: bool = Tru
                 if k in obs:
                     packed[k] = tuple(obs[k].shape[1:])
                     obs[k] = pack_steps(obs[k], f"{path}: {k}")
+        goal = None if goal_raw is None else validate_goal(goal_raw, t, path)
         eps.append(Episode(obs, arrays[LABEL_KEY], str(r["map_id"]), str(r["stage"]), str(r["file"]),
-                           packed))
+                           packed, goal))
     return eps
 
 
@@ -190,6 +202,9 @@ class Chunk:
     labels: torch.Tensor            # (T, B, n_heads) long
     valid: torch.Tensor             # (T, B) bool
     episode_start: torch.Tensor     # (T, B) float
+    # (T, B) long sub-goal labels (negative = unlabelled) when any episode of the
+    # stream carries `goal_mode`; None otherwise.
+    goal: torch.Tensor | None = None
 
 
 class ChunkStream:
@@ -206,6 +221,7 @@ class ChunkStream:
         self.keys = tuple(episodes[0].obs)
         if any(tuple(e.obs) != self.keys for e in episodes):
             raise ValueError(f"episodes carry different observation keys (first: {self.keys})")
+        self.has_goal = any(e.goal is not None for e in episodes)
 
     def __iter__(self) -> Iterator[Chunk]:
         order = (torch.randperm(len(self.eps), generator=self.gen).tolist() if self.shuffle
@@ -248,9 +264,14 @@ class ChunkStream:
             stacked = np.stack([srcs[s].rows(k, idx[s]) for s in range(b)], axis=1)   # (T, B, ...)
             obs[k] = torch.as_tensor(stacked).to(device=self.device, dtype=torch_dtype(k, stacked))
         labels = np.stack([srcs[s].labels[idx[s]] for s in range(b)], axis=1)
+        goal = None
+        if self.has_goal:
+            goal = torch.as_tensor(np.stack([srcs[s].goal_rows(idx[s]) for s in range(b)], axis=1),
+                                   device=self.device).long()
+            assert goal.shape == (t, b), f"goal labels expected (T={t}, B={b}), got {tuple(goal.shape)}"
         out = Chunk(obs, torch.as_tensor(labels, device=self.device).long(),
                     torch.as_tensor(valid.T.copy(), device=self.device),
-                    torch.as_tensor(start.T.copy(), device=self.device))
+                    torch.as_tensor(start.T.copy(), device=self.device), goal)
         assert out.labels.shape[:2] == (t, b), f"labels expected (T={t}, B={b}, heads)"
         assert out.valid.shape == (t, b) and out.episode_start.shape == (t, b)
         return out

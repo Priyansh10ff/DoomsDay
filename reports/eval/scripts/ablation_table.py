@@ -16,6 +16,11 @@ sha256 of the file on disk now, every val map id + wad sha256 equal to maps/spli
 complete row count); reused paths are referenced, not copied, and flagged in the table
 because they were produced by older env/ code.
 
+A manifest row may carry an optional "temperature" (default 1.0, decode "sample" only;
+refused with argmax or random): passed through as `evaluate.run --temperature T`, part
+of the protocol match (a result written before the field existed reads as T = 1.0),
+and shown in the decode column as "sample T=...".
+
 DOOMSDAY_OBS_VERSION is set per row in the child process only, from the checkpoint's
 stored sensor signature (evaluate.obs_select.checkpoint_obs_version); a manifest
 obs_version that disagrees refuses the row.
@@ -64,6 +69,7 @@ BOOT_SEED = 20261126
 STAGES = ("S0", "S1", "S2", "S3")
 SEED_STRIDE_MAP = 10_000            # evaluate.config.EvalRunConfig default; checked on reuse
 CHECKPOINT_RE = re.compile(r"checkpoint-u(\d+)\.pt$")
+DEFAULT_TEMPERATURE = 1.0           # agent.inference.DEFAULT_TEMPERATURE (plain sampling)
 
 
 # ----------------------------------------------------------------------------- helpers
@@ -115,9 +121,29 @@ def read_summary(d: str) -> dict | None:
 
 
 # ----------------------------------------------------------------------------- protocol match
+def row_temperature(row: dict) -> tuple[float, str | None]:
+    """(T, refusal or None) of a manifest row's optional "temperature" field (default
+    1.0). T != 1 is accepted only for decode "sample" (not argmax, not random)."""
+    t = row.get("temperature", DEFAULT_TEMPERATURE)
+    try:
+        t = float(t)
+    except (TypeError, ValueError):
+        return DEFAULT_TEMPERATURE, f"temperature {row.get('temperature')!r} is not a number"
+    if not math.isfinite(t) or t <= 0.0:
+        return DEFAULT_TEMPERATURE, f"temperature {t} must be finite and > 0"
+    if t != DEFAULT_TEMPERATURE and (row.get("checkpoint") == "random" or row.get("decode") != "sample"):
+        return t, f"temperature {t} needs decode 'sample' (argmax / random take no temperature)"
+    return t, None
+
+
+def decode_label(decode: str | None, temperature: float) -> str:
+    return f"{decode} T={temperature:g}" if temperature != DEFAULT_TEMPERATURE else str(decode)
+
+
 def protocol_mismatch(d: str, *, policy: str, episodes: int, seed: int, ckpt_sha: str | None,
-                      maps: list[dict]) -> str | None:
-    """None when directory `d` holds a complete result of exactly this protocol."""
+                      maps: list[dict], temperature: float = DEFAULT_TEMPERATURE) -> str | None:
+    """None when directory `d` holds a complete result of exactly this protocol. A
+    summary written before --temperature existed reads as T = 1.0 (plain sampling)."""
     s = read_summary(d)
     if s is None or "meta" not in s:
         return "no summary.json with meta"
@@ -129,6 +155,9 @@ def protocol_mismatch(d: str, *, policy: str, episodes: int, seed: int, ckpt_sha
     for k, v in want.items():
         if rc.get(k, "<absent>") != v:
             return f"run_config.{k}={rc.get(k, '<absent>')!r}, want {v!r}"
+    got_t = rc.get("temperature", DEFAULT_TEMPERATURE)
+    if got_t != temperature:
+        return f"run_config.temperature={got_t!r}, want {temperature!r}"
     got_sha = (m.get("checkpoint") or {}).get("sha256")
     if got_sha != ckpt_sha:
         return f"checkpoint sha256 {str(got_sha)[:12]} != {str(ckpt_sha)[:12]}"
@@ -183,12 +212,15 @@ def fmt_dur(s: float) -> str:
 
 
 # ----------------------------------------------------------------------------- running
-def eval_cmd(ckpt: str | None, decode: str, episodes: int, seed: int, out: str) -> list[str]:
+def eval_cmd(ckpt: str | None, decode: str, episodes: int, seed: int, out: str,
+             temperature: float = DEFAULT_TEMPERATURE) -> list[str]:
     cmd = [sys.executable, "-m", "evaluate.run"]
     if ckpt is None:
         cmd += ["--random-policy"]
     else:
         cmd += ["--checkpoint", ckpt, "--" + decode]
+        if temperature != DEFAULT_TEMPERATURE:
+            cmd += ["--temperature", repr(float(temperature))]
     return cmd + ["--split", SPLIT, "--episodes-per-map", str(episodes), "--seed", str(seed), "--out", out]
 
 
@@ -314,13 +346,18 @@ def plan_rows(man: dict, episodes: int, seed: int, out_root: str, no_reuse: bool
     search = [] if no_reuse else man.get("reuse_search_dirs", [])
     plan = []
     for row in man["rows"]:
+        temperature, t_refusal = row_temperature(row)
         p = {"row": row, "status": row.get("status", "ready"), "obs_version": None,
              "out": rel(os.path.join(out_root, row["name"])), "action": None, "detail": "",
-             "ckpt_sha": None, "cmd": None}
+             "ckpt_sha": None, "cmd": None, "temperature": temperature}
         ck = row.get("checkpoint")
         if p["status"] == "pending" or ck is None:
             p["action"], p["status"] = "pending", "pending"
             p["detail"] = row.get("note", "")
+            plan.append(p)
+            continue
+        if t_refusal is not None:
+            p["action"], p["detail"] = "blocked", t_refusal
             plan.append(p)
             continue
         is_random = ck == "random"
@@ -343,7 +380,8 @@ def plan_rows(man: dict, episodes: int, seed: int, out_root: str, no_reuse: bool
                     plan.append(p)
                     continue
                 p["obs_version"] = v
-        kw = dict(policy=policy, episodes=episodes, seed=seed, ckpt_sha=p["ckpt_sha"], maps=maps)
+        kw = dict(policy=policy, episodes=episodes, seed=seed, ckpt_sha=p["ckpt_sha"], maps=maps,
+                  temperature=temperature)
         if protocol_mismatch(p["out"], **kw) is None:
             p["action"], p["src"] = "done", p["out"]
         else:
@@ -353,7 +391,7 @@ def plan_rows(man: dict, episodes: int, seed: int, out_root: str, no_reuse: bool
             else:
                 p["action"], p["src"] = "run", p["out"]
                 p["cmd"] = eval_cmd(None if is_random else ck, row.get("decode", "sample"),
-                                    episodes, seed, p["out"])
+                                    episodes, seed, p["out"], temperature)
         plan.append(p)
     return plan, maps
 
@@ -392,6 +430,7 @@ def write_ablation_report(man, plan, maps, episodes, seed, out_root, reused_cave
         e = {"name": r["name"], "checkpoint": r.get("checkpoint"), "checkpoint_sha256": p["ckpt_sha"],
              "obs_version": p["obs_version"] if p["obs_version"] is not None else r.get("obs_version"),
              "decode": "random" if r.get("checkpoint") == "random" else r.get("decode"),
+             "temperature": None if r.get("checkpoint") == "random" else p["temperature"],
              "note": r.get("note", ""), "action": p["action"], "source": p.get("src"), "detail": p["detail"]}
         if r["name"] in loaded:
             e.update(summarize_rows(loaded[r["name"]]))
@@ -425,7 +464,8 @@ def write_ablation_report(man, plan, maps, episodes, seed, out_root, reused_cave
         ps = e.get("per_stage", {})
         src = {"done": f"ran: `{e['source']}`", "reuse": f"REUSED: `{e['source']}`",
                "pending": "pending (not run)", "run": "not run yet", "blocked": f"blocked: {e['detail']}"}[e["action"]]
-        L.append(f"| {e['name']} | {'-' if e['obs_version'] is None else 'v' + str(e['obs_version'])} | {e['decode']} | "
+        dec = e["decode"] if e["temperature"] is None else decode_label(e["decode"], e["temperature"])
+        L.append(f"| {e['name']} | {'-' if e['obs_version'] is None else 'v' + str(e['obs_version'])} | {dec} | "
                  + " | ".join(f_rate(ps.get(s)) for s in STAGES)
                  + f" | {f_rate(e.get('overall'))} | {src} |")
     L += ["", "## Overall episode metrics", "",
@@ -510,7 +550,7 @@ def ablation_main(a) -> int:
             r = p["row"]
             pol = "random" if r["checkpoint"] == "random" else r["decode"]
             bad = protocol_mismatch(p["out"], policy=pol, episodes=episodes, seed=seed,
-                                    ckpt_sha=p["ckpt_sha"], maps=maps)
+                                    ckpt_sha=p["ckpt_sha"], maps=maps, temperature=p["temperature"])
             if rc != 0 or bad:
                 print(f"[fail] {r['name']}: exit {rc}; {bad}. Stopping (resume re-runs this row).")
                 p["action"], p["detail"] = "blocked", f"run failed (exit {rc}; {bad})"
