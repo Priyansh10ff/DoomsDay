@@ -132,6 +132,8 @@ _Add entries as: `YYYY-MM-DD: decision (who decided, why)`._
 
 - 2026-11-26 (04:35): **Exploration teacher** (decided by Priyansh: "if it helps then i want it"): a second training-only teacher whose decisions use only what the player has seen (frontier exploration over seen cells, then key / locked door / exit once seen), to fix the generalisation gap from imitating an all-knowing route teacher. Adopt it in the day run only if a head-to-head on unseen validation maps shows it helps.
 
+- 2026-11-26 (10:42): **Day run 1 window is 6 hours** (decided by Priyansh): the 10:33 launch was stopped and relaunched fresh as `reports/runs/20261126-day1b-v4-plr/` with max-seconds 21600 (stops itself about 16:42). Laptop stays on all day.
+
 ## 8. Current state of the repo
 
 - 2026-11-24: Repository started. Only this file exists. No code yet.
